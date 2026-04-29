@@ -14,9 +14,9 @@ interface Booking {
   status: string
   pitch_id: number
   user_id: string
-  pitch_name?: string
-  pitch_colour?: string
-  booked_by?: string
+  pitch_name: string
+  pitch_colour: string
+  full_name: string
 }
 
 interface Pitch {
@@ -25,14 +25,8 @@ interface Pitch {
   colour: string
 }
 
-interface BookingModalProps {
-  booking: Booking
-  onClose: () => void
-  currentUserId: string
-  userRole: string
-}
-
-function BookingModal({ booking, onClose, currentUserId, userRole }: BookingModalProps) {
+const fmt = (t: string) => { const parts = t.slice(0,5).split(':'); const hr = parseInt(parts[0]); const mn = parts[1]; return `${hr > 12 ? hr-12 : hr === 0 ? 12 : hr}:${mn}${hr >= 12 ? 'pm' : 'am'}` }
+function BookingModal({ booking, onClose, currentUserId, userRole }: { booking: Booking; onClose: () => void; currentUserId: string; userRole: string }) {
   const canEdit = booking.user_id === currentUserId || userRole === 'admin'
   const statusColour = booking.status === 'approved' ? 'bg-green-100 text-green-800' : booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
   return (
@@ -46,35 +40,44 @@ function BookingModal({ booking, onClose, currentUserId, userRole }: BookingModa
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
         </div>
         <div className="space-y-3 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-500">Date</span>
-            <span className="font-medium">{booking.booking_date}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Time</span>
-            <span className="font-medium">{booking.start_time.slice(0,5)} - {booking.end_time.slice(0,5)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Pitch</span>
-            <span className="font-medium">{booking.pitch_name || 'Unknown'}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Booked by</span>
-            <span className="font-medium">{booking.booked_by || 'Unknown'}</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-500">Status</span>
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColour}`}>{booking.status}</span>
-          </div>
+          <div className="flex justify-between"><span className="text-gray-500">Date</span><span className="font-medium">{new Date(booking.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span></div>
+          <div className="flex justify-between"><span className="text-gray-500">Time</span><span className="font-medium">{fmt(booking.start_time)} - {fmt(booking.end_time)}</span></div>
+          <div className="flex justify-between"><span className="text-gray-500">Pitch</span><span className="font-medium">{booking.pitch_name}</span></div>
+          <div className="flex justify-between"><span className="text-gray-500">Booked by</span><span className="font-medium">{booking.full_name}</span></div>
+          <div className="flex justify-between items-center"><span className="text-gray-500">Status</span><span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColour}`}>{booking.status}</span></div>
         </div>
         {canEdit && (
           <div className="mt-6">
-            <a href={`/edit-booking/${booking.id}`} className="block w-full bg-gray-900 text-white text-center py-3 rounded-lg font-semibold text-sm hover:bg-gray-700 transition-colors">
-              Edit Booking
-            </a>
+            <a href={`/edit-booking/${booking.id}`} className="block w-full bg-gray-900 text-white text-center py-3 rounded-lg font-semibold text-sm hover:bg-gray-700 transition-colors">Edit Booking</a>
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+function BookingCard({ booking, onClick, compact }: { booking: Booking; onClick: () => void; compact?: boolean }) {
+  const isApproved = booking.status === 'approved'
+  const isPending = booking.status === 'pending'
+  const bg = isApproved ? '#f1f8f1' : isPending ? '#fff8e1' : '#f5f5f5'
+  const borderColour = isApproved ? '#2e7d32' : isPending ? '#f9ab2b' : '#9e9e9e'
+  const borderStyle = isPending ? 'dashed' : 'solid'
+  const timeColour = isApproved ? '#2e7d32' : isPending ? '#f9ab2b' : '#9e9e9e'
+
+  if (compact) {
+    return (
+      <div onClick={onClick} style={{ backgroundColor: bg, borderLeft: `3px ${borderStyle} ${borderColour}`, borderRadius: '4px', padding: '3px 5px', cursor: 'pointer' }}>
+        <div style={{ color: timeColour, fontWeight: 'bold', fontSize: '10px' }}>{fmt(booking.start_time)}-{fmt(booking.end_time)}</div>
+        <div style={{ color: '#111', fontWeight: 'bold', fontSize: '11px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{booking.team_name}</div>
+        <div style={{ color: '#888', fontSize: '10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{booking.full_name} - {booking.pitch_name}</div>
+      </div>
+    )
+  }
+  return (
+    <div onClick={onClick} style={{ backgroundColor: bg, borderLeft: `4px ${borderStyle} ${borderColour}`, borderRadius: '6px', padding: '5px 7px', cursor: 'pointer' }}>
+      <div style={{ color: timeColour, fontWeight: 'bold', fontSize: '11px' }}>{fmt(booking.start_time)}-{fmt(booking.end_time)}</div>
+      <div style={{ color: '#111', fontWeight: 'bold', fontSize: '12px', marginTop: '1px' }}>{booking.team_name}</div>
+      <div style={{ color: '#888', fontSize: '11px', marginTop: '1px', lineHeight: '1.3' }}>{booking.full_name} - {booking.pitch_name}</div>
     </div>
   )
 }
@@ -107,22 +110,15 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
       start = startOfWeek(currentDate, { weekStartsOn: 1 })
       end = endOfWeek(currentDate, { weekStartsOn: 1 })
     }
-    const { data: bookingData } = await supabase
-      .from('bookings')
-      .select('id, booking_date, start_time, end_time, team_name, purpose, status, pitch_id, user_id')
+    const { data, error } = await supabase
+      .from('public_planner')
+      .select('*')
       .gte('booking_date', format(start, 'yyyy-MM-dd'))
       .lte('booking_date', format(end, 'yyyy-MM-dd'))
+      .order('booking_date')
       .order('start_time')
-    if (!bookingData) { setLoading(false); return }
-    const { data: profileData } = await supabase.from('profiles').select('id, full_name')
-    const { data: pitchData } = await supabase.from('pitches').select('id, name, colour')
-    const enriched = bookingData.map(b => ({
-      ...b,
-      pitch_name: pitchData?.find(p => p.id === b.pitch_id)?.name || '',
-      pitch_colour: pitchData?.find(p => p.id === b.pitch_id)?.colour || '#1a5c2e',
-      booked_by: profileData?.find(p => p.id === b.user_id)?.full_name || '',
-    }))
-    setBookings(enriched)
+    if (error) console.error('Planner fetch error:', error)
+    if (data) setBookings(data as Booking[])
     setLoading(false)
   }
 
@@ -135,29 +131,25 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
     })
   }
 
-  function getCardStyle(booking: Booking): React.CSSProperties {
-    if (booking.status === 'approved') {
-      const colour = booking.pitch_colour || '#1a5c2e'
-      return { backgroundColor: colour + '22', borderLeft: `4px solid ${colour}`, color: '#1a3a1a' }
-    }
-    if (booking.status === 'pending') {
-      return { backgroundColor: '#fffbeb', borderLeft: '4px dashed #f59e0b', color: '#92400e' }
-    }
-    return { backgroundColor: '#f9fafb', borderLeft: '4px solid #d1d5db', color: '#6b7280' }
-  }
-
-  function getMonthCardStyle(booking: Booking): React.CSSProperties {
-    if (booking.status === 'approved') {
-      const colour = booking.pitch_colour || '#1a5c2e'
-      return { backgroundColor: colour, borderLeft: `3px solid ${colour}`, color: 'white' }
-    }
-    if (booking.status === 'pending') {
-      return { backgroundColor: '#fffbeb', borderLeft: '3px dashed #f59e0b', color: '#92400e' }
-    }
-    return { backgroundColor: '#f3f4f6', borderLeft: '3px solid #9ca3af', color: '#6b7280' }
-  }
-
   const uniqueTeams = Array.from(new Set(bookings.map(b => b.team_name))).sort()
+
+  function getWeekLabel() {
+    const ws = startOfWeek(currentDate, { weekStartsOn: 1 })
+    const we = endOfWeek(currentDate, { weekStartsOn: 1 })
+    const sameMonth = format(ws, 'MMM') === format(we, 'MMM')
+    return sameMonth ? `${format(ws, 'd')} - ${format(we, 'd MMM yyyy')}` : `${format(ws, 'd MMM')} - ${format(we, 'd MMM yyyy')}`
+  }
+
+  function renderWeekDayHeader(day: Date, i: number) {
+    const today = isToday(day)
+    return (
+      <div key={i} style={{ textAlign: 'center', padding: '6px 2px', backgroundColor: today ? '#111' : '#1f2937', borderLeft: i > 0 ? '1px solid #374151' : 'none' }}>
+        <div style={{ fontSize: '10px', fontWeight: '600', color: today ? '#9ca3af' : '#6b7280', letterSpacing: '0.05em' }}>{format(day, 'EEE').toUpperCase()}</div>
+        <div style={{ fontSize: '18px', fontWeight: 'bold', color: today ? '#111' : 'white', backgroundColor: today ? 'white' : 'transparent', borderRadius: '50%', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '2px auto' }}>{format(day, 'd')}</div>
+        <div style={{ fontSize: '10px', color: today ? '#9ca3af' : '#6b7280' }}>{format(day, 'MMM')}</div>
+      </div>
+    )
+  }
 
   function renderMonthView() {
     const monthStart = startOfMonth(currentDate)
@@ -170,33 +162,26 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
     const weeks: Date[][] = []
     for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i + 7))
     return (
-      <div className="month-grid-wrapper border border-gray-200 rounded-lg overflow-hidden">
-        <div className="grid grid-cols-7 bg-gray-900">
+      <div className="month-grid-wrapper" style={{ border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', backgroundColor: '#111' }}>
           {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => (
-            <div key={d} className="text-center text-xs font-semibold text-white py-3">{d}</div>
+            <div key={d} style={{ textAlign: 'center', padding: '8px 0', fontSize: '11px', fontWeight: '600', color: 'white' }}>{d}</div>
           ))}
         </div>
         {weeks.map((week, wi) => (
-          <div key={wi} className="grid grid-cols-7 border-t border-gray-200">
+          <div key={wi} style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderTop: '1px solid #e5e7eb' }}>
             {week.map((day, di) => {
               const dayBookings = getBookingsForDay(day)
-              const isCurrentMonth = isSameMonth(day, currentDate)
-              const todayClass = isToday(day) ? 'bg-gray-900 text-white' : ''
+              const inMonth = isSameMonth(day, currentDate)
+              const today = isToday(day)
               return (
-                <div key={di} className={`min-h-24 p-1 border-l border-gray-200 ${!isCurrentMonth ? 'bg-gray-50' : 'bg-white'}`}>
-                  <div className="flex justify-end">
-                    <span className={`text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full ${todayClass} ${!isCurrentMonth ? 'text-gray-400' : 'text-gray-700'}`}>
-                      {format(day, 'd')}
-                    </span>
+                <div key={di} style={{ minHeight: '90px', padding: '4px', backgroundColor: inMonth ? 'white' : '#f9fafb', borderLeft: di > 0 ? '1px solid #e5e7eb' : 'none' }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '500', width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: today ? '#111' : 'transparent', color: today ? 'white' : inMonth ? '#374151' : '#9ca3af' }}>{format(day, 'd')}</span>
                   </div>
-                  <div className="space-y-1 mt-1">
-                    {dayBookings.slice(0,3).map(booking => (
-                      <div key={booking.id} onClick={() => setSelectedBooking(booking)} style={getMonthCardStyle(booking)} className="text-xs p-1 rounded cursor-pointer hover:opacity-80 transition-opacity">
-                        <div className="font-semibold truncate">{booking.team_name}</div>
-                        <div className="opacity-80">{booking.start_time.slice(0,5)}</div>
-                      </div>
-                    ))}
-                    {dayBookings.length > 3 && <div className="text-xs text-gray-500 pl-1">+{dayBookings.length - 3} more</div>}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    {dayBookings.slice(0,3).map(b => <BookingCard key={b.id} booking={b} onClick={() => setSelectedBooking(b)} compact />)}
+                    {dayBookings.length > 3 && <div style={{ fontSize: '10px', color: '#9ca3af', paddingLeft: '4px' }}>+{dayBookings.length - 3} more</div>}
                   </div>
                 </div>
               )
@@ -211,28 +196,16 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 })
     const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
     return (
-      <div className="week-grid-wrapper border border-gray-200 rounded-lg overflow-hidden">
-        <div className="grid grid-cols-7 bg-gray-900">
-          {days.map((day, i) => (
-            <div key={i} className="text-center py-3">
-              <div className="text-xs font-semibold text-gray-400">{format(day, 'EEE').toUpperCase()}</div>
-              <div className={`text-sm font-bold mt-1 w-8 h-8 flex items-center justify-center rounded-full mx-auto ${isToday(day) ? 'bg-white text-gray-900' : 'text-white'}`}>{format(day, 'd')}</div>
-              <div className="text-xs text-gray-400">{format(day, 'MMM')}</div>
-            </div>
-          ))}
+      <div className="week-grid-wrapper" style={{ border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', minWidth: '700px' }}>
+          {days.map((day, i) => renderWeekDayHeader(day, i))}
         </div>
-        <div className="grid grid-cols-7 divide-x divide-gray-200">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', minWidth: '700px', borderTop: '1px solid #e5e7eb' }}>
           {days.map((day, di) => {
             const dayBookings = getBookingsForDay(day)
             return (
-              <div key={di} className="min-h-48 p-2 space-y-2 bg-white">
-                {dayBookings.map(booking => (
-                  <div key={booking.id} onClick={() => setSelectedBooking(booking)} style={getCardStyle(booking)} className="text-xs p-2 rounded cursor-pointer hover:opacity-80 transition-opacity">
-                    <div className="font-bold" style={{color: booking.status === 'approved' ? booking.pitch_colour || '#1a5c2e' : 'inherit'}}>{booking.start_time.slice(0,5)}-{booking.end_time.slice(0,5)}</div>
-                    <div className="font-semibold">{booking.team_name}</div>
-                    <div className="opacity-70">{booking.booked_by} - {booking.pitch_name}</div>
-                  </div>
-                ))}
+              <div key={di} style={{ minHeight: '180px', padding: '6px', display: 'flex', flexDirection: 'column', gap: '4px', backgroundColor: isToday(day) ? '#f0fdf4' : 'white', borderLeft: di > 0 ? '1px solid #e5e7eb' : 'none' }}>
+                {dayBookings.map(b => <BookingCard key={b.id} booking={b} onClick={() => setSelectedBooking(b)} />)}
               </div>
             )
           })}
@@ -243,46 +216,39 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
 
   return (
     <div>
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Pitch Planner</h1>
-          <p className="text-gray-500 text-sm">St. Saviours GAA & LGFA</p>
-        </div>
-        <div className="flex gap-2">
-          <button className="border border-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Print / Save</button>
-          <a href="/new-booking" className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-700">+ New Booking</a>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
+        <div><h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#111' }}>Pitch Planner</h1><p style={{ color: '#6b7280', fontSize: '13px' }}>St. Saviours GAA & LGFA</p></div>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button style={{ border: '1px solid #d1d5db', padding: '8px 16px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer', backgroundColor: 'white' }}>Print / Save</button>
+          <a href="/new-booking" style={{ backgroundColor: '#111', color: 'white', padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', textDecoration: 'none' }}>+ New Booking</a>
         </div>
       </div>
-      <div className="flex items-center gap-4 mb-4 text-sm">
-        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-green-700 inline-block"></span> Booked</span>
-        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-amber-400 inline-block"></span> Awaiting Approval</span>
-        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-gray-400 inline-block"></span> Pitch Closed</span>
-      </div>
-      <div className="flex flex-wrap items-center gap-3 mb-4">
-        <select value={selectedPitch} onChange={e => setSelectedPitch(e.target.value)} className="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px', fontSize: '13px', flexWrap: 'wrap' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#2e7d32', display: 'inline-block' }}></span>Booked</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '10px', height: '10px', borderRadius: '50%', border: '2px dashed #f9ab2b', display: 'inline-block' }}></span>Awaiting Approval</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#9e9e9e', display: 'inline-block' }}></span>Pitch Closed</span>
+      
+        <select value={selectedPitch} onChange={e => setSelectedPitch(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '6px 12px', fontSize: '13px' }}>
           <option value="all">All Pitches</option>
-          {pitches.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          {pitches.map(p => <option key={p.id} value={String(p.id)}>{p.name}</option>)}
         </select>
-        <select value={selectedTeam} onChange={e => setSelectedTeam(e.target.value)} className="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+        <select value={selectedTeam} onChange={e => setSelectedTeam(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '6px 12px', fontSize: '13px' }}>
           <option value="all">All Teams</option>
           {uniqueTeams.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
-      </div>
-      <div className="flex items-center gap-3 mb-4">
-        <div className="flex border border-gray-300 rounded-lg overflow-hidden">
-          <button onClick={() => setView('week')} className={`px-4 py-2 text-sm font-medium ${view === 'week' ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}>Week</button>
-          <button onClick={() => setView('month')} className={`px-4 py-2 text-sm font-medium ${view === 'month' ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}>Month</button>
+      <div style={{ display: 'flex', border: '1px solid #d1d5db', borderRadius: '8px', overflow: 'hidden' }}>
+          <button onClick={() => setView('week')} style={{ padding: '7px 16px', fontSize: '13px', fontWeight: '500', backgroundColor: view === 'week' ? '#111' : 'white', color: view === 'week' ? 'white' : '#374151', border: 'none', cursor: 'pointer' }}>Week</button>
+          <button onClick={() => setView('month')} style={{ padding: '7px 16px', fontSize: '13px', fontWeight: '500', backgroundColor: view === 'month' ? '#111' : 'white', color: view === 'month' ? 'white' : '#374151', border: 'none', cursor: 'pointer' }}>Month</button>
         </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <button onClick={() => setCurrentDate(view === 'month' ? subMonths(currentDate, 1) : subWeeks(currentDate, 1))} style={{ border: '1px solid #d1d5db', padding: '7px 16px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer', backgroundColor: 'white' }}>&larr; Prev</button>
+          <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#111', minWidth: '200px', textAlign: 'center' }}>{view === 'month' ? format(currentDate, 'MMMM yyyy') : getWeekLabel()}</h2>
+          <button onClick={() => setCurrentDate(view === 'month' ? addMonths(currentDate, 1) : addWeeks(currentDate, 1))} style={{ border: '1px solid #d1d5db', padding: '7px 16px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer', backgroundColor: 'white' }}>Next &rarr;</button>
+        </div>
+        <div style={{ width: '120px' }}></div>
       </div>
-      <div className="flex items-center justify-between mb-4">
-        <button onClick={() => setCurrentDate(view === 'month' ? subMonths(currentDate, 1) : subWeeks(currentDate, 1))} className="border border-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">&larr; Prev</button>
-        <h2 className="text-lg font-semibold text-gray-900">{view === 'month' ? format(currentDate, 'MMMM yyyy') : 'This Week'}</h2>
-        <button onClick={() => setCurrentDate(view === 'month' ? addMonths(currentDate, 1) : addWeeks(currentDate, 1))} className="border border-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Next &rarr;</button>
-      </div>
-      {loading ? <div className="text-center py-12 text-gray-500">Loading bookings...</div> : view === 'month' ? renderMonthView() : renderWeekView()}
-      {selectedBooking && (
-        <BookingModal booking={selectedBooking} onClose={() => setSelectedBooking(null)} currentUserId={currentUserId} userRole={userRole} />
-      )}
+      {loading ? <div style={{ textAlign: 'center', padding: '48px', color: '#888' }}>Loading bookings...</div> : view === 'month' ? renderMonthView() : renderWeekView()}
+      {selectedBooking && <BookingModal booking={selectedBooking} onClose={() => setSelectedBooking(null)} currentUserId={currentUserId} userRole={userRole} />}
     </div>
   )
 }
