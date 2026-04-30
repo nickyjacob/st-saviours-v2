@@ -1,120 +1,178 @@
 const fs = require('fs');
-let content = fs.readFileSync('app/admin/page.tsx', 'utf8');
-
-content = content.replace(
-  `        {tab === 'history' && (
-          <div>
-            <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>&#x1f4ca; Usage & Login History</h2>
-            {!historyLoaded ? (
-              <div style={{ textAlign: 'center', padding: '40px', backgroundColor: 'white', borderRadius: '10px' }}>
-                <p style={{ color: '#6b7280', marginBottom: '12px', fontSize: '13px' }}>Login history is not loaded by default to keep things fast.</p>
-                <button onClick={loadHistory} style={{ backgroundColor: '#111', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: 'pointer' }}>Load Last 20 Logins</button>
-              </div>
-            ) : historyLoading ? (
-              <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>Loading...</div>
-            ) : (
-              <div>
-                <div style={{ backgroundColor: 'white', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                    <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
-                      <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#6b7280' }}>User</th>
-                      <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#6b7280' }}>Email</th>
-                      <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#6b7280' }}>Logged In</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {loginHistory.map((h, i) => (
-                      <tr key={h.id} style={{ borderBottom: i < loginHistory.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
-                        <td style={{ padding: '10px 14px', fontSize: '13px', color: '#111', fontWeight: '500' }}>{h.full_name || '—'}</td>
-                        <td style={{ padding: '10px 14px', fontSize: '13px', color: '#6b7280' }}>{h.email}</td>
-                        <td style={{ padding: '10px 14px', fontSize: '13px', color: '#6b7280' }}>{formatDateTime(h.logged_in_at)}</td>
-                      </tr>
-                    ))}
-                    </tbody>
-                  </table>
-                </div>
-                <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '8px', textAlign: 'center' }}>Showing last 20 logins</p>
-              </div>
-            )}
-          </div>
-        )}`,
-  `        {tab === 'history' && (
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: '600' }}>&#x1f4ca; Usage & Login History</h2>
-              {historyLoaded && (
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <input
-                    type="text"
-                    placeholder="Filter by user..."
-                    value={historyUserFilter}
-                    onChange={e => setHistoryUserFilter(e.target.value)}
-                    style={{ border: '1px solid #d1d5db', borderRadius: '6px', padding: '5px 10px', fontSize: '12px', width: '150px' }}
-                  />
-                  <input
-                    type="date"
-                    value={historyDateFilter}
-                    onChange={e => setHistoryDateFilter(e.target.value)}
-                    style={{ border: '1px solid #d1d5db', borderRadius: '6px', padding: '5px 10px', fontSize: '12px' }}
-                  />
-                  {(historyUserFilter || historyDateFilter) && (
-                    <button onClick={() => { setHistoryUserFilter(''); setHistoryDateFilter('') }} style={{ border: '1px solid #d1d5db', borderRadius: '6px', padding: '5px 10px', fontSize: '12px', cursor: 'pointer', backgroundColor: 'white' }}>Clear</button>
-                  )}
-                </div>
-              )}
-            </div>
-            {!historyLoaded ? (
-              <div style={{ textAlign: 'center', padding: '40px', backgroundColor: 'white', borderRadius: '10px' }}>
-                <p style={{ color: '#6b7280', marginBottom: '12px', fontSize: '13px' }}>Login history is not loaded by default to keep things fast.</p>
-                <button onClick={loadHistory} style={{ backgroundColor: '#111', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: 'pointer' }}>Load Last 20 Logins</button>
-              </div>
-            ) : historyLoading ? (
-              <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>Loading...</div>
-            ) : (
-              <div>
-                <div style={{ backgroundColor: 'white', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                    <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
-                      <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#6b7280' }}>User</th>
-                      <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#6b7280' }}>Email</th>
-                      <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#6b7280' }}>Logged In</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {loginHistory
-                      .filter(h => {
-                        if (historyUserFilter && !((h.full_name || '') + (h.email || '')).toLowerCase().includes(historyUserFilter.toLowerCase())) return false
-                        if (historyDateFilter && !h.logged_in_at.startsWith(historyDateFilter)) return false
-                        return true
-                      })
-                      .map((h, i, arr) => (
-                      <tr key={h.id} style={{ borderBottom: i < arr.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
-                        <td style={{ padding: '10px 14px', fontSize: '13px', color: '#111', fontWeight: '500' }}>{h.full_name || '—'}</td>
-                        <td style={{ padding: '10px 14px', fontSize: '13px', color: '#6b7280' }}>{h.email}</td>
-                        <td style={{ padding: '10px 14px', fontSize: '13px', color: '#6b7280' }}>{formatDateTime(h.logged_in_at)}</td>
-                      </tr>
-                    ))}
-                    </tbody>
-                  </table>
-                </div>
-                <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '8px', textAlign: 'center' }}>Showing last 20 logins</p>
-              </div>
-            )}
-          </div>
-        )}`
-);
-
-content = content.replace(
-  `                  <div key={c.id} style={{ backgroundColor: 'white', borderRadius: '8px', borderLeft: \`4px solid \${c.pitch_colour || '#888'}\`, padding: '10px 14px', marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>`,
-  `                  <div key={c.id} style={{ backgroundColor: '#f9fafb', borderRadius: '8px', borderLeft: '4px solid #4b5563', padding: '10px 14px', marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>`
-);
-
-content = content.replace(
-  `                      <div style={{ fontWeight: '600', fontSize: '13px', color: c.pitch_colour || '#374151' }}>{c.pitch_name}</div>`,
-  `                      <div style={{ fontWeight: '600', fontSize: '13px', color: '#374151' }}>{c.pitch_name}</div>`
-);
-
-fs.writeFileSync('app/admin/page.tsx', content, 'utf8');
-console.log('Done');
+const lines = [];
+lines.push("'use client'");
+lines.push("");
+lines.push("import { useEffect, useState } from 'react'");
+lines.push("import { supabase } from '@/lib/supabase'");
+lines.push("import Navbar from '@/components/Navbar'");
+lines.push("");
+lines.push("interface PersonStat {");
+lines.push("  name: string");
+lines.push("  email: string");
+lines.push("  total: number");
+lines.push("  approved: number");
+lines.push("  pending: number");
+lines.push("  rejected: number");
+lines.push("}");
+lines.push("");
+lines.push("interface PitchStat {");
+lines.push("  pitch_name: string");
+lines.push("  total: number");
+lines.push("  approved: number");
+lines.push("}");
+lines.push("");
+lines.push("interface MonthStat {");
+lines.push("  month: string");
+lines.push("  total: number");
+lines.push("  approved: number");
+lines.push("  pending: number");
+lines.push("}");
+lines.push("");
+lines.push("export default function StatsPage() {");
+lines.push("  const [personStats, setPersonStats] = useState<PersonStat[]>([])");
+lines.push("  const [pitchStats, setPitchStats] = useState<PitchStat[]>([])");
+lines.push("  const [monthStats, setMonthStats] = useState<MonthStat[]>([])");
+lines.push("  const [loading, setLoading] = useState(true)");
+lines.push("");
+lines.push("  useEffect(() => {");
+lines.push("    async function init() {");
+lines.push("      const { data: { session } } = await supabase.auth.getSession()");
+lines.push("      if (!session) { window.location.href = '/login'; return }");
+lines.push("      const { data: profile } = await supabase.from('profiles').select('role, is_approved').eq('id', session.user.id).single()");
+lines.push("      if (!profile || !profile.is_approved || profile.role !== 'admin') { window.location.href = '/dashboard'; return }");
+lines.push("      await fetchStats()");
+lines.push("      setLoading(false)");
+lines.push("    }");
+lines.push("    init()");
+lines.push("  }, [])");
+lines.push("");
+lines.push("  async function fetchStats() {");
+lines.push("    const { data } = await supabase.from('admin_bookings').select('full_name, booker_email, status, pitch_name, booking_date').not('status', 'eq', 'cancelled')");
+lines.push("    if (!data) return");
+lines.push("");
+lines.push("    const personMap: Record<string, PersonStat> = {}");
+lines.push("    const pitchMap: Record<string, PitchStat> = {}");
+lines.push("    const monthMap: Record<string, MonthStat> = {}");
+lines.push("");
+lines.push("    data.forEach((b: Record<string, string>) => {");
+lines.push("      const name = b.full_name || b.booker_email");
+lines.push("      if (!personMap[name]) personMap[name] = { name, email: b.booker_email, total: 0, approved: 0, pending: 0, rejected: 0 }");
+lines.push("      personMap[name].total++");
+lines.push("      if (b.status === 'approved') personMap[name].approved++");
+lines.push("      if (b.status === 'pending') personMap[name].pending++");
+lines.push("      if (b.status === 'rejected') personMap[name].rejected++");
+lines.push("");
+lines.push("      const pitch = b.pitch_name || 'Unknown'");
+lines.push("      if (!pitchMap[pitch]) pitchMap[pitch] = { pitch_name: pitch, total: 0, approved: 0 }");
+lines.push("      pitchMap[pitch].total++");
+lines.push("      if (b.status === 'approved') pitchMap[pitch].approved++");
+lines.push("");
+lines.push("      if (b.booking_date) {");
+lines.push("        const month = b.booking_date.slice(0, 7)");
+lines.push("        if (!monthMap[month]) monthMap[month] = { month, total: 0, approved: 0, pending: 0 }");
+lines.push("        monthMap[month].total++");
+lines.push("        if (b.status === 'approved') monthMap[month].approved++");
+lines.push("        if (b.status === 'pending') monthMap[month].pending++");
+lines.push("      }");
+lines.push("    })");
+lines.push("");
+lines.push("    setPersonStats(Object.values(personMap).sort((a, b) => b.total - a.total))");
+lines.push("    setPitchStats(Object.values(pitchMap).sort((a, b) => b.total - a.total))");
+lines.push("    setMonthStats(Object.values(monthMap).sort((a, b) => b.month.localeCompare(a.month)).slice(0, 6))");
+lines.push("  }");
+lines.push("");
+lines.push("  const thStyle = { padding: '10px 14px', textAlign: 'left' as const, fontSize: '12px', fontWeight: '600' as const, color: '#6b7280', borderBottom: '1px solid #e5e7eb' }");
+lines.push("  const tdStyle = { padding: '10px 14px', fontSize: '13px', borderBottom: '1px solid #f3f4f6' }");
+lines.push("");
+lines.push("  const Badge = ({ value, colour }: { value: number; colour: string }) => (");
+lines.push("    <span style={{ display: 'inline-block', minWidth: '28px', padding: '2px 8px', borderRadius: '12px', backgroundColor: colour + '20', color: colour, fontSize: '12px', fontWeight: '600', textAlign: 'center' }}>{value}</span>");
+lines.push("  )");
+lines.push("");
+lines.push("  if (loading) return (");
+lines.push("    <div style={{ minHeight: '100vh', backgroundColor: '#f4f4f4' }}>");
+lines.push("      <Navbar activePage=\"Stats\" userRole=\"admin\" />");
+lines.push("      <div style={{ textAlign: 'center', padding: '48px', color: '#888' }}>Loading...</div>");
+lines.push("    </div>");
+lines.push("  )");
+lines.push("");
+lines.push("  return (");
+lines.push("    <div style={{ minHeight: '100vh', backgroundColor: '#f4f4f4' }}>");
+lines.push("      <Navbar activePage=\"Stats\" userRole=\"admin\" />");
+lines.push("      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '24px 16px' }}>");
+lines.push("        <h1 style={{ fontSize: '22px', fontWeight: 'bold', color: '#111', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>&#x1f4ca; Stats</h1>");
+lines.push("");
+lines.push("        <div style={{ backgroundColor: 'white', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', marginBottom: '20px' }}>");
+lines.push("          <div style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb', fontWeight: '600', fontSize: '14px' }}>Bookings per Person</div>");
+lines.push("          <div style={{ overflowX: 'auto' }}>");
+lines.push("            <table style={{ width: '100%', borderCollapse: 'collapse' }}>");
+lines.push("              <thead><tr style={{ backgroundColor: '#f9fafb' }}>");
+lines.push("                <th style={thStyle}>Name</th>");
+lines.push("                <th style={{ ...thStyle, textAlign: 'center' }}>Total</th>");
+lines.push("                <th style={{ ...thStyle, textAlign: 'center' }}>Approved</th>");
+lines.push("                <th style={{ ...thStyle, textAlign: 'center' }}>Pending</th>");
+lines.push("                <th style={{ ...thStyle, textAlign: 'center' }}>Rejected</th>");
+lines.push("              </tr></thead>");
+lines.push("              <tbody>");
+lines.push("              {personStats.map((p, i) => (");
+lines.push("                <tr key={p.name} style={{ backgroundColor: i % 2 === 0 ? 'white' : '#fafafa' }}>");
+lines.push("                  <td style={tdStyle}><div style={{ fontWeight: '500', color: '#111' }}>{p.name}</div><div style={{ fontSize: '11px', color: '#9ca3af' }}>{p.email}</div></td>");
+lines.push("                  <td style={{ ...tdStyle, textAlign: 'center', fontWeight: '700' }}>{p.total}</td>");
+lines.push("                  <td style={{ ...tdStyle, textAlign: 'center' }}><Badge value={p.approved} colour=\"#16a34a\" /></td>");
+lines.push("                  <td style={{ ...tdStyle, textAlign: 'center' }}><Badge value={p.pending} colour=\"#d97706\" /></td>");
+lines.push("                  <td style={{ ...tdStyle, textAlign: 'center' }}><Badge value={p.rejected} colour=\"#dc2626\" /></td>");
+lines.push("                </tr>");
+lines.push("              ))}");
+lines.push("              </tbody>");
+lines.push("            </table>");
+lines.push("          </div>");
+lines.push("        </div>");
+lines.push("");
+lines.push("        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>");
+lines.push("          <div style={{ backgroundColor: 'white', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>");
+lines.push("            <div style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb', fontWeight: '600', fontSize: '14px' }}>Bookings per Pitch</div>");
+lines.push("            <table style={{ width: '100%', borderCollapse: 'collapse' }}>");
+lines.push("              <thead><tr style={{ backgroundColor: '#f9fafb' }}>");
+lines.push("                <th style={thStyle}>Pitch</th>");
+lines.push("                <th style={{ ...thStyle, textAlign: 'center' }}>Total</th>");
+lines.push("                <th style={{ ...thStyle, textAlign: 'center' }}>Approved</th>");
+lines.push("              </tr></thead>");
+lines.push("              <tbody>");
+lines.push("              {pitchStats.map((p, i) => (");
+lines.push("                <tr key={p.pitch_name} style={{ backgroundColor: i % 2 === 0 ? 'white' : '#fafafa' }}>");
+lines.push("                  <td style={tdStyle}>{p.pitch_name}</td>");
+lines.push("                  <td style={{ ...tdStyle, textAlign: 'center', fontWeight: '700' }}>{p.total}</td>");
+lines.push("                  <td style={{ ...tdStyle, textAlign: 'center' }}><Badge value={p.approved} colour=\"#16a34a\" /></td>");
+lines.push("                </tr>");
+lines.push("              ))}");
+lines.push("              </tbody>");
+lines.push("            </table>");
+lines.push("          </div>");
+lines.push("");
+lines.push("          <div style={{ backgroundColor: 'white', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>");
+lines.push("            <div style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb', fontWeight: '600', fontSize: '14px' }}>Monthly Summary (last 6 months)</div>");
+lines.push("            <table style={{ width: '100%', borderCollapse: 'collapse' }}>");
+lines.push("              <thead><tr style={{ backgroundColor: '#f9fafb' }}>");
+lines.push("                <th style={thStyle}>Month</th>");
+lines.push("                <th style={{ ...thStyle, textAlign: 'center' }}>Total</th>");
+lines.push("                <th style={{ ...thStyle, textAlign: 'center' }}>Approved</th>");
+lines.push("                <th style={{ ...thStyle, textAlign: 'center' }}>Pending</th>");
+lines.push("              </tr></thead>");
+lines.push("              <tbody>");
+lines.push("              {monthStats.map((m, i) => (");
+lines.push("                <tr key={m.month} style={{ backgroundColor: i % 2 === 0 ? 'white' : '#fafafa' }}>");
+lines.push("                  <td style={tdStyle}>{new Date(m.month + '-01').toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</td>");
+lines.push("                  <td style={{ ...tdStyle, textAlign: 'center', fontWeight: '700' }}>{m.total}</td>");
+lines.push("                  <td style={{ ...tdStyle, textAlign: 'center' }}><Badge value={m.approved} colour=\"#16a34a\" /></td>");
+lines.push("                  <td style={{ ...tdStyle, textAlign: 'center' }}><Badge value={m.pending} colour=\"#d97706\" /></td>");
+lines.push("                </tr>");
+lines.push("              ))}");
+lines.push("              </tbody>");
+lines.push("            </table>");
+lines.push("          </div>");
+lines.push("        </div>");
+lines.push("      </div>");
+lines.push("    </div>");
+lines.push("  )");
+lines.push("}");
+fs.writeFileSync('app/stats/page.tsx', lines.join('\n'), 'utf8');
+console.log('Done - stats page written');
