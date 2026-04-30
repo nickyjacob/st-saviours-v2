@@ -19,6 +19,16 @@ interface Booking {
   full_name: string
 }
 
+interface Closure {
+  id: string
+  pitch_id: number
+  reason: string
+  start_date: string
+  end_date: string
+  pitch_name: string
+  pitch_colour: string
+}
+
 interface Pitch {
   id: number
   name: string
@@ -84,20 +94,33 @@ function BookingCard({ booking, onClick, compact }: { booking: Booking; onClick:
 
 export default function PitchCalendar({ userRole, currentUserId }: { userRole: string; currentUserId: string }) {
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [view, setView] = useState<'month' | 'week'>('month')
+  const [view, setView] = useState<'month' | 'week'>('week')
   const [bookings, setBookings] = useState<Booking[]>([])
   const [pitches, setPitches] = useState<Pitch[]>([])
   const [selectedPitch, setSelectedPitch] = useState('all')
   const [selectedTeam, setSelectedTeam] = useState('all')
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [loading, setLoading] = useState(true)
+  const [closures, setClosures] = useState<Closure[]>([])
 
   useEffect(() => { fetchPitches() }, [])
+  useEffect(() => { fetchClosures() }, [])
   useEffect(() => { fetchBookings() }, [currentDate, view])
 
-  async function fetchPitches() {
+async function fetchPitches() {
     const { data } = await supabase.from('pitches').select('id, name, colour').eq('is_active', true).order('sort_order')
     if (data) setPitches(data)
+  }
+
+  async function fetchClosures() {
+    const { data } = await supabase
+      .from('pitch_closures')
+      .select('*, pitches(name, colour)')
+      console.log('closures data:', data)
+    if (data) setClosures(data.map((c: Record<string, unknown>) => {
+      const p = c.pitches as {name: string; colour: string} | null
+      return { ...c, pitch_name: p?.name || '', pitch_colour: p?.colour || '#888' }
+    }) as Closure[])
   }
 
   async function fetchBookings() {
@@ -127,6 +150,15 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
       if (!isSameDay(new Date(b.booking_date + 'T00:00:00'), date)) return false
       if (selectedPitch !== 'all' && b.pitch_id !== parseInt(selectedPitch)) return false
       if (selectedTeam !== 'all' && b.team_name !== selectedTeam) return false
+      return true
+    })
+  }
+
+function getClosuresForDay(date: Date) {
+    const dateStr = format(date, 'yyyy-MM-dd')
+    return closures.filter(c => {
+      if (dateStr < c.start_date || dateStr > c.end_date) return false
+      if (selectedPitch !== 'all' && c.pitch_id !== parseInt(selectedPitch)) return false
       return true
     })
   }
@@ -180,6 +212,12 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
                     <span style={{ fontSize: '11px', fontWeight: '500', width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: today ? '#111' : 'transparent', color: today ? 'white' : inMonth ? '#374151' : '#9ca3af' }}>{format(day, 'd')}</span>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    {getClosuresForDay(day).map(c => (
+                      <div key={c.id} style={{ backgroundColor: '#f3f4f6', borderLeft: '3px solid #6b7280', borderRadius: '4px', padding: '3px 5px' }}>
+                        <div style={{ color: '#6b7280', fontWeight: 'bold', fontSize: '10px' }}>&#x1f512; Closed</div>
+                        <div style={{ color: '#6b7280', fontSize: '10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.pitch_name}</div>
+                      </div>
+                    ))}
                     {dayBookings.slice(0,3).map(b => <BookingCard key={b.id} booking={b} onClick={() => setSelectedBooking(b)} compact />)}
                     {dayBookings.length > 3 && <div style={{ fontSize: '10px', color: '#9ca3af', paddingLeft: '4px' }}>+{dayBookings.length - 3} more</div>}
                   </div>
@@ -205,6 +243,13 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
             const dayBookings = getBookingsForDay(day)
             return (
               <div key={di} style={{ minHeight: '180px', padding: '6px', display: 'flex', flexDirection: 'column', gap: '4px', backgroundColor: isToday(day) ? '#f0fdf4' : 'white', borderLeft: di > 0 ? '1px solid #e5e7eb' : 'none' }}>
+                {getClosuresForDay(day).map(c => (
+                  <div key={c.id} style={{ backgroundColor: '#f3f4f6', borderLeft: '4px solid #6b7280', borderRadius: '6px', padding: '5px 7px' }}>
+                    <div style={{ color: '#6b7280', fontWeight: 'bold', fontSize: '11px' }}>&#x1f512; Pitch Closed</div>
+                    <div style={{ color: '#6b7280', fontSize: '11px', marginTop: '1px' }}>{c.pitch_name}</div>
+                    <div style={{ color: '#9ca3af', fontSize: '10px', marginTop: '1px' }}>{c.reason}</div>
+                  </div>
+                ))}
                 {dayBookings.map(b => <BookingCard key={b.id} booking={b} onClick={() => setSelectedBooking(b)} />)}
               </div>
             )

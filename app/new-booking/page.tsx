@@ -77,14 +77,21 @@ export default function NewBookingPage() {
 
 async function checkConflict(pId: string, d: string, st: string, et: string, excludeId?: string) {
     if (!pId || !d || !st || !et) return null
-    const { data, error } = await supabase.rpc('check_booking_conflict_extended', {
+    const { data: closureData } = await supabase
+      .from('pitch_closures')
+      .select('id')
+      .eq('pitch_id', parseInt(pId))
+      .lte('start_date', d)
+      .gte('end_date', d)
+    if (closureData && closureData.length > 0) return true
+    const { data } = await supabase.rpc('check_booking_conflict_extended', {
       p_pitch_id: parseInt(pId),
       p_date: d,
       p_start: st + ':00',
       p_end: et + ':00',
       p_exclude_id: excludeId || null
     })
-    if (error) { console.error('Conflict check error:', error); return null }
+if (!data && data !== false) return null
     return data as boolean
   }
 
