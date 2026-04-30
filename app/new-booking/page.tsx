@@ -1,5 +1,6 @@
 'use client'
 
+import Navbar from '@/components/Navbar'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
@@ -57,14 +58,17 @@ export default function NewBookingPage() {
   const [approxNumbers, setApproxNumbers] = useState('')
   const [notes, setNotes] = useState('')
   const [errors, setErrors] = useState<Record<string, boolean>>({})
+  const [userRole, setUserRole] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
-
+ 
   useEffect(() => {
     async function init() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { window.location.href = '/login'; return }
       setUserId(session.user.id)
+      const { data: profileData } = await supabase.from('profiles').select('role').eq('id', session.user.id).single()
+      if (profileData) setUserRole(profileData.role || '')
       const { data } = await supabase.from('pitches').select('id, name, colour').eq('is_active', true).order('sort_order')
       if (data) setPitches(data)
     }
@@ -247,16 +251,7 @@ async function checkConflict(pId: string, d: string, st: string, et: string, exc
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f4f4' }}>
-      <nav style={{ backgroundColor: '#111', padding: '12px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <a href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-          <img src="/crest.png" alt="Crest" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
-          <div>
-            <div style={{ color: 'white', fontWeight: 'bold', fontSize: '14px' }}>St. Saviours</div>
-            <div style={{ color: '#9ca3af', fontSize: '11px' }}>GAA & LGFA</div>
-          </div>
-        </a>
-        <a href="/dashboard" style={{ color: '#9ca3af', fontSize: '13px', textDecoration: 'none' }}>&larr; Back to Planner</a>
-      </nav>
+<Navbar activePage="New Booking" userRole={userRole} />
 
       <div style={{ maxWidth: '640px', margin: '32px auto', padding: '0 16px' }}>
         <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '32px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
