@@ -25,3 +25,10 @@ body {
     text-wrap: balance;
   }
 }
+.nav-hamburger { display: none !important; }
+.nav-desktop-links { display: flex !important; }
+
+@media (max-width: 768px) {
+  .nav-desktop-links { display: none !important; }
+  .nav-hamburger { display: flex !important; }
+}
