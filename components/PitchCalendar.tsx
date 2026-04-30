@@ -94,7 +94,9 @@ function BookingCard({ booking, onClick, compact }: { booking: Booking; onClick:
 
 export default function PitchCalendar({ userRole, currentUserId }: { userRole: string; currentUserId: string }) {
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [view, setView] = useState<'month' | 'week'>('week')
+  const [isMobile, setIsMobile] = useState(false)
+  const [view, setView] = useState<'month' | 'week' | 'day'>('week')
+  const [selectedDay, setSelectedDay] = useState(new Date())
   const [bookings, setBookings] = useState<Booking[]>([])
   const [pitches, setPitches] = useState<Pitch[]>([])
   const [selectedPitch, setSelectedPitch] = useState('all')
@@ -103,9 +105,20 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
   const [loading, setLoading] = useState(true)
   const [closures, setClosures] = useState<Closure[]>([])
 
+  useEffect(() => {
+    const check = () => {
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
+      if (mobile) setView('day')
+    }
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
   useEffect(() => { fetchPitches() }, [])
   useEffect(() => { fetchClosures() }, [])
-  useEffect(() => { fetchBookings() }, [currentDate, view])
+  useEffect(() => { fetchBookings() }, [currentDate, view, selectedDay])
 
 async function fetchPitches() {
     const { data } = await supabase.from('pitches').select('id, name, colour').eq('is_active', true).order('sort_order')
@@ -116,7 +129,6 @@ async function fetchPitches() {
     const { data } = await supabase
       .from('pitch_closures')
       .select('*, pitches(name, colour)')
-      console.log('closures data:', data)
     if (data) setClosures(data.map((c: Record<string, unknown>) => {
       const p = c.pitches as {name: string; colour: string} | null
       return { ...c, pitch_name: p?.name || '', pitch_colour: p?.colour || '#888' }
@@ -129,6 +141,9 @@ async function fetchPitches() {
     if (view === 'month') {
       start = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 1 })
       end = endOfWeek(endOfMonth(currentDate), { weekStartsOn: 1 })
+    } else if (view === 'day') {
+      start = selectedDay
+      end = selectedDay
     } else {
       start = startOfWeek(currentDate, { weekStartsOn: 1 })
       end = endOfWeek(currentDate, { weekStartsOn: 1 })
@@ -170,6 +185,110 @@ function getClosuresForDay(date: Date) {
     const we = endOfWeek(currentDate, { weekStartsOn: 1 })
     const sameMonth = format(ws, 'MMM') === format(we, 'MMM')
     return sameMonth ? `${format(ws, 'd')} - ${format(we, 'd MMM yyyy')}` : `${format(ws, 'd MMM')} - ${format(we, 'd MMM yyyy')}`
+  }
+  function getDayLabel() {
+    if (isToday(selectedDay)) return 'Today'
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    if (isSameDay(selectedDay, tomorrow)) return 'Tomorrow'
+    return format(selectedDay, 'EEEE, d MMMM yyyy')
+  }
+
+  function renderDayView() {
+    const dayBookings = getBookingsForDay(selectedDay)
+    const dayClosures = getClosuresForDay(selectedDay)
+    return (
+      <div>
+        {dayClosures.map(c => (
+          <div key={c.id} style={{ backgroundColor: '#f3f4f6', borderLeft: '4px solid #6b7280', borderRadius: '8px', padding: '12px 16px', marginBottom: '8px' }}>
+            <div style={{ fontWeight: '600', fontSize: '14px', color: '#6b7280' }}>&#x1f512; Pitch Closed — {c.pitch_name}</div>
+            <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '2px' }}>{c.reason}</div>
+          </div>
+        ))}
+        {dayBookings.length === 0 && dayClosures.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af', backgroundColor: 'white', borderRadius: '10px' }}>
+            <div style={{ fontSize: '32px', marginBottom: '8px' }}>&#x1f4c5;</div>
+            <div style={{ fontSize: '14px' }}>No bookings today</div>
+          </div>
+        )}
+        {dayBookings.map(b => {
+          const isApproved = b.status === 'approved'
+          const isPending = b.status === 'pending'
+          const colour = b.pitch_colour || '#2e7d32'
+          const borderColour = isPending ? '#f9ab2b' : colour
+          const borderStyle = isPending ? 'dashed' : 'solid'
+          return (
+            <div key={b.id} onClick={() => setSelectedBooking(b)} style={{ backgroundColor: 'white', borderRadius: '8px', borderLeft: `4px ${borderStyle} ${borderColour}`, padding: '12px 16px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', cursor: 'pointer' }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '11px', color: isPending ? '#f9ab2b' : colour, fontWeight: 'bold' }}>{fmt(b.start_time)}-{fmt(b.end_time)}</div>
+                <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#111', marginTop: '1px' }}>{b.team_name}</div>
+                <div style={{ fontSize: '12px', color: colour, fontWeight: '500', marginTop: '1px' }}>{b.pitch_name}</div>
+                <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '1px' }}>{b.full_name} · {b.purpose}</div>
+              </div>
+              <span style={{ fontSize: '11px', fontWeight: '600', padding: '3px 8px', borderRadius: '12px', backgroundColor: isApproved ? '#f0fdf4' : '#fefce8', color: isApproved ? '#16a34a' : '#d97706', whiteSpace: 'nowrap', marginLeft: '8px' }}>
+                {isApproved ? 'Booked' : 'Awaiting'}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
+  function renderMobileMonthView() {
+    const monthStart = startOfMonth(currentDate)
+    const monthEnd = endOfMonth(currentDate)
+    const days: Date[] = []
+    let day = monthStart
+    while (day <= monthEnd) { days.push(new Date(day)); day = addDays(day, 1) }
+    const daysWithBookings = days.filter(d => getBookingsForDay(d).length > 0 || getClosuresForDay(d).length > 0)
+    if (daysWithBookings.length === 0) return (
+      <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af', backgroundColor: 'white', borderRadius: '10px' }}>
+        <div style={{ fontSize: '32px', marginBottom: '8px' }}>&#x1f4c5;</div>
+        <div style={{ fontSize: '14px' }}>No bookings this month</div>
+      </div>
+    )
+    return (
+      <div>
+        {daysWithBookings.map(d => {
+          const dayBookings = getBookingsForDay(d)
+          const dayClosures = getClosuresForDay(d)
+          return (
+            <div key={d.toISOString()} style={{ marginBottom: '16px' }}>
+              <div style={{ fontSize: '13px', fontWeight: '700', color: '#374151', padding: '6px 0', borderBottom: '1px solid #e5e7eb', marginBottom: '8px' }}>
+                {format(d, 'EEEE, d MMMM')}
+              </div>
+              {dayClosures.map(c => (
+                <div key={c.id} style={{ backgroundColor: '#f3f4f6', borderLeft: '4px solid #6b7280', borderRadius: '8px', padding: '10px 14px', marginBottom: '6px' }}>
+                  <div style={{ fontWeight: '600', fontSize: '13px', color: '#6b7280' }}>&#x1f512; {c.pitch_name} — Closed</div>
+                  <div style={{ fontSize: '12px', color: '#9ca3af' }}>{c.reason}</div>
+                </div>
+              ))}
+              {dayBookings.map(b => {
+                const isApproved = b.status === 'approved'
+                const isPending = b.status === 'pending'
+                const colour = b.pitch_colour || '#2e7d32'
+                const borderColour = isPending ? '#f9ab2b' : colour
+                const borderStyle = isPending ? 'dashed' : 'solid'
+                return (
+                  <div key={b.id} onClick={() => setSelectedBooking(b)} style={{ backgroundColor: 'white', borderRadius: '8px', borderLeft: `4px ${borderStyle} ${borderColour}`, padding: '10px 14px', marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', cursor: 'pointer' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '12px', color: isPending ? '#f9ab2b' : colour, fontWeight: '600' }}>{fmt(b.start_time)} - {fmt(b.end_time)}</div>
+                      <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', marginTop: '1px' }}>{b.team_name}</div>
+                      <div style={{ fontSize: '12px', color: colour, marginTop: '1px' }}>{b.pitch_name}</div>
+                      <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '1px' }}>{b.full_name} · {b.purpose}</div>
+                    </div>
+                    <span style={{ fontSize: '11px', fontWeight: '600', padding: '3px 8px', borderRadius: '12px', backgroundColor: isApproved ? '#f0fdf4' : '#fefce8', color: isApproved ? '#16a34a' : '#d97706', whiteSpace: 'nowrap', marginLeft: '8px' }}>
+                      {isApproved ? 'Booked' : 'Awaiting'}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })}
+      </div>
+    )
   }
 
   function renderWeekDayHeader(day: Date, i: number) {
@@ -261,38 +380,53 @@ function getClosuresForDay(date: Date) {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
-        <div><h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#111' }}>Pitch Planner</h1><p style={{ color: '#6b7280', fontSize: '13px' }}>St. Saviours GAA & LGFA</p></div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button style={{ border: '1px solid #d1d5db', padding: '8px 16px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer', backgroundColor: 'white' }}>Print / Save</button>
-          <a href="/new-booking" style={{ backgroundColor: '#111', color: 'white', padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', textDecoration: 'none' }}>+ New Booking</a>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+        <div><h1 style={{ fontSize: isMobile ? '18px' : '24px', fontWeight: 'bold', color: '#111' }}>Pitch Planner</h1><p style={{ color: '#6b7280', fontSize: '12px' }}>St. Saviours GAA & LGFA</p></div>
+        <div style={{ display: 'flex', gap: '6px' }}>
+          <button style={{ border: '1px solid #d1d5db', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', backgroundColor: 'white' }}>Print / Save</button>
+          <a href="/new-booking" style={{ backgroundColor: '#111', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', textDecoration: 'none', whiteSpace: 'nowrap' }}>+ New Booking</a>
         </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px', fontSize: '13px', flexWrap: 'wrap' }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#2e7d32', display: 'inline-block' }}></span>Booked</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '10px', height: '10px', borderRadius: '50%', border: '2px dashed #f9ab2b', display: 'inline-block' }}></span>Awaiting Approval</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#9e9e9e', display: 'inline-block' }}></span>Pitch Closed</span>
-      
-        <select value={selectedPitch} onChange={e => setSelectedPitch(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '6px 12px', fontSize: '13px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap', fontSize: '13px' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#2e7d32', display: 'inline-block' }}></span>Booked</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><span style={{ width: '10px', height: '10px', borderRadius: '50%', border: '2px dashed #f9ab2b', display: 'inline-block' }}></span>Awaiting</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#9e9e9e', display: 'inline-block' }}></span>Closed</span>
+      </div>
+      <div style={{ display: 'flex', gap: '6px', marginBottom: '6px', alignItems: 'center' }}>
+        <select value={selectedPitch} onChange={e => setSelectedPitch(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '5px 8px', fontSize: '12px', flex: 1 }}>
           <option value="all">All Pitches</option>
           {pitches.map(p => <option key={p.id} value={String(p.id)}>{p.name}</option>)}
         </select>
-        <select value={selectedTeam} onChange={e => setSelectedTeam(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '6px 12px', fontSize: '13px' }}>
+        <select value={selectedTeam} onChange={e => setSelectedTeam(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '5px 8px', fontSize: '12px', flex: 1 }}>
           <option value="all">All Teams</option>
           {uniqueTeams.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
-      <div style={{ display: 'flex', border: '1px solid #d1d5db', borderRadius: '8px', overflow: 'hidden' }}>
-          <button onClick={() => setView('week')} style={{ padding: '7px 16px', fontSize: '13px', fontWeight: '500', backgroundColor: view === 'week' ? '#111' : 'white', color: view === 'week' ? 'white' : '#374151', border: 'none', cursor: 'pointer' }}>Week</button>
-          <button onClick={() => setView('month')} style={{ padding: '7px 16px', fontSize: '13px', fontWeight: '500', backgroundColor: view === 'month' ? '#111' : 'white', color: view === 'month' ? 'white' : '#374151', border: 'none', cursor: 'pointer' }}>Month</button>
+        <div style={{ display: 'flex', border: '1px solid #d1d5db', borderRadius: '8px', overflow: 'hidden' }}>
+          {isMobile && <button onClick={() => { setView('day'); setSelectedDay(new Date()) }} style={{ padding: '6px 12px', fontSize: '13px', fontWeight: '500', backgroundColor: view === 'day' ? '#111' : 'white', color: view === 'day' ? 'white' : '#374151', border: 'none', cursor: 'pointer' }}>Day</button>}
+          <button onClick={() => setView('week')} style={{ padding: '6px 12px', fontSize: '13px', fontWeight: '500', backgroundColor: view === 'week' ? '#111' : 'white', color: view === 'week' ? 'white' : '#374151', border: 'none', cursor: 'pointer' }}>Week</button>
+          <button onClick={() => setView('month')} style={{ padding: '6px 12px', fontSize: '13px', fontWeight: '500', backgroundColor: view === 'month' ? '#111' : 'white', color: view === 'month' ? 'white' : '#374151', border: 'none', cursor: 'pointer' }}>Month</button>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <button onClick={() => setCurrentDate(view === 'month' ? subMonths(currentDate, 1) : subWeeks(currentDate, 1))} style={{ border: '1px solid #d1d5db', padding: '7px 16px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer', backgroundColor: 'white' }}>&larr; Prev</button>
-          <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#111', minWidth: '200px', textAlign: 'center' }}>{view === 'month' ? format(currentDate, 'MMMM yyyy') : getWeekLabel()}</h2>
-          <button onClick={() => setCurrentDate(view === 'month' ? addMonths(currentDate, 1) : addWeeks(currentDate, 1))} style={{ border: '1px solid #d1d5db', padding: '7px 16px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer', backgroundColor: 'white' }}>Next &rarr;</button>
-        </div>
-        <div style={{ width: '120px' }}></div>
       </div>
-      {loading ? <div style={{ textAlign: 'center', padding: '48px', color: '#888' }}>Loading bookings...</div> : view === 'month' ? renderMonthView() : renderWeekView()}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+        <button onClick={() => {
+          if (view === 'day') { const d = new Date(selectedDay); d.setDate(d.getDate() - 1); setSelectedDay(d) }
+          else if (view === 'month') setCurrentDate(subMonths(currentDate, 1))
+          else setCurrentDate(subWeeks(currentDate, 1))
+        }} style={{ border: '1px solid #d1d5db', padding: '6px 14px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer', backgroundColor: 'white' }}>&larr; Prev</button>
+        <h2 style={{ fontSize: '15px', fontWeight: '600', color: '#111', textAlign: 'center', flex: 1, margin: '0 8px' }}>
+          {view === 'month' ? format(currentDate, 'MMMM yyyy') : view === 'day' ? getDayLabel() : getWeekLabel()}
+        </h2>
+        <button onClick={() => {
+          if (view === 'day') { const d = new Date(selectedDay); d.setDate(d.getDate() + 1); setSelectedDay(d) }
+          else if (view === 'month') setCurrentDate(addMonths(currentDate, 1))
+          else setCurrentDate(addWeeks(currentDate, 1))
+        }} style={{ border: '1px solid #d1d5db', padding: '6px 14px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer', backgroundColor: 'white' }}>Next &rarr;</button>
+      </div>
+            {loading ? (
+        <div style={{ textAlign: 'center', padding: '48px', color: '#888' }}>Loading bookings...</div>
+      ) : view === 'day' ? renderDayView()
+        : view === 'month' ? (isMobile ? renderMobileMonthView() : renderMonthView())
+        : renderWeekView()}
       {selectedBooking && <BookingModal booking={selectedBooking} onClose={() => setSelectedBooking(null)} currentUserId={currentUserId} userRole={userRole} />}
     </div>
   )

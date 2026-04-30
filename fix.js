@@ -1,103 +1,48 @@
 const fs = require('fs');
-const lines = [];
-lines.push("'use client'");
-lines.push("");
-lines.push("import { supabase } from '@/lib/supabase'");
-lines.push("import { useEffect, useState } from 'react'");
-lines.push("");
-lines.push("interface NavbarProps {");
-lines.push("  activePage?: string");
-lines.push("  userRole?: string");
-lines.push("}");
-lines.push("");
-lines.push("export default function Navbar({ activePage, userRole }: NavbarProps) {");
-lines.push("  const [userName, setUserName] = useState('')");
-lines.push("  const [menuOpen, setMenuOpen] = useState(false)");
-lines.push("");
-lines.push("  useEffect(() => {");
-lines.push("    async function getName() {");
-lines.push("      const { data: { session } } = await supabase.auth.getSession()");
-lines.push("      if (!session) return");
-lines.push("      const { data: profile } = await supabase");
-lines.push("        .from('profiles')");
-lines.push("        .select('full_name')");
-lines.push("        .eq('id', session.user.id)");
-lines.push("        .single()");
-lines.push("      if (profile) setUserName(profile.full_name || '')");
-lines.push("    }");
-lines.push("    getName()");
-lines.push("  }, [])");
-lines.push("");
-lines.push("  async function handleLogout() {");
-lines.push("    await supabase.auth.signOut()");
-lines.push("    window.location.href = '/login'");
-lines.push("  }");
-lines.push("");
-lines.push("  const navItems = [");
-lines.push("    { label: 'Planner', href: '/dashboard' },");
-lines.push("    { label: 'My Bookings', href: '/my-bookings' },");
-lines.push("    { label: 'New Booking', href: '/new-booking' },");
-lines.push("    { label: 'Calendar Sync', href: '/calendar-sync' },");
-lines.push("    ...(userRole === 'admin' ? [");
-lines.push("      { label: 'Admin', href: '/admin' },");
-lines.push("      { label: 'Stats', href: '/stats' },");
-lines.push("    ] : []),");
-lines.push("  ]");
-lines.push("");
-lines.push("  return (");
-lines.push("    <>"); 
-lines.push("      <nav style={{ backgroundColor: '#111', color: 'white', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '56px', position: 'sticky', top: 0, zIndex: 100 }}>");
-lines.push("        <a href='/dashboard' style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>");
-lines.push("          <img src='/crest.png' alt='Crest' style={{ width: '32px', height: '32px', objectFit: 'contain' }} />");
-lines.push("          <div style={{ lineHeight: '1.2' }}>");
-lines.push("            <div style={{ color: 'white', fontWeight: 'bold', fontSize: '14px' }}>St. Saviours</div>");
-lines.push("            <div style={{ color: '#9ca3af', fontSize: '11px' }}>GAA & LGFA</div>");
-lines.push("          </div>");
-lines.push("        </a>");
-lines.push("");
-lines.push("        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} className='nav-desktop-links'>");
-lines.push("          {navItems.map(item => (");
-lines.push("            <a key={item.href} href={item.href} style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: '500', textDecoration: 'none', backgroundColor: activePage === item.label ? '#374151' : 'transparent', color: activePage === item.label ? 'white' : '#d1d5db' }}>");
-lines.push("              {item.label}");
-lines.push("            </a>");
-lines.push("          ))}");
-lines.push("        </div>");
-lines.push("");
-lines.push("        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>");
-lines.push("          <span style={{ fontSize: '13px', color: '#9ca3af' }} className='nav-desktop-links'>{userName}</span>");
-lines.push("          <button onClick={handleLogout} style={{ backgroundColor: 'white', color: '#111', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }} className='nav-desktop-links'>Sign out</button>");
-lines.push("          <button onClick={() => setMenuOpen(!menuOpen)} className='nav-hamburger' style={{ backgroundColor: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>");
-lines.push("            {menuOpen ? (");
-lines.push("              <svg width='24' height='24' fill='none' stroke='currentColor' strokeWidth='2' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' d='M6 18L18 6M6 6l12 12'/></svg>");
-lines.push("            ) : (");
-lines.push("              <svg width='24' height='24' fill='none' stroke='currentColor' strokeWidth='2' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' d='M4 6h16M4 12h16M4 18h16'/></svg>");
-lines.push("            )}");
-lines.push("          </button>");
-lines.push("        </div>");
-lines.push("      </nav>");
-lines.push("");
-lines.push("      {menuOpen && (");
-lines.push("        <div style={{ position: 'fixed', top: '56px', left: 0, right: 0, bottom: 0, zIndex: 99, backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={() => setMenuOpen(false)}>");
-lines.push("          <div style={{ backgroundColor: '#111', width: '280px', height: '100%', padding: '0', marginLeft: 'auto' }} onClick={e => e.stopPropagation()}>");
-lines.push("            <div style={{ padding: '20px 16px', borderBottom: '1px solid #374151' }}>");
-lines.push("              <div style={{ fontWeight: '600', color: 'white', fontSize: '15px' }}>{userName}</div>");
-lines.push("              <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '2px' }}>Signed in</div>");
-lines.push("            </div>");
-lines.push("            <div style={{ padding: '8px' }}>");
-lines.push("              {navItems.map(item => (");
-lines.push("                <a key={item.href} href={item.href} onClick={() => setMenuOpen(false)} style={{ display: 'block', padding: '12px 16px', borderRadius: '8px', fontSize: '15px', fontWeight: '500', textDecoration: 'none', backgroundColor: activePage === item.label ? '#374151' : 'transparent', color: activePage === item.label ? 'white' : '#d1d5db', marginBottom: '2px' }}>");
-lines.push("                  {item.label}");
-lines.push("                </a>");
-lines.push("              ))}");
-lines.push("            </div>");
-lines.push("            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px', borderTop: '1px solid #374151' }}>");
-lines.push("              <button onClick={handleLogout} style={{ width: '100%', backgroundColor: 'white', color: '#111', border: 'none', borderRadius: '8px', padding: '12px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>Sign out</button>");
-lines.push("            </div>");
-lines.push("          </div>");
-lines.push("        </div>");
-lines.push("      )}");
-lines.push("    </>");
-lines.push("  )");
-lines.push("}");
-fs.writeFileSync('components/Navbar.tsx', lines.join('\n'), 'utf8');
-console.log('Done - Navbar with mobile menu written');
+let content = fs.readFileSync('components/PitchCalendar.tsx', 'utf8');
+
+const oldControls = content.slice(
+  content.indexOf('      <div style={{ display: \'flex\', alignItems: \'center\', gap: \'12px\', marginBottom: \'8px\', fontSize: \'13px\', flexWrap: \'wrap\' }}>'),
+  content.indexOf('      {loading ?')
+);
+
+const newControls = `      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap', fontSize: '13px' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#2e7d32', display: 'inline-block' }}></span>Booked</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><span style={{ width: '10px', height: '10px', borderRadius: '50%', border: '2px dashed #f9ab2b', display: 'inline-block' }}></span>Awaiting</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#9e9e9e', display: 'inline-block' }}></span>Closed</span>
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '6px', alignItems: 'center' }}>
+        <select value={selectedPitch} onChange={e => setSelectedPitch(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '13px' }}>
+          <option value="all">All Pitches</option>
+          {pitches.map(p => <option key={p.id} value={String(p.id)}>{p.name}</option>)}
+        </select>
+        <select value={selectedTeam} onChange={e => setSelectedTeam(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '6px 10px', fontSize: '13px' }}>
+          <option value="all">All Teams</option>
+          {uniqueTeams.map(t => <option key={t} value={t}>{t}</option>)}
+        </select>
+        <div style={{ display: 'flex', border: '1px solid #d1d5db', borderRadius: '8px', overflow: 'hidden' }}>
+          {isMobile && <button onClick={() => { setView('day'); setSelectedDay(new Date()) }} style={{ padding: '6px 12px', fontSize: '13px', fontWeight: '500', backgroundColor: view === 'day' ? '#111' : 'white', color: view === 'day' ? 'white' : '#374151', border: 'none', cursor: 'pointer' }}>Day</button>}
+          <button onClick={() => setView('week')} style={{ padding: '6px 12px', fontSize: '13px', fontWeight: '500', backgroundColor: view === 'week' ? '#111' : 'white', color: view === 'week' ? 'white' : '#374151', border: 'none', cursor: 'pointer' }}>Week</button>
+          <button onClick={() => setView('month')} style={{ padding: '6px 12px', fontSize: '13px', fontWeight: '500', backgroundColor: view === 'month' ? '#111' : 'white', color: view === 'month' ? 'white' : '#374151', border: 'none', cursor: 'pointer' }}>Month</button>
+        </div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+        <button onClick={() => {
+          if (view === 'day') { const d = new Date(selectedDay); d.setDate(d.getDate() - 1); setSelectedDay(d) }
+          else if (view === 'month') setCurrentDate(subMonths(currentDate, 1))
+          else setCurrentDate(subWeeks(currentDate, 1))
+        }} style={{ border: '1px solid #d1d5db', padding: '6px 14px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer', backgroundColor: 'white' }}>&larr; Prev</button>
+        <h2 style={{ fontSize: '15px', fontWeight: '600', color: '#111', textAlign: 'center', flex: 1, margin: '0 8px' }}>
+          {view === 'month' ? format(currentDate, 'MMMM yyyy') : view === 'day' ? getDayLabel() : getWeekLabel()}
+        </h2>
+        <button onClick={() => {
+          if (view === 'day') { const d = new Date(selectedDay); d.setDate(d.getDate() + 1); setSelectedDay(d) }
+          else if (view === 'month') setCurrentDate(addMonths(currentDate, 1))
+          else setCurrentDate(addWeeks(currentDate, 1))
+        }} style={{ border: '1px solid #d1d5db', padding: '6px 14px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer', backgroundColor: 'white' }}>Next &rarr;</button>
+      </div>
+      `;
+
+content = content.replace(oldControls, newControls);
+fs.writeFileSync('components/PitchCalendar.tsx', content, 'utf8');
+console.log('Done');
