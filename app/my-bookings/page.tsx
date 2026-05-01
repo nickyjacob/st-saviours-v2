@@ -73,22 +73,25 @@ export default function MyBookingsPage() {
     const borderColour = isApproved ? '#2e7d32' : isPending ? '#f9ab2b' : '#9e9e9e'
     const borderStyle = isPending ? 'dashed' : 'solid'
     const pitchColour = isApproved ? '#2e7d32' : isPending ? '#f9ab2b' : '#9e9e9e'
+    const cardStyle = { backgroundColor: bg, borderRadius: '8px', borderLeft: '4px ' + borderStyle + ' ' + borderColour, padding: '8px 12px', marginBottom: '6px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }
     return (
-      <div style={{ backgroundColor: bg, borderRadius: '8px', borderLeft: `4px ${borderStyle} ${borderColour}`, padding: '10px 14px', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-            <span style={{ fontWeight: '600', fontSize: '13px', color: '#111' }}>{formatDate(b.booking_date)}</span>
-            <span style={{ fontSize: '13px', color: '#374151' }}>{fmt(b.start_time)} – {fmt(b.end_time)}</span>
-            <span style={{ fontSize: '13px', fontWeight: '600', color: pitchColour }}>{b.pitch_name}</span>
+      <div style={cardStyle}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '13px', fontWeight: '700', color: '#111' }}>{formatDate(b.booking_date)}</div>
+            <div style={{ fontSize: '12px', color: '#374151', marginTop: '1px' }}>{fmt(b.start_time)} – {fmt(b.end_time)}</div>
+            <div style={{ fontSize: '12px', fontWeight: '600', color: pitchColour, marginTop: '1px' }}>{b.pitch_name}</div>
+            <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '1px' }}>{b.team_name} · {b.purpose}</div>
           </div>
-          <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>{b.team_name} · {b.purpose}</div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '12px' }}>
-          <span style={{ fontSize: '12px', fontWeight: '600', color: isApproved ? '#16a34a' : '#d97706', whiteSpace: 'nowrap' }}>{isApproved ? '● Booked' : '● Awaiting'}</span>
-          <a href={`/edit-booking/${b.id}`} style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '12px', color: '#374151', textDecoration: 'none', whiteSpace: 'nowrap' }}>Edit</a>
-          <button onClick={() => handleCancel(b.id)} disabled={cancelling === b.id} style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid #fca5a5', fontSize: '12px', color: '#dc2626', backgroundColor: 'white', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-            {cancelling === b.id ? '...' : 'Cancel'}
-          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px', flexShrink: 0 }}>
+            <span style={{ fontSize: '11px', fontWeight: '600', color: isApproved ? '#16a34a' : '#d97706' }}>{isApproved ? '● Booked' : '● Awaiting'}</span>
+            <div style={{ display: 'flex', gap: '4px' }}>
+              <a href={`/edit-booking/${b.id}`} style={{ padding: '3px 8px', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '11px', color: '#374151', textDecoration: 'none' }}>Edit</a>
+              <button onClick={() => handleCancel(b.id)} disabled={cancelling === b.id} style={{ padding: '3px 8px', borderRadius: '6px', border: '1px solid #fca5a5', fontSize: '11px', color: '#dc2626', backgroundColor: 'white', cursor: 'pointer' }}>
+                {cancelling === b.id ? '...' : 'Cancel'}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     )
