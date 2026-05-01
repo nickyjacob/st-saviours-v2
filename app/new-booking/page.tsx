@@ -54,7 +54,7 @@ export default function NewBookingPage() {
   const [repeatDates, setRepeatDates] = useState<string[]>([])
   const [multiDays, setMultiDays] = useState<DayEntry[]>([{ date: '', start_time: '', end_time: '', conflict: null }])
   const [multiRepeat, setMultiRepeat] = useState(1)
-  const [purpose, setPurpose] = useState('Training')
+  const [purpose, setPurpose] = useState('')
   const [approxNumbers, setApproxNumbers] = useState('')
   const [notes, setNotes] = useState('')
   const [errors, setErrors] = useState<Record<string, boolean>>({})
@@ -269,13 +269,23 @@ if (!data && data !== false) return null
           <h1 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>&#xff0b; New Booking</h1>
           <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '24px' }}>Fields marked <span style={{ color: '#dc2626' }}>*</span> are required</p>
 
-          <div id="field-sport" style={fieldStyle}>
-            <label style={labelStyle}>Sport / Code{requiredStar}</label>
-            <select value={sport} onChange={e => { setSport(e.target.value); setAgeGroup('') }} style={inputStyle(!!errors.sport)}>
-              <option value="">Select sport...</option>
-              {Object.keys(SPORTS).map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-            {errors.sport && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Please select a sport</p>}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+            <div id="field-sport">
+              <label style={labelStyle}>Sport / Code{requiredStar}</label>
+              <select value={sport} onChange={e => { setSport(e.target.value); setAgeGroup('') }} style={inputStyle(!!errors.sport)}>
+                <option value="">Select sport...</option>
+                {Object.keys(SPORTS).map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+              {errors.sport && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Please select a sport</p>}
+            </div>
+            <div id="field-pitchId">
+              <label style={labelStyle}>Pitch{requiredStar}</label>
+              <select value={pitchId} onChange={e => setPitchId(e.target.value)} style={inputStyle(!!errors.pitchId)}>
+                <option value="">Select a pitch...</option>
+                {pitches.map(p => <option key={p.id} value={String(p.id)}>{p.name}</option>)}
+              </select>
+              {errors.pitchId && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Please select a pitch</p>}
+            </div>
           </div>
 
           {sport && (
@@ -288,15 +298,6 @@ if (!data && data !== false) return null
               {errors.ageGroup && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Please select an age group</p>}
             </div>
           )}
-
-          <div id="field-pitchId" style={fieldStyle}>
-            <label style={labelStyle}>Pitch{requiredStar}</label>
-            <select value={pitchId} onChange={e => setPitchId(e.target.value)} style={inputStyle(!!errors.pitchId)}>
-              <option value="">Select a pitch...</option>
-              {pitches.map(p => <option key={p.id} value={String(p.id)}>{p.name}</option>)}
-            </select>
-            {errors.pitchId && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Please select a pitch</p>}
-          </div>
 
           <div style={{ display: 'flex', border: '1px solid #d1d5db', borderRadius: '8px', overflow: 'hidden', marginBottom: '20px' }}>
             <button onClick={() => setBookingMode('single')} style={{ flex: 1, padding: '10px', fontSize: '14px', fontWeight: '600', backgroundColor: bookingMode === 'single' ? '#111' : 'white', color: bookingMode === 'single' ? 'white' : '#374151', border: 'none', cursor: 'pointer' }}>Single / Recurring</button>
@@ -362,22 +363,6 @@ if (!data && data !== false) return null
             </div>
           )}
 
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Dressing Rooms</label>
-            <select value={dressingRoom} onChange={e => setDressingRoom(e.target.value)} style={inputStyle(false)}>
-              <option value="none">No dressing room required</option>
-              <option value="rooms_1_2">Rooms 1 & 2</option>
-              <option value="rooms_3_4">Rooms 3 & 4</option>
-              <option value="rooms_1_2_3_4">Rooms 1, 2, 3 & 4</option>
-            </select>
-          </div>
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Do you require showers?</label>
-            <select value={showers} onChange={e => setShowers(e.target.value)} style={inputStyle(false)}>
-              <option value="no">No</option>
-              <option value="yes">Yes</option>
-            </select>
-          </div>
           {bookingMode === 'multi' && (
             <div>
               <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '16px', marginBottom: '16px', backgroundColor: '#f9fafb' }}>
@@ -433,25 +418,56 @@ if (!data && data !== false) return null
             </div>
           )}
 
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Purpose</label>
-            <select value={purpose} onChange={e => setPurpose(e.target.value)} style={inputStyle(false)}>
-              <option value="Training">Training</option>
-              <option value="Match / Fixture">Match / Fixture</option>
-              <option value="Other">Other</option>
-            </select>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+            <div>
+              <label style={labelStyle}>Purpose{requiredStar}</label>
+              <select value={purpose} onChange={e => setPurpose(e.target.value)} style={inputStyle(false)}>
+                <option value="">Select purpose...</option>
+                <option value="Training">Training</option>
+                <option value="Match / Fixture">Match / Fixture</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>Dressing Rooms</label>
+              <select value={dressingRoom} onChange={e => setDressingRoom(e.target.value)} style={inputStyle(false)}>
+                <option value="none">No dressing room required</option>
+                <option value="rooms_1_2">Rooms 1 & 2</option>
+                <option value="rooms_3_4">Rooms 3 & 4</option>
+                <option value="rooms_1_2_3_4">Rooms 1, 2, 3 & 4</option>
+              </select>
+            </div>
           </div>
-
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Approximate Number of People</label>
-            <input type="number" value={approxNumbers} onChange={e => setApproxNumbers(e.target.value)} placeholder="e.g. 25" style={inputStyle(false)} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+            <div>
+              <label style={labelStyle}>Showers Required?</label>
+              <select value={showers} onChange={e => setShowers(e.target.value)} style={inputStyle(false)}>
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>No. of People</label>
+              <input type="number" value={approxNumbers} onChange={e => setApproxNumbers(e.target.value)} placeholder="e.g. 25" style={inputStyle(false)} />
+            </div>
           </div>
-
           <div style={fieldStyle}>
             <label style={labelStyle}>Additional Notes (optional)</label>
             <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Any special requirements..." rows={3} style={{ ...inputStyle(false), resize: 'vertical' }} />
           </div>
 
+          {sport && ageGroup && pitchId && (
+            <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #86efac', borderRadius: '8px', padding: '12px 16px', marginBottom: '16px' }}>
+              <p style={{ fontSize: '13px', fontWeight: '700', color: '#15803d', marginBottom: '6px' }}>&#x1f4cb; Booking Summary</p>
+              <div style={{ fontSize: '13px', color: '#166534', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                <span>&#x26bd; {sport} {ageGroup}</span>
+                <span>&#x1f3df; {pitches.find(p => String(p.id) === pitchId)?.name || ''}</span>
+                {bookingMode === 'single' && date && <span>&#x1f4c5; {formatDateDisplay(date)}{startTime ? ` · ${fmt(startTime)}${endTime ? ` – ${fmt(endTime)}` : ''}` : ''}</span>}
+                {purpose && <span>&#x1f3af; {purpose}</span>}
+                <span>&#x1f4dd; {totalBookings} booking{totalBookings !== 1 ? 's' : ''} will be submitted for approval</span>
+              </div>
+            </div>
+          )}
           {submitError && (
             <div style={{ padding: '10px 14px', borderRadius: '8px', marginBottom: '16px', backgroundColor: '#fef2f2', border: '1px solid #fca5a5', color: '#dc2626', fontSize: '14px' }}>
               {submitError}
