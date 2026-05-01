@@ -61,7 +61,7 @@ export default function NewBookingPage() {
   const [userRole, setUserRole] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
- 
+
   useEffect(() => {
     async function init() {
       const { data: { session } } = await supabase.auth.getSession()
@@ -182,6 +182,10 @@ if (!data && data !== false) return null
     }
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors)
+      const firstKey = Object.keys(newErrors)[0]
+      const refKey = firstKey.startsWith('day_date') ? 'date' : firstKey.startsWith('day_start') ? 'startTime' : firstKey.startsWith('day_end') ? 'endTime' : firstKey
+      const el = document.getElementById(`field-${refKey}`)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
       return
     }
     setErrors({})
@@ -265,7 +269,7 @@ if (!data && data !== false) return null
           <h1 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>&#xff0b; New Booking</h1>
           <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '24px' }}>Fields marked <span style={{ color: '#dc2626' }}>*</span> are required</p>
 
-          <div style={fieldStyle}>
+          <div id="field-sport" style={fieldStyle}>
             <label style={labelStyle}>Sport / Code{requiredStar}</label>
             <select value={sport} onChange={e => { setSport(e.target.value); setAgeGroup('') }} style={inputStyle(!!errors.sport)}>
               <option value="">Select sport...</option>
@@ -275,7 +279,7 @@ if (!data && data !== false) return null
           </div>
 
           {sport && (
-            <div style={fieldStyle}>
+            <div id="field-ageGroup" style={fieldStyle}>
               <label style={labelStyle}>Age Group / Team{requiredStar}</label>
               <select value={ageGroup} onChange={e => setAgeGroup(e.target.value)} style={inputStyle(!!errors.ageGroup)}>
                 <option value="">Select age group...</option>
@@ -285,31 +289,13 @@ if (!data && data !== false) return null
             </div>
           )}
 
-          <div style={fieldStyle}>
+          <div id="field-pitchId" style={fieldStyle}>
             <label style={labelStyle}>Pitch{requiredStar}</label>
             <select value={pitchId} onChange={e => setPitchId(e.target.value)} style={inputStyle(!!errors.pitchId)}>
               <option value="">Select a pitch...</option>
               {pitches.map(p => <option key={p.id} value={String(p.id)}>{p.name}</option>)}
             </select>
             {errors.pitchId && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Please select a pitch</p>}
-          </div>
-
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Dressing Rooms</label>
-            <select value={dressingRoom} onChange={e => setDressingRoom(e.target.value)} style={inputStyle(false)}>
-              <option value="none">No dressing room required</option>
-              <option value="rooms_1_2">Rooms 1 & 2</option>
-              <option value="rooms_3_4">Rooms 3 & 4</option>
-              <option value="rooms_1_2_3_4">Rooms 1, 2, 3 & 4</option>
-            </select>
-          </div>
-
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Do you require showers?</label>
-            <select value={showers} onChange={e => setShowers(e.target.value)} style={inputStyle(false)}>
-              <option value="no">No</option>
-              <option value="yes">Yes</option>
-            </select>
           </div>
 
           <div style={{ display: 'flex', border: '1px solid #d1d5db', borderRadius: '8px', overflow: 'hidden', marginBottom: '20px' }}>
@@ -319,13 +305,13 @@ if (!data && data !== false) return null
 
           {bookingMode === 'single' && (
             <div>
-              <div style={fieldStyle}>
+              <div id="field-date" style={fieldStyle}>
                 <label style={labelStyle}>Date{requiredStar}</label>
                 <input type="date" value={date} onChange={e => handleDateChange(e.target.value)} style={inputStyle(!!errors.date)} />
                 {errors.date && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Please select a date</p>}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-                <div>
+                <div id="field-startTime">
                   <label style={labelStyle}>Start Time{requiredStar}</label>
                   <select value={startTime} onChange={e => handleStartTimeChange(e.target.value)} style={inputStyle(!!errors.startTime)}>
                     <option value="">Start...</option>
@@ -376,6 +362,22 @@ if (!data && data !== false) return null
             </div>
           )}
 
+          <div style={fieldStyle}>
+            <label style={labelStyle}>Dressing Rooms</label>
+            <select value={dressingRoom} onChange={e => setDressingRoom(e.target.value)} style={inputStyle(false)}>
+              <option value="none">No dressing room required</option>
+              <option value="rooms_1_2">Rooms 1 & 2</option>
+              <option value="rooms_3_4">Rooms 3 & 4</option>
+              <option value="rooms_1_2_3_4">Rooms 1, 2, 3 & 4</option>
+            </select>
+          </div>
+          <div style={fieldStyle}>
+            <label style={labelStyle}>Do you require showers?</label>
+            <select value={showers} onChange={e => setShowers(e.target.value)} style={inputStyle(false)}>
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
+            </select>
+          </div>
           {bookingMode === 'multi' && (
             <div>
               <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '16px', marginBottom: '16px', backgroundColor: '#f9fafb' }}>
