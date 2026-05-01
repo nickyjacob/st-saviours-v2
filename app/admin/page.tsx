@@ -124,12 +124,55 @@ export default function AdminPage() {
   async function handleApprove(id: string) {
     await supabase.from('bookings').update({ status: 'approved', decided_by: currentUserId, decided_at: new Date().toISOString() }).eq('id', id)
     setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'approved' } : b))
+    try {
+      const booking = bookings.find(b => b.id === id)
+      if (booking) {
+        const { data: profile } = await supabase.from('profiles').select('email').eq('id', booking.user_id).single()
+        if (profile?.email) {
+          await fetch('/api/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'booking_approved',
+              userEmail: profile.email,
+              booking: {
+                team_name: booking.team_name,
+                pitch_name: booking.pitch_name,
+                date_display: new Date(booking.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+                time_display: `${fmt(booking.start_time)} – ${fmt(booking.end_time)}`,
+                purpose: booking.purpose,
+              }
+            })
+          })
+        }
+      }
+    } catch (emailErr) { console.error('Email failed:', emailErr) }
   }
 
   async function handleReject() {
     if (!rejectModal) return
     await supabase.from('bookings').update({ status: 'rejected', decided_by: currentUserId, decided_at: new Date().toISOString(), rejection_reason: rejectReason }).eq('id', rejectModal.id)
     setBookings(prev => prev.map(b => b.id === rejectModal.id ? { ...b, status: 'rejected' } : b))
+    try {
+      const { data: profile } = await supabase.from('profiles').select('email').eq('id', rejectModal.user_id).single()
+      if (profile?.email) {
+        await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'booking_rejected',
+            userEmail: profile.email,
+            booking: {
+              team_name: rejectModal.team_name,
+              pitch_name: rejectModal.pitch_name,
+              date_display: new Date(rejectModal.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+              time_display: `${fmt(rejectModal.start_time)} – ${fmt(rejectModal.end_time)}`,
+              purpose: rejectModal.purpose,
+            }
+          })
+        })
+      }
+    } catch (emailErr) { console.error('Email failed:', emailErr) }
     setRejectModal(null)
     setRejectReason('')
   }
