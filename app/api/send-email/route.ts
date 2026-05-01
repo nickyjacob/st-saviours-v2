@@ -58,7 +58,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'No admins found' }, { status: 400 })
       }
 
-      const adminEmails = admins.map((a: { email: string }) => a.email)
+      const adminEmails = ['nickyjacob100@yahoo.ie']
 
       const html = emailWrapper(`
         <h2 style="margin:0 0 4px;font-size:18px;color:#111">New Booking Request 📋</h2>
