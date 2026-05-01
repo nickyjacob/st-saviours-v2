@@ -125,10 +125,10 @@ export default function StatsPage() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
           <div style={{ backgroundColor: 'white', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
             <div style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb', fontWeight: '600', fontSize: '14px' }}>Bookings per Pitch</div>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <div style={{ overflowX: 'auto' }}><table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead><tr style={{ backgroundColor: '#f9fafb' }}>
                 <th style={thStyle}>Pitch</th>
                 <th style={{ ...thStyle, textAlign: 'center' }}>Total</th>
@@ -143,12 +143,12 @@ export default function StatsPage() {
                 </tr>
               ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
 
           <div style={{ backgroundColor: 'white', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
             <div style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb', fontWeight: '600', fontSize: '14px' }}>Monthly Summary (last 6 months)</div>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <div style={{ overflowX: 'auto' }}><table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead><tr style={{ backgroundColor: '#f9fafb' }}>
                 <th style={thStyle}>Month</th>
                 <th style={{ ...thStyle, textAlign: 'center' }}>Total</th>
@@ -165,7 +165,7 @@ export default function StatsPage() {
                 </tr>
               ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
       </div>

@@ -69,16 +69,17 @@ export default function MyBookingsPage() {
   function BookingCard({ b }: { b: Booking }) {
     const isApproved = b.status === 'approved'
     const isPending = b.status === 'pending'
-    const colour = b.pitch_colour || '#2e7d32'
-    const borderColour = isPending ? '#f9ab2b' : colour
+    const bg = isApproved ? '#f1f8f1' : isPending ? '#fff8e1' : '#f5f5f5'
+    const borderColour = isApproved ? '#2e7d32' : isPending ? '#f9ab2b' : '#9e9e9e'
     const borderStyle = isPending ? 'dashed' : 'solid'
+    const pitchColour = isApproved ? '#2e7d32' : isPending ? '#f9ab2b' : '#9e9e9e'
     return (
-      <div style={{ backgroundColor: 'white', borderRadius: '8px', borderLeft: `4px ${borderStyle} ${borderColour}`, padding: '10px 14px', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+      <div style={{ backgroundColor: bg, borderRadius: '8px', borderLeft: `4px ${borderStyle} ${borderColour}`, padding: '10px 14px', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
             <span style={{ fontWeight: '600', fontSize: '13px', color: '#111' }}>{formatDate(b.booking_date)}</span>
             <span style={{ fontSize: '13px', color: '#374151' }}>{fmt(b.start_time)} – {fmt(b.end_time)}</span>
-            <span style={{ fontSize: '13px', fontWeight: '600', color: colour }}>{b.pitch_name}</span>
+            <span style={{ fontSize: '13px', fontWeight: '600', color: pitchColour }}>{b.pitch_name}</span>
           </div>
           <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>{b.team_name} · {b.purpose}</div>
         </div>

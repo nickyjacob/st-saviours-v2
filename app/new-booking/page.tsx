@@ -307,7 +307,7 @@ if (!data && data !== false) return null
             <div>
               <div id="field-date" style={fieldStyle}>
                 <label style={labelStyle}>Date{requiredStar}</label>
-                <input type="date" value={date} onChange={e => handleDateChange(e.target.value)} style={inputStyle(!!errors.date)} />
+                <input type="date" value={date} min={new Date().toISOString().split('T')[0]} onChange={e => handleDateChange(e.target.value)} style={inputStyle(!!errors.date)} />
                 {errors.date && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Please select a date</p>}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
