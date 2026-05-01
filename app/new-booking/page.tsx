@@ -237,6 +237,30 @@ if (!data && data !== false) return null
         const { error } = await supabase.from('bookings').insert(inserts)
         if (error) throw error
       }
+      try {
+        const pitch = pitches.find(p => String(p.id) === pitchId)
+        const bookingDate = bookingMode === 'single' ? (repeatDates.length > 0 ? repeatDates[0] : date) : multiDays[0].date
+        const bookingStart = bookingMode === 'single' ? startTime : multiDays[0].start_time
+        const bookingEnd = bookingMode === 'single' ? endTime : multiDays[0].end_time
+        const profileRes = await supabase.from('profiles').select('full_name').eq('id', userId).single()
+        await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'new_booking',
+            userName: profileRes.data?.full_name || 'A user',
+            booking: {
+              team_name: `${sport} ${ageGroup}`.trim(),
+              pitch_name: pitch?.name || '',
+              date_display: new Date(bookingDate + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+              time_display: `${fmt(bookingStart)} – ${fmt(bookingEnd)}`,
+              purpose,
+            }
+          })
+        })
+      } catch (emailErr) {
+        console.error('Email notification failed:', emailErr)
+      }
       window.location.href = '/dashboard'
     } catch (err: unknown) {
       setSubmitError('Failed to submit booking. Please try again.')
@@ -269,7 +293,7 @@ if (!data && data !== false) return null
           <h1 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>&#xff0b; New Booking</h1>
           <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '24px' }}>Fields marked <span style={{ color: '#dc2626' }}>*</span> are required</p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '16px' }}>
             <div id="field-sport">
               <label style={labelStyle}>Sport / Code{requiredStar}</label>
               <select value={sport} onChange={e => { setSport(e.target.value); setAgeGroup('') }} style={inputStyle(!!errors.sport)}>
