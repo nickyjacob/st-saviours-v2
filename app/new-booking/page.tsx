@@ -249,7 +249,7 @@ if (!data && data !== false) return null
   const inputStyle = (hasError: boolean) => ({
     width: '100%', border: `1px solid ${hasError ? '#dc2626' : '#d1d5db'}`,
     borderRadius: '8px', padding: '10px 12px', fontSize: '14px',
-    outline: 'none', backgroundColor: 'white',
+    outline: 'none', backgroundColor: 'white', color: '#111',
   })
 
   const labelStyle = { fontSize: '14px', fontWeight: '600', color: '#111', marginBottom: '6px', display: 'block' }
