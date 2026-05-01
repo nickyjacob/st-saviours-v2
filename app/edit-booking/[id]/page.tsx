@@ -47,7 +47,7 @@ export default function EditBookingPage() {
   const params = useParams()
   const id = params.id as string
 
-  const [userId, setUserId] = useState('')
+  const [, setUserId] = useState('')
   const [userRole, setUserRole] = useState('')
   const [pitches, setPitches] = useState<Pitch[]>([])
   const [sport, setSport] = useState('')
@@ -98,7 +98,7 @@ export default function EditBookingPage() {
     init()
   }, [id])
 
-async function checkConflict(pId: string, d: string, st: string, et: string, excludeId?: string) {
+async function checkConflict(pId: string, d: string, st: string, et: string) {
     if (!pId || !d || !st || !et) return null
     const { data: closureData } = await supabase
       .from('pitch_closures')

@@ -86,7 +86,7 @@ export default function CalendarSyncPage() {
 
         <div style={{ backgroundColor: '#fefce8', border: '1px solid #fef08a', borderRadius: '10px', padding: '14px 16px', fontSize: '13px', color: '#854d0e', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
           <span>&#x1f512;</span>
-          <span>Your calendar URL is private — don't share it with others. If it's ever compromised, contact the admin to reset it.</span>
+          <span>Your calendar URL is private — don&apos;t share it with others. If it&apos;s ever compromised, contact the admin to reset it.</span>
         </div>
       </div>
     </div>
