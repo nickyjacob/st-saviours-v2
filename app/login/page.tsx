@@ -54,6 +54,9 @@ if (signInError) {
       return
     }
 
+    try {
+      await supabase.from('login_history').insert({ user_id: user.id, logged_in_at: new Date().toISOString() })
+    } catch (e) { console.error('Login history error:', e) }
     window.location.href = '/dashboard'
   }
 

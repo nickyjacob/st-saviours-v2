@@ -109,7 +109,7 @@ export default function AdminPage() {
 
   async function loadHistory() {
     setHistoryLoading(true)
-    const { data: histData } = await supabase.from('login_history').select('id, logged_in_at, user_id').order('logged_in_at', { ascending: false }).limit(20)
+    const { data: histData } = await supabase.from('login_history').select('id, logged_in_at, user_id').order('logged_in_at', { ascending: false }).limit(15)
     if (histData) {
       const enriched = histData.map(h => {
         const p = profiles.find(p => p.id === h.user_id)
@@ -383,7 +383,7 @@ export default function AdminPage() {
                   <select
                     value={historyUserFilter}
                     onChange={e => setHistoryUserFilter(e.target.value)}
-                    style={{ border: '1px solid #d1d5db', borderRadius: '6px', padding: '5px 10px', fontSize: '12px' }}
+                    style={{ border: '1px solid #d1d5db', borderRadius: '6px', padding: '5px 10px', fontSize: '12px', color: '#111', backgroundColor: 'white' }}
                   >
                     <option value="">All Users</option>
                     {profiles.map(p => (
@@ -394,7 +394,7 @@ export default function AdminPage() {
                     type="date"
                     value={historyDateFilter}
                     onChange={e => setHistoryDateFilter(e.target.value)}
-                    style={{ border: '1px solid #d1d5db', borderRadius: '6px', padding: '5px 10px', fontSize: '12px' }}
+                    style={{ border: '1px solid #d1d5db', borderRadius: '6px', padding: '5px 10px', fontSize: '12px', color: '#111', backgroundColor: 'white' }}
                   />
                   {(historyUserFilter || historyDateFilter) && (
                     <button onClick={() => { setHistoryUserFilter(''); setHistoryDateFilter('') }} style={{ border: '1px solid #d1d5db', borderRadius: '6px', padding: '5px 10px', fontSize: '12px', cursor: 'pointer', backgroundColor: 'white' }}>Clear</button>
@@ -405,7 +405,7 @@ export default function AdminPage() {
             {!historyLoaded ? (
               <div style={{ textAlign: 'center', padding: '40px', backgroundColor: 'white', borderRadius: '10px' }}>
                 <p style={{ color: '#6b7280', marginBottom: '12px', fontSize: '13px' }}>Login history is not loaded by default to keep things fast.</p>
-                <button onClick={loadHistory} style={{ backgroundColor: '#111', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: 'pointer' }}>Load Last 20 Logins</button>
+                <button onClick={loadHistory} style={{ backgroundColor: '#111', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: 'pointer' }}>Load Last 15 Logins</button>
               </div>
             ) : historyLoading ? (
               <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>Loading...</div>
