@@ -192,7 +192,7 @@ async function checkConflict(pId: string, d: string, st: string, et: string) {
   const inputStyle = (hasError: boolean) => ({
     width: '100%', border: `1px solid ${hasError ? '#dc2626' : '#d1d5db'}`,
     borderRadius: '8px', padding: '10px 12px', fontSize: '14px',
-    outline: 'none', backgroundColor: 'white',
+    outline: 'none', backgroundColor: 'white', color: '#111',
   })
   const labelStyle = { fontSize: '14px', fontWeight: '600', color: '#111', marginBottom: '6px', display: 'block' }
   const fieldStyle = { marginBottom: '16px' }
@@ -222,13 +222,23 @@ async function checkConflict(pId: string, d: string, st: string, et: string) {
           <h1 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '4px' }}>&#9998; Edit Booking</h1>
           <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '24px' }}>Fields marked <span style={{ color: '#dc2626' }}>*</span> are required</p>
 
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Sport / Code{requiredStar}</label>
-            <select value={sport} onChange={e => { setSport(e.target.value); setAgeGroup('') }} style={inputStyle(!!errors.sport)}>
-              <option value="">Select sport...</option>
-              {Object.keys(SPORTS).map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-            {errors.sport && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Please select a sport</p>}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '16px' }}>
+            <div>
+              <label style={labelStyle}>Sport / Code{requiredStar}</label>
+              <select value={sport} onChange={e => { setSport(e.target.value); setAgeGroup('') }} style={inputStyle(!!errors.sport)}>
+                <option value="">Select sport...</option>
+                {Object.keys(SPORTS).map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+              {errors.sport && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Please select a sport</p>}
+            </div>
+            <div>
+              <label style={labelStyle}>Pitch{requiredStar}</label>
+              <select value={pitchId} onChange={e => handlePitchChange(e.target.value)} style={inputStyle(!!errors.pitchId)}>
+                <option value="">Select a pitch...</option>
+                {pitches.map(p => <option key={p.id} value={String(p.id)}>{p.name}</option>)}
+              </select>
+              {errors.pitchId && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Please select a pitch</p>}
+            </div>
           </div>
 
           {sport && SPORTS[sport] && (
@@ -242,31 +252,39 @@ async function checkConflict(pId: string, d: string, st: string, et: string) {
             </div>
           )}
 
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Pitch{requiredStar}</label>
-            <select value={pitchId} onChange={e => handlePitchChange(e.target.value)} style={inputStyle(!!errors.pitchId)}>
-              <option value="">Select a pitch...</option>
-              {pitches.map(p => <option key={p.id} value={String(p.id)}>{p.name}</option>)}
-            </select>
-            {errors.pitchId && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Please select a pitch</p>}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+            <div>
+              <label style={labelStyle}>Purpose</label>
+              <select value={purpose} onChange={e => setPurpose(e.target.value)} style={inputStyle(false)}>
+                <option value="">Select purpose...</option>
+                <option value="Training">Training</option>
+                <option value="Match / Fixture">Match / Fixture</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>Dressing Rooms</label>
+              <select value={dressingRoom} onChange={e => setDressingRoom(e.target.value)} style={inputStyle(false)}>
+                <option value="none">No dressing room required</option>
+                <option value="rooms_1_2">Rooms 1 & 2</option>
+                <option value="rooms_3_4">Rooms 3 & 4</option>
+                <option value="rooms_1_2_3_4">Rooms 1, 2, 3 & 4</option>
+              </select>
+            </div>
           </div>
 
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Dressing Rooms</label>
-            <select value={dressingRoom} onChange={e => setDressingRoom(e.target.value)} style={inputStyle(false)}>
-              <option value="none">No dressing room required</option>
-              <option value="rooms_1_2">Rooms 1 & 2</option>
-              <option value="rooms_3_4">Rooms 3 & 4</option>
-              <option value="rooms_1_2_3_4">Rooms 1, 2, 3 & 4</option>
-            </select>
-          </div>
-
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Do you require showers?</label>
-            <select value={showers} onChange={e => setShowers(e.target.value)} style={inputStyle(false)}>
-              <option value="no">No</option>
-              <option value="yes">Yes</option>
-            </select>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+            <div>
+              <label style={labelStyle}>Showers Required?</label>
+              <select value={showers} onChange={e => setShowers(e.target.value)} style={inputStyle(false)}>
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>No. of People</label>
+              <input type="number" value={approxNumbers} onChange={e => setApproxNumbers(e.target.value)} placeholder="e.g. 25" style={inputStyle(false)} />
+            </div>
           </div>
 
           <div style={fieldStyle}>
@@ -299,20 +317,6 @@ async function checkConflict(pId: string, d: string, st: string, et: string) {
               {conflict ? '⚠ Conflict detected — this pitch is already booked at this time' : '✓ Available'}
             </div>
           )}
-
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Purpose</label>
-            <select value={purpose} onChange={e => setPurpose(e.target.value)} style={inputStyle(false)}>
-              <option value="Training">Training</option>
-              <option value="Match / Fixture">Match / Fixture</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Approximate Number of People</label>
-            <input type="number" value={approxNumbers} onChange={e => setApproxNumbers(e.target.value)} placeholder="e.g. 25" style={inputStyle(false)} />
-          </div>
 
           <div style={fieldStyle}>
             <label style={labelStyle}>Additional Notes (optional)</label>
