@@ -428,7 +428,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
           {uniqueTeams.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', gap: '8px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', gap: '4px' }}>
         <div style={{ display: 'flex', border: '1px solid #d1d5db', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
           {isMobile && <button onClick={() => { setView('day'); setSelectedDay(new Date()) }} style={{ padding: '6px 10px', fontSize: '12px', fontWeight: '500', backgroundColor: view === 'day' ? '#111' : 'white', color: view === 'day' ? 'white' : '#374151', border: 'none', cursor: 'pointer' }}>Day</button>}
           <button onClick={() => setView('week')} style={{ padding: '6px 10px', fontSize: '12px', fontWeight: '500', backgroundColor: view === 'week' ? '#111' : 'white', color: view === 'week' ? 'white' : '#374151', border: 'none', cursor: 'pointer' }}>Week</button>
@@ -439,15 +439,15 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
             if (view === 'day') { const d = new Date(selectedDay); d.setDate(d.getDate() - 1); setSelectedDay(d) }
             else if (view === 'month') setCurrentDate(subMonths(currentDate, 1))
             else setCurrentDate(subWeeks(currentDate, 1))
-          }} style={{ border: '1px solid #d1d5db', padding: '5px 8px', borderRadius: '8px', fontSize: '16px', cursor: 'pointer', backgroundColor: 'white', flexShrink: 0, width: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
-          <h2 style={{ fontSize: '13px', fontWeight: '600', color: '#111', textAlign: 'center', minWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          }} style={{ border: '1px solid #d1d5db', padding: '5px 8px', borderRadius: '8px', fontSize: '16px', cursor: 'pointer', backgroundColor: 'white', flexShrink: 0, width: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#111' }}>‹</button>
+          <h2 style={{ fontSize: '13px', fontWeight: '600', color: '#111', textAlign: 'center', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {view === 'month' ? format(currentDate, 'MMMM yyyy') : view === 'day' ? getDayLabel() : getWeekLabel()}
           </h2>
           <button onClick={() => {
             if (view === 'day') { const d = new Date(selectedDay); d.setDate(d.getDate() + 1); setSelectedDay(d) }
             else if (view === 'month') setCurrentDate(addMonths(currentDate, 1))
             else setCurrentDate(addWeeks(currentDate, 1))
-          }} style={{ border: '1px solid #d1d5db', padding: '5px 8px', borderRadius: '8px', fontSize: '16px', cursor: 'pointer', backgroundColor: 'white', flexShrink: 0, width: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>›</button>
+          }} style={{ border: '1px solid #d1d5db', padding: '5px 8px', borderRadius: '8px', fontSize: '16px', cursor: 'pointer', backgroundColor: 'white', flexShrink: 0, width: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#111' }}>‹</button>
         </div>
       </div>
       {loading ? (
