@@ -51,11 +51,11 @@ function BookingModal({ booking, onClose, currentUserId, userRole }: { booking: 
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
         </div>
         <div className="space-y-3 text-sm">
-          <div className="flex justify-between"><span className="text-gray-500">Date</span><span className="font-medium">{new Date(booking.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span></div>
-          <div className="flex justify-between"><span className="text-gray-500">Time</span><span className="font-medium">{fmt(booking.start_time)} - {fmt(booking.end_time)}</span></div>
-          <div className="flex justify-between"><span className="text-gray-500">Pitch</span><span className="font-medium">{booking.pitch_name}</span></div>
-          <div className="flex justify-between"><span className="text-gray-500">Booked by</span><span className="font-medium">{booking.full_name}</span></div>
-          <div className="flex justify-between items-center"><span className="text-gray-500">Status</span><span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColour}`}>{booking.status}</span></div>
+          <div className="flex justify-between"><span className="text-gray-500">Date</span><span className="font-semibold text-gray-900">{new Date(booking.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span></div>
+          <div className="flex justify-between"><span className="text-gray-500">Time</span><span className="font-semibold text-gray-900">{fmt(booking.start_time)} - {fmt(booking.end_time)}</span></div>
+          <div className="flex justify-between"><span className="text-gray-500">Pitch</span><span className="font-semibold text-gray-900">{booking.pitch_name}</span></div>
+          <div className="flex justify-between"><span className="text-gray-500">Booked by</span><span className="font-semibold text-gray-900">{booking.full_name}</span></div>
+          <div className="flex justify-between items-center"><span className="text-gray-500">Status</span><span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusColour}`}>{booking.status}</span></div>
         </div>
         {canEdit && (
           <div className="mt-6">
