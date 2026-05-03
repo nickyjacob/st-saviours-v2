@@ -419,11 +419,11 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
         <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#9e9e9e', display: 'inline-block' }}></span>Closed</span>
       </div>
       <div style={{ display: 'flex', gap: '6px', marginBottom: '6px', alignItems: 'center', maxWidth: isMobile ? '100%' : '500px' }}>
-        <select value={selectedPitch} onChange={e => setSelectedPitch(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '5px 8px', fontSize: '12px', flex: 1, minWidth: 0 }}>
+        <select value={selectedPitch} onChange={e => setSelectedPitch(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '5px 8px', fontSize: '12px', flex: 1, minWidth: 0, color: '#111', backgroundColor: 'white' }}>
           <option value="all">All Pitches</option>
           {pitches.map(p => <option key={p.id} value={String(p.id)}>{p.name}</option>)}
         </select>
-        <select value={selectedTeam} onChange={e => setSelectedTeam(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '5px 8px', fontSize: '12px', flex: 1, minWidth: 0 }}>
+        <select value={selectedTeam} onChange={e => setSelectedTeam(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '5px 8px', fontSize: '12px', flex: 1, minWidth: 0, color: '#111', backgroundColor: 'white' }}>
           <option value="all">All Teams</option>
           {uniqueTeams.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
@@ -439,7 +439,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
             if (view === 'day') { const d = new Date(selectedDay); d.setDate(d.getDate() - 1); setSelectedDay(d) }
             else if (view === 'month') setCurrentDate(subMonths(currentDate, 1))
             else setCurrentDate(subWeeks(currentDate, 1))
-          }} style={{ border: '1px solid #d1d5db', padding: '5px 10px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', backgroundColor: 'white', flexShrink: 0 }}>&larr;</button>
+          }} style={{ border: '1px solid #d1d5db', padding: '5px 8px', borderRadius: '8px', fontSize: '16px', cursor: 'pointer', backgroundColor: 'white', flexShrink: 0, width: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
           <h2 style={{ fontSize: '13px', fontWeight: '600', color: '#111', textAlign: 'center', minWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {view === 'month' ? format(currentDate, 'MMMM yyyy') : view === 'day' ? getDayLabel() : getWeekLabel()}
           </h2>
@@ -447,7 +447,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
             if (view === 'day') { const d = new Date(selectedDay); d.setDate(d.getDate() + 1); setSelectedDay(d) }
             else if (view === 'month') setCurrentDate(addMonths(currentDate, 1))
             else setCurrentDate(addWeeks(currentDate, 1))
-          }} style={{ border: '1px solid #d1d5db', padding: '5px 10px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', backgroundColor: 'white', flexShrink: 0 }}>&rarr;</button>
+          }} style={{ border: '1px solid #d1d5db', padding: '5px 8px', borderRadius: '8px', fontSize: '16px', cursor: 'pointer', backgroundColor: 'white', flexShrink: 0, width: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>›</button>
         </div>
       </div>
       {loading ? (
