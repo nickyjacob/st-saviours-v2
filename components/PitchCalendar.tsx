@@ -127,14 +127,16 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
   const [closures, setClosures] = useState<Closure[]>([])
 
   useEffect(() => {
-    const check = () => {
+    const mobile = window.innerWidth < 768
+    setIsMobile(mobile)
+    if (mobile) setView('week')
+
+    const handleResize = () => {
       const mobile = window.innerWidth < 768
       setIsMobile(mobile)
-      if (mobile) setView('day')
     }
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
   }, [])
 
   useEffect(() => { fetchPitches() }, [])
