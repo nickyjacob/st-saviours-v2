@@ -65,7 +65,7 @@ export default function CalendarSyncPage() {
 
         <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', marginBottom: '20px' }}>
           <h2 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '16px' }}>How to add to your calendar</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {[
               { icon: '&#x1f4f1;', title: 'iPhone / iPad', steps: ['Copy the URL above', 'Open Settings → Calendar → Accounts', 'Tap Add Account → Other', 'Tap Add Subscribed Calendar', 'Paste the URL and tap Next'] },
               { icon: '&#x1f4c5;', title: 'Google Calendar', steps: ['Copy the URL above', 'Open calendar.google.com', 'Click + Other Calendars → From URL', 'Paste the URL and click Add Calendar'] },
