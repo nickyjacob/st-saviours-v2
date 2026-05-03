@@ -23,6 +23,19 @@ export default function RegisterPage() {
       options: { data: { full_name: fullName } }
     })
     if (signUpError) { setError(signUpError.message); setLoading(false); return }
+    try {
+      await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'new_user',
+          userName: fullName,
+          userEmail: email,
+        })
+      })
+    } catch (emailErr) {
+      console.error('Email notification failed:', emailErr)
+    }
     setSuccess(true)
     setLoading(false)
   }

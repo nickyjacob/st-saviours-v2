@@ -58,7 +58,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'No admins found' }, { status: 400 })
       }
 
-      const adminEmails = ['nickyjacob100@yahoo.ie', 'stephenwhelan82@hotmail.com']
+      const adminEmails = ['stephenwhelan82@hotmail.com']
 
       const html = emailWrapper(`
         <h2 style="margin:0 0 4px;font-size:18px;color:#111">New Booking Request 📋</h2>
@@ -80,6 +80,27 @@ export async function POST(req: Request) {
         from: 'onboarding@resend.dev',
         to: adminEmails,
         subject: `📋 New Booking Request — ${booking.team_name} on ${booking.date_display}`,
+        html,
+      })
+    }
+
+    if (type === 'new_user') {
+      const html = emailWrapper(`
+        <h2 style="margin:0 0 4px;font-size:18px;color:#111">New User Registration 👤</h2>
+        <p style="color:#6b7280;font-size:13px;margin:0 0 16px">A new user has registered and is awaiting approval.</p>
+        ${bookingTable({
+          'Name': userName,
+          'Email': userEmail,
+        })}
+        <a href="https://st-saviours-v2.vercel.app/admin"
+           style="display:inline-block;background:#111;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px;margin-top:8px">
+          Review in Admin Panel →
+        </a>
+      `)
+      await resend.emails.send({
+        from: 'onboarding@resend.dev',
+        to: ['nickyjacob100@yahoo.ie'],
+        subject: `👤 New User Registration — ${userName}`,
         html,
       })
     }
