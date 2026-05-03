@@ -346,9 +346,9 @@ export default function AdminPage() {
                 {upcomingClosures.map(c => (
                   <div key={c.id} style={{ backgroundColor: '#f9fafb', borderRadius: '8px', borderLeft: '4px solid #4b5563', padding: '10px 14px', marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                      <div style={{ fontWeight: '600', fontSize: '13px', color: '#374151' }}>{c.pitch_name}</div>
+                      <div style={{ fontWeight: '600', fontSize: '13px', color: '#111' }}>{c.pitch_name}</div>
                       <div style={{ fontSize: '12px', color: '#111' }}>&#x1f512; {c.reason}</div>
-                      <div style={{ fontSize: '12px', color: '#6b7280' }}>{formatDate(c.start_date)} → {formatDate(c.end_date)}</div>
+                      <div style={{ fontSize: '12px', color: '#374151' }}>{formatDate(c.start_date)} → {formatDate(c.end_date)}</div>
                     </div>
                     <button onClick={() => handleRemoveClosure(c.id)} style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid #fca5a5', color: '#dc2626', backgroundColor: 'white', fontSize: '12px', cursor: 'pointer' }}>Remove</button>
                   </div>
