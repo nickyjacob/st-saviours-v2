@@ -335,7 +335,7 @@ export default function AdminPage() {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div>
-                <h2 style={{ fontSize: '16px', fontWeight: '600' }}>&#x1f512; Pitch Closures</h2>
+                <h2 style={{ fontSize: '16px', fontWeight: '600' }}>&#x1f4ca; Pitch Closures</h2>
                 <p style={{ fontSize: '12px', color: '#6b7280' }}>Block pitches during maintenance, match days or events</p>
               </div>
               <button onClick={() => setClosureModal(true)} style={{ backgroundColor: '#111', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>+ Add Closure</button>
