@@ -241,16 +241,16 @@ export default function AdminPage() {
 
         <h1 style={{ fontSize: '22px', fontWeight: 'bold', color: '#111', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>&#9881; Admin Panel</h1>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '20px' }}>
           {[
             { label: 'Pending', value: pending.length, colour: '#f59e0b', border: '#f59e0b' },
             { label: 'Approved', value: approved.length, colour: '#16a34a', border: '#16a34a' },
             { label: 'Rejected', value: rejected.length, colour: '#dc2626', border: '#dc2626' },
-            { label: 'User Awaiting Approval', value: awaitingUsers.length, colour: '#7c3aed', border: '#7c3aed' },
+            { label: 'Awaiting', value: awaitingUsers.length, colour: '#7c3aed', border: '#7c3aed' },
           ].map(card => (
-            <div key={card.label} style={{ backgroundColor: 'white', borderRadius: '10px', padding: '20px', textAlign: 'center', border: `1px solid ${card.border}22`, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-              <div style={{ fontSize: '36px', fontWeight: 'bold', color: card.colour }}>{card.value}</div>
-              <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>{card.label}</div>
+            <div key={card.label} style={{ backgroundColor: 'white', borderRadius: '8px', padding: '10px 6px', textAlign: 'center', border: `1px solid ${card.border}22`, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+              <div style={{ fontSize: '22px', fontWeight: 'bold', color: card.colour }}>{card.value}</div>
+              <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>{card.label}</div>
             </div>
           ))}
         </div>
@@ -264,7 +264,7 @@ export default function AdminPage() {
             { key: 'closures', label: 'Closures', dot: '#111' },
             { key: 'history', label: 'History', dot: '#111' },
           ].map(t => (
-            <button key={t.key} onClick={() => { setTab(t.key); if (t.key === 'history' && !historyLoaded) loadHistory() }} style={{ padding: '6px 14px', borderRadius: '20px', border: '1px solid #d1d5db', fontSize: '13px', fontWeight: '500', backgroundColor: tab === t.key ? '#111' : 'white', color: tab === t.key ? 'white' : '#374151', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <button key={t.key} onClick={() => { setTab(t.key); if (t.key === 'history' && !historyLoaded) loadHistory() }} style={{ padding: '4px 10px', borderRadius: '20px', border: '1px solid #d1d5db', fontSize: '11px', fontWeight: '500', backgroundColor: tab === t.key ? '#111' : 'white', color: tab === t.key ? 'white' : '#374151', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: t.dot, display: 'inline-block' }}></span>
               {t.label}
             </button>
