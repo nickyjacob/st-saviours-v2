@@ -112,6 +112,10 @@ if (signInError) {
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
+          <div className="flex justify-between text-sm mt-2">
+            <a href="/forgot-password" className="text-gray-500 hover:text-gray-900">Forgot password?</a>
+            <a href="/register" className="text-gray-500 hover:text-gray-900">Create account</a>
+          </div>
         </form>
       </div>
     </div>
