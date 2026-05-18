@@ -120,9 +120,9 @@ if (!data && data !== false) return null
     if (val && repeat > 0) {
       const dates = []
       for (let i = 0; i < repeat; i++) {
-        const d = new Date(val + 'T00:00:00')
-        d.setDate(d.getDate() + i * 7)
-        dates.push(d.toISOString().split('T')[0])
+        const [y, m, day] = val.split('-').map(Number)
+        const d = new Date(Date.UTC(y, m - 1, day + (i * 7)))
+        dates.push(`${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`)
       }
       setRepeatDates(dates)
     }
@@ -137,9 +137,9 @@ if (!data && data !== false) return null
     if (!date) return
     const dates = []
     for (let i = 0; i < weeks; i++) {
-      const d = new Date(date + 'T00:00:00')
-      d.setDate(d.getDate() + i * 7)
-      dates.push(d.toISOString().split('T')[0])
+      const [y, m, day] = date.split('-').map(Number)
+      const d = new Date(Date.UTC(y, m - 1, day + (i * 7)))
+      dates.push(`${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`)
     }
     setRepeatDates(dates)
   }
