@@ -133,7 +133,7 @@ export default function MyBookingsPage() {
 
         {filtered.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '48px', color: '#888', backgroundColor: 'white', borderRadius: '10px' }}>
-            <p style={{ fontSize: '15px', marginBottom: '12px' }}>No bookings found</p>
+            <p style={{ fontSize: '15px', marginBottom: '12px', color: '#111' }}>No bookings found</p>
             <a href="/new-booking" style={{ backgroundColor: '#111', color: 'white', padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', textDecoration: 'none' }}>Make a booking</a>
           </div>
         ) : (

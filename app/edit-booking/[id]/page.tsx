@@ -208,7 +208,7 @@ async function checkConflict(pId: string, d: string, st: string, et: string) {
   if (notFound) return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f4f4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center' }}>
-        <p style={{ color: '#888', marginBottom: '12px' }}>Booking not found.</p>
+        <p style={{ color: '#111', marginBottom: '12px' }}>Booking not found.</p>
         <a href="/my-bookings" style={{ color: '#111', fontWeight: '600' }}>Back to My Bookings</a>
       </div>
     </div>
@@ -220,7 +220,7 @@ async function checkConflict(pId: string, d: string, st: string, et: string) {
 
       <div style={{ maxWidth: '640px', margin: '32px auto', padding: '0 16px' }}>
         <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '32px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <h1 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '4px' }}>&#9998; Edit Booking</h1>
+          <h1 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '4px', color: '#111' }}>&#9998; Edit Booking</h1>
           <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '24px' }}>Fields marked <span style={{ color: '#dc2626' }}>*</span> are required</p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '16px' }}>

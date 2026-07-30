@@ -335,7 +335,7 @@ export default function AdminPage() {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div>
-                <h2 style={{ fontSize: '16px', fontWeight: '600' }}>&#x1f4ca; Pitch Closures</h2>
+                <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#111' }}>&#x1f4ca; Pitch Closures</h2>
                 <p style={{ fontSize: '12px', color: '#6b7280' }}>Block pitches during maintenance, match days or events</p>
               </div>
               <button onClick={() => setClosureModal(true)} style={{ backgroundColor: '#111', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>+ Add Closure</button>
@@ -361,7 +361,7 @@ export default function AdminPage() {
                 {pastClosures.map(c => (
                   <div key={c.id} style={{ backgroundColor: 'white', borderRadius: '8px', borderLeft: '4px solid #d1d5db', padding: '10px 14px', marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: 0.6 }}>
                     <div>
-                      <div style={{ fontWeight: '600', fontSize: '13px' }}>{c.pitch_name}</div>
+                      <div style={{ fontWeight: '600', fontSize: '13px', color: '#111' }}>{c.pitch_name}</div>
                       <div style={{ fontSize: '12px', color: '#374151' }}>{c.reason}</div>
                       <div style={{ fontSize: '12px', color: '#6b7280' }}>{formatDate(c.start_date)} → {formatDate(c.end_date)}</div>
                     </div>
@@ -448,7 +448,7 @@ export default function AdminPage() {
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
           <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', width: '100%', maxWidth: '480px' }}>
             <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#dc2626', marginBottom: '8px' }}>Reject Booking</h2>
-            <p style={{ fontSize: '13px', color: '#374151', marginBottom: '4px' }}>{rejectModal.full_name} — {rejectModal.pitch_name}</p>
+            <p style={{ fontSize: '13px', color: '#111', marginBottom: '4px' }}>{rejectModal.full_name} — {rejectModal.pitch_name}</p>
             <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '16px' }}>{formatDate(rejectModal.booking_date)}, {fmt(rejectModal.start_time)}–{fmt(rejectModal.end_time)}</p>
             <label style={{ fontSize: '13px', fontWeight: '600', color: '#111', display: 'block', marginBottom: '6px' }}>Reason (will be emailed to the coach)</label>
             <textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} placeholder="e.g. Pitch already in use, maintenance scheduled..." rows={3} style={{ width: '100%', border: '1px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', fontSize: '13px', resize: 'vertical' }} />
@@ -463,25 +463,25 @@ export default function AdminPage() {
       {closureModal && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
           <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', width: '100%', maxWidth: '480px' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>&#x1f512; Add Pitch Closure</h2>
+            <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: '#111' }}>&#x1f512; Add Pitch Closure</h2>
             <div style={{ marginBottom: '12px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Pitch</label>
+              <label style={{ fontSize: '13px', fontWeight: '600', display: 'block', marginBottom: '4px', color: '#111' }}>Pitch</label>
               <select value={newClosure.pitch_id} onChange={e => setNewClosure(p => ({ ...p, pitch_id: e.target.value }))} style={{ ...inputStyle }}>
                 <option value="">Select pitch...</option>
                 {pitches.map(p => <option key={p.id} value={String(p.id)}>{p.name}</option>)}
               </select>
             </div>
             <div style={{ marginBottom: '12px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Reason</label>
+              <label style={{ fontSize: '13px', fontWeight: '600', display: 'block', marginBottom: '4px', color: '#111' }}>Reason</label>
               <input value={newClosure.reason} onChange={e => setNewClosure(p => ({ ...p, reason: e.target.value }))} placeholder="e.g. Maintenance, Match Day" style={{ ...inputStyle }} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
               <div>
-                <label style={{ fontSize: '13px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Start Date</label>
+                <label style={{ fontSize: '13px', fontWeight: '600', display: 'block', marginBottom: '4px', color: '#111' }}>Start Date</label>
                 <input type="date" value={newClosure.start_date} onChange={e => setNewClosure(p => ({ ...p, start_date: e.target.value, end_date: e.target.value }))} style={{ ...inputStyle }} />
               </div>
               <div>
-                <label style={{ fontSize: '13px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>End Date</label>
+                <label style={{ fontSize: '13px', fontWeight: '600', display: 'block', marginBottom: '4px', color: '#111' }}>End Date</label>
                 <input type="date" value={newClosure.end_date} onChange={e => setNewClosure(p => ({ ...p, end_date: e.target.value }))} style={{ ...inputStyle }} />
               </div>
             </div>

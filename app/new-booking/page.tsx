@@ -366,7 +366,7 @@ if (!data && data !== false) return null
                 </label>
                 {repeat > 0 && (
                   <div style={{ marginTop: '12px' }}>
-                    <p style={{ fontSize: '13px', color: '#374151', marginBottom: '8px' }}>Repeat for how many weeks total?</p>
+                    <p style={{ fontSize: '13px', color: '#111', marginBottom: '8px' }}>Repeat for how many weeks total?</p>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       {[2, 3, 4].map(w => (
                         <button key={w} onClick={() => handleRepeatChange(w)} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #d1d5db', backgroundColor: repeat === w ? '#111' : 'white', color: repeat === w ? 'white' : '#374151', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>{w} weeks</button>
@@ -406,18 +406,18 @@ if (!data && data !== false) return null
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
                       <div>
-                        <label style={{ fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '4px', display: 'block' }}>Start Date{requiredStar}</label>
+                        <label style={{ fontSize: '12px', fontWeight: '600', color: '#111', marginBottom: '4px', display: 'block' }}>Start Date{requiredStar}</label>
                         <input type="date" value={day.date} onChange={e => handleMultiDayChange(i, 'date', e.target.value)} style={inputStyle(!!errors[`day_date_${i}`])} />
                       </div>
                       <div>
-                        <label style={{ fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '4px', display: 'block' }}>Start Time{requiredStar}</label>
+                        <label style={{ fontSize: '12px', fontWeight: '600', color: '#111', marginBottom: '4px', display: 'block' }}>Start Time{requiredStar}</label>
                         <select value={day.start_time} onChange={e => handleMultiDayChange(i, 'start_time', e.target.value)} style={inputStyle(!!errors[`day_start_${i}`])}>
                           <option value="">Start...</option>
                           {TIME_SLOTS.map(t => <option key={t} value={t}>{fmt(t)}</option>)}
                         </select>
                       </div>
                       <div>
-                        <label style={{ fontSize: '12px', fontWeight: '600', color: '#374151', marginBottom: '4px', display: 'block' }}>End Time{requiredStar}</label>
+                        <label style={{ fontSize: '12px', fontWeight: '600', color: '#111', marginBottom: '4px', display: 'block' }}>End Time{requiredStar}</label>
                         <select value={day.end_time} onChange={e => handleMultiDayChange(i, 'end_time', e.target.value)} style={inputStyle(!!errors[`day_end_${i}`])}>
                           <option value="">End...</option>
                           {TIME_SLOTS.map(t => <option key={t} value={t}>{fmt(t)}</option>)}

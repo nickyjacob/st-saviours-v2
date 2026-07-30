@@ -80,7 +80,7 @@ export default function StatsPage() {
   }
 
   const thStyle = { padding: '10px 14px', textAlign: 'left' as const, fontSize: '12px', fontWeight: '600' as const, color: '#6b7280', borderBottom: '1px solid #e5e7eb' }
-  const tdStyle = { padding: '10px 14px', fontSize: '13px', borderBottom: '1px solid #f3f4f6' }
+  const tdStyle = { padding: '10px 14px', fontSize: '13px', borderBottom: '1px solid #f3f4f6', color: '#111' }
 
   const Badge = ({ value, colour }: { value: number; colour: string }) => (
     <span style={{ display: 'inline-block', minWidth: '28px', padding: '2px 8px', borderRadius: '12px', backgroundColor: colour + '20', color: colour, fontSize: '12px', fontWeight: '600', textAlign: 'center' }}>{value}</span>
@@ -100,7 +100,7 @@ export default function StatsPage() {
         <h1 style={{ fontSize: '22px', fontWeight: 'bold', color: '#111', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>&#x1f4ca; Stats</h1>
 
         <div style={{ backgroundColor: 'white', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', marginBottom: '20px' }}>
-          <div style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb', fontWeight: '600', fontSize: '14px' }}>Bookings per Person</div>
+          <div style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb', fontWeight: '600', fontSize: '14px', color: '#111' }}>Bookings per Person</div>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead><tr style={{ backgroundColor: '#f9fafb' }}>
@@ -127,7 +127,7 @@ export default function StatsPage() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
           <div style={{ backgroundColor: 'white', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-            <div style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb', fontWeight: '600', fontSize: '14px' }}>Bookings per Pitch</div>
+            <div style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb', fontWeight: '600', fontSize: '14px', color: '#111' }}>Bookings per Pitch</div>
             <div style={{ overflowX: 'auto' }}><table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead><tr style={{ backgroundColor: '#f9fafb' }}>
                 <th style={thStyle}>Pitch</th>
@@ -147,7 +147,7 @@ export default function StatsPage() {
           </div>
 
           <div style={{ backgroundColor: 'white', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-            <div style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb', fontWeight: '600', fontSize: '14px' }}>Monthly Summary (last 6 months)</div>
+            <div style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb', fontWeight: '600', fontSize: '14px', color: '#111' }}>Monthly Summary (last 6 months)</div>
             <div style={{ overflowX: 'auto' }}><table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead><tr style={{ backgroundColor: '#f9fafb' }}>
                 <th style={thStyle}>Month</th>

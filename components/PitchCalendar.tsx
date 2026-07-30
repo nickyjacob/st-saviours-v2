@@ -235,14 +235,14 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
       <div>
         {dayClosures.map(c => (
           <div key={c.id} style={{ backgroundColor: '#f3f4f6', borderLeft: '4px solid #6b7280', borderRadius: '8px', padding: '10px 14px', marginBottom: '8px' }}>
-            <div style={{ fontWeight: '600', fontSize: '13px', color: '#6b7280' }}>&#x1f512; Pitch Closed — {c.pitch_name}</div>
+            <div style={{ fontWeight: '600', fontSize: '13px', color: '#111' }}>&#x1f512; Pitch Closed — {c.pitch_name}</div>
             <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '2px' }}>{c.reason}</div>
           </div>
         ))}
         {dayBookings.length === 0 && dayClosures.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af', backgroundColor: 'white', borderRadius: '10px' }}>
+          <div style={{ textAlign: 'center', padding: '40px', backgroundColor: 'white', borderRadius: '10px' }}>
             <div style={{ fontSize: '28px', marginBottom: '8px' }}>&#x1f4c5;</div>
-            <div style={{ fontSize: '13px' }}>No bookings</div>
+            <div style={{ fontSize: '13px', color: '#111' }}>No bookings</div>
           </div>
         )}
         {dayBookings.map(b => <MobileBookingRow key={b.id} b={b} onClick={() => setSelectedBooking(b)} />)}
@@ -255,9 +255,9 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
     const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
     const daysWithContent = days.filter(d => getBookingsForDay(d).length > 0 || getClosuresForDay(d).length > 0)
     if (daysWithContent.length === 0) return (
-      <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af', backgroundColor: 'white', borderRadius: '10px' }}>
+      <div style={{ textAlign: 'center', padding: '40px', backgroundColor: 'white', borderRadius: '10px' }}>
         <div style={{ fontSize: '28px', marginBottom: '8px' }}>&#x1f4c5;</div>
-        <div style={{ fontSize: '13px' }}>No bookings this week</div>
+        <div style={{ fontSize: '13px', color: '#111' }}>No bookings this week</div>
       </div>
     )
     return (

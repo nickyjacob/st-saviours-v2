@@ -51,12 +51,12 @@ export default function CalendarSyncPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>&#x1f464;</div>
             <div>
-              <div style={{ fontWeight: '600', fontSize: '15px' }}>My Bookings Calendar</div>
+              <div style={{ fontWeight: '600', fontSize: '15px', color: '#111' }}>My Bookings Calendar</div>
               <div style={{ fontSize: '12px', color: '#6b7280' }}>Shows only your approved bookings</div>
             </div>
           </div>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <div style={{ flex: 1, backgroundColor: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', color: '#374151', wordBreak: 'break-all', fontFamily: 'monospace' }}>{icalUrl}</div>
+            <div style={{ flex: 1, backgroundColor: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', color: '#111', wordBreak: 'break-all', fontFamily: 'monospace' }}>{icalUrl}</div>
             <button onClick={handleCopy} style={{ padding: '10px 16px', borderRadius: '8px', backgroundColor: copied ? '#16a34a' : '#111', color: 'white', border: 'none', fontSize: '13px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap', minWidth: '100px' }}>
               {copied ? '✓ Copied!' : 'Copy URL'}
             </button>
@@ -64,7 +64,7 @@ export default function CalendarSyncPage() {
         </div>
 
         <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', marginBottom: '20px' }}>
-          <h2 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '16px' }}>How to add to your calendar</h2>
+          <h2 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '16px', color: '#111' }}>How to add to your calendar</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {[
               { icon: '&#x1f4f1;', title: 'iPhone / iPad', steps: ['Copy the URL above', 'Open Settings → Calendar → Accounts', 'Tap Add Account → Other', 'Tap Add Subscribed Calendar', 'Paste the URL and tap Next'] },
@@ -73,10 +73,10 @@ export default function CalendarSyncPage() {
             ].map(item => (
               <div key={item.title} style={{ backgroundColor: '#f9fafb', borderRadius: '8px', padding: '16px' }}>
                 <div style={{ fontSize: '20px', marginBottom: '8px' }} dangerouslySetInnerHTML={{ __html: item.icon }} />
-                <div style={{ fontWeight: '600', fontSize: '13px', marginBottom: '10px' }}>{item.title}</div>
+                <div style={{ fontWeight: '600', fontSize: '13px', marginBottom: '10px', color: '#111' }}>{item.title}</div>
                 <ol style={{ paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {item.steps.map((step, i) => (
-                    <li key={i} style={{ fontSize: '12px', color: '#374151', lineHeight: '1.4' }} dangerouslySetInnerHTML={{ __html: step.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
+                    <li key={i} style={{ fontSize: '12px', color: '#111', lineHeight: '1.4' }} dangerouslySetInnerHTML={{ __html: step.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
                   ))}
                 </ol>
               </div>
