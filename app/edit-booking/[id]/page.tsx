@@ -10,6 +10,7 @@ const SPORTS: Record<string, string[]> = {
   "Men's/Boys Gaelic": ['U6','U7','U8','U9','U10','U11','U12','U13','U14','U15','U16','U18','U20','Prem Inter'],
   'LGFA': ['U12','U13','G4M&O'],
   'Other': ['Soccer','Other'],
+  'External GAA Fixture': ['External Game'],
 }
 
 const TIME_SLOTS: string[] = []
