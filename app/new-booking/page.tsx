@@ -291,7 +291,7 @@ if (!data && data !== false) return null
 
       <div style={{ maxWidth: '640px', margin: '32px auto', padding: '0 16px' }}>
         <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '32px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <h1 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>&#xff0b; New Booking</h1>
+          <h1 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px', color: '#111' }}>&#xff0b; New Booking</h1>
           <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '24px' }}>Fields marked <span style={{ color: '#dc2626' }}>*</span> are required</p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '16px' }}>
@@ -360,7 +360,7 @@ if (!data && data !== false) return null
                 </div>
               )}
               <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '16px', marginBottom: '16px', backgroundColor: '#f9fafb' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: '600' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: '600', color: '#111' }}>
                   <input type="checkbox" checked={repeat > 0} onChange={e => handleRepeatChange(e.target.checked ? 2 : 0)} style={{ width: '16px', height: '16px' }} />
                   &#x1f504; Repeat this booking weekly
                 </label>
