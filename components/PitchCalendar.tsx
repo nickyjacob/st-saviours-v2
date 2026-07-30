@@ -211,8 +211,17 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
     return sameMonth ? `${format(ws, 'd')} - ${format(we, 'd MMM yyyy')}` : `${format(ws, 'd MMM')} - ${format(we, 'd MMM yyyy')}`
   }
 
-  function getDayLabel() {
-    if (isToday(selectedDay)) return 'Today'
+  function getDayLabel(): React.ReactNode {
+    if (isToday(selectedDay)) {
+      return (
+        <>
+          <span style={{ flexShrink: 0 }}>Today</span>
+          <span style={{ fontSize: '11px', fontWeight: '500', color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
+            · {format(selectedDay, 'EEE, d MMM yyyy')}
+          </span>
+        </>
+      )
+    }
     const tomorrow = new Date()
     tomorrow.setDate(tomorrow.getDate() + 1)
     if (isSameDay(selectedDay, tomorrow)) return 'Tomorrow'
@@ -434,13 +443,13 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
           <button onClick={() => setView('week')} style={{ padding: '6px 10px', fontSize: '12px', fontWeight: '500', backgroundColor: view === 'week' ? '#111' : 'white', color: view === 'week' ? 'white' : '#374151', border: 'none', cursor: 'pointer' }}>Week</button>
           <button onClick={() => setView('month')} style={{ padding: '6px 10px', fontSize: '12px', fontWeight: '500', backgroundColor: view === 'month' ? '#111' : 'white', color: view === 'month' ? 'white' : '#374151', border: 'none', cursor: 'pointer' }}>Month</button>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0, justifyContent: 'flex-end' }}>
           <button onClick={() => {
             if (view === 'day') { const d = new Date(selectedDay); d.setDate(d.getDate() - 1); setSelectedDay(d) }
             else if (view === 'month') setCurrentDate(subMonths(currentDate, 1))
             else setCurrentDate(subWeeks(currentDate, 1))
           }} style={{ border: '1px solid #d1d5db', padding: '5px 8px', borderRadius: '8px', fontSize: '16px', cursor: 'pointer', backgroundColor: 'white', flexShrink: 0, width: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#111' }}>‹</button>
-          <h2 style={{ fontSize: '13px', fontWeight: '600', color: '#111', textAlign: 'center', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <h2 style={{ fontSize: '13px', fontWeight: '600', color: '#111', textAlign: 'center', flex: 1, minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap', display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '4px' }}>
             {view === 'month' ? format(currentDate, 'MMMM yyyy') : view === 'day' ? getDayLabel() : getWeekLabel()}
           </h2>
           <button onClick={() => {
