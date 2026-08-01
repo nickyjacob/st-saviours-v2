@@ -31,10 +31,11 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
     window.location.href = '/login'
   }
 
+  const isViewer = userRole === 'viewer'
   const navItems = [
     { label: 'Planner', href: '/dashboard' },
-    { label: 'My Bookings', href: '/my-bookings' },
-    { label: 'New Booking', href: '/new-booking' },
+    ...(!isViewer ? [{ label: 'My Bookings', href: '/my-bookings' }] : []),
+    ...(!isViewer ? [{ label: 'New Booking', href: '/new-booking' }] : []),
     { label: 'Calendar Sync', href: '/calendar-sync' },
     ...(userRole === 'admin' ? [
       { label: 'Admin', href: '/admin' },

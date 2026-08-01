@@ -69,7 +69,10 @@ export default function NewBookingPage() {
       if (!session) { window.location.href = '/login'; return }
       setUserId(session.user.id)
       const { data: profileData } = await supabase.from('profiles').select('role').eq('id', session.user.id).single()
-      if (profileData) setUserRole(profileData.role || '')
+      if (profileData) {
+        setUserRole(profileData.role || '')
+        if (profileData.role === 'viewer') { window.location.href = '/dashboard'; return }
+      }
       const { data } = await supabase.from('pitches').select('id, name, colour').eq('is_active', true).order('sort_order')
       if (data) setPitches(data)
     }

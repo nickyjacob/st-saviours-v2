@@ -34,6 +34,7 @@ export default function MyBookingsPage() {
       if (!session) { window.location.href = '/login'; return }
       const { data: profile } = await supabase.from('profiles').select('role, is_approved').eq('id', session.user.id).single()
       if (!profile || !profile.is_approved) { window.location.href = '/pending'; return }
+      if (profile.role === 'viewer') { window.location.href = '/dashboard'; return }
       setUserRole(profile.role || '')
       const { data } = await supabase
         .from('public_planner')
