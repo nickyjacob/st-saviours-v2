@@ -63,6 +63,10 @@ export default function AdminPage() {
   const [pitches, setPitches] = useState<{id: number; name: string; colour: string}[]>([])
   const [newClosure, setNewClosure] = useState({ pitch_id: '', reason: '', start_date: '', end_date: '' })
   const [historyLoaded, setHistoryLoaded] = useState(false)
+  const [notices, setNotices] = useState<{id: string; title: string; body: string; created_at: string}[]>([])
+  const [noticeTitle, setNoticeTitle] = useState('')
+  const [noticeBody, setNoticeBody] = useState('')
+  const [noticeModal, setNoticeModal] = useState(false)
   const [historyLoading, setHistoryLoading] = useState(false)
   const [historyUserFilter, setHistoryUserFilter] = useState('')
   const [historyDateFilter, setHistoryDateFilter] = useState('')
@@ -74,7 +78,7 @@ export default function AdminPage() {
       const { data: profile } = await supabase.from('profiles').select('role, is_approved').eq('id', session.user.id).single()
       if (!profile || !profile.is_approved || profile.role !== 'admin') { window.location.href = '/dashboard'; return }
       setCurrentUserId(session.user.id)
-      await Promise.all([fetchBookings(), fetchProfiles(), fetchClosures(), fetchPitches()])
+      await Promise.all([fetchBookings(), fetchProfiles(), fetchClosures(), fetchPitches(), fetchNotices()])
       setLoading(false)
     }
     init()
@@ -92,6 +96,11 @@ export default function AdminPage() {
       if (a.is_approved && !b.is_approved) return 1
       return (a.full_name || '').localeCompare(b.full_name || '')
     }) as Profile[])
+  }
+
+  async function fetchNotices() {
+    const { data } = await supabase.from('notices').select('*').order('created_at', { ascending: false })
+    if (data) setNotices(data)
   }
 
   async function fetchClosures() {
@@ -262,6 +271,7 @@ export default function AdminPage() {
             { key: 'rejected', label: `Rejected (${rejected.length})`, dot: '#dc2626' },
             { key: 'users', label: `Users (${profiles.length})`, dot: '#6b7280' },
             { key: 'closures', label: 'Closures', dot: '#111' },
+            { key: 'notices', label: 'Notices', dot: '#2563eb' },
             { key: 'history', label: 'History', dot: '#111' },
           ].map(t => (
             <button key={t.key} onClick={() => { setTab(t.key); if (t.key === 'history' && !historyLoaded) loadHistory() }} style={{ padding: '4px 10px', borderRadius: '20px', border: '1px solid #d1d5db', fontSize: '11px', fontWeight: '500', backgroundColor: tab === t.key ? '#111' : 'white', color: tab === t.key ? 'white' : '#374151', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -374,6 +384,48 @@ export default function AdminPage() {
           </div>
         )}
 
+        {tab === 'notices' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#111' }}>📢 Notices & Announcements</h2>
+              <button onClick={() => setNoticeModal(true)} style={{ backgroundColor: '#111', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>+ Add Notice</button>
+            </div>
+            {notices.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '40px', color: '#888', backgroundColor: 'white', borderRadius: '10px' }}>No notices yet</div>
+            )}
+            {notices.map(n => (
+              <div key={n.id} style={{ backgroundColor: 'white', borderRadius: '8px', borderLeft: '4px solid #2563eb', padding: '12px 16px', marginBottom: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: '600', fontSize: '14px', color: '#111' }}>{n.title}</div>
+                    <div style={{ fontSize: '13px', color: '#374151', marginTop: '4px' }}>{n.body}</div>
+                    <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '6px' }}>{new Date(n.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                  </div>
+                  <button onClick={async () => { await supabase.from('notices').delete().eq('id', n.id); fetchNotices() }} style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid #fca5a5', color: '#dc2626', backgroundColor: 'white', fontSize: '12px', cursor: 'pointer', marginLeft: '12px' }}>Remove</button>
+                </div>
+              </div>
+            ))}
+            {noticeModal && (
+              <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
+                <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', width: '100%', maxWidth: '500px' }}>
+                  <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: '#111' }}>📢 Add Notice</h2>
+                  <div style={{ marginBottom: '12px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: '600', color: '#111', display: 'block', marginBottom: '6px' }}>Title</label>
+                    <input type="text" value={noticeTitle} onChange={e => setNoticeTitle(e.target.value)} placeholder="e.g. Pitch closed this Saturday" style={{ width: '100%', border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 12px', fontSize: '14px', color: '#111', outline: 'none', backgroundColor: 'white' }} />
+                  </div>
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: '600', color: '#111', display: 'block', marginBottom: '6px' }}>Message</label>
+                    <textarea value={noticeBody} onChange={e => setNoticeBody(e.target.value)} placeholder="Enter your announcement here..." rows={4} style={{ width: '100%', border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 12px', fontSize: '14px', color: '#111', outline: 'none', backgroundColor: 'white', resize: 'vertical' }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                    <button onClick={() => { setNoticeModal(false); setNoticeTitle(''); setNoticeBody('') }} style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '13px', fontWeight: '600', color: '#374151', backgroundColor: 'white', cursor: 'pointer' }}>Cancel</button>
+                    <button onClick={async () => { if (!noticeTitle || !noticeBody) return; await supabase.from('notices').insert({ title: noticeTitle, body: noticeBody, created_by: currentUserId }); setNoticeModal(false); setNoticeTitle(''); setNoticeBody(''); fetchNotices() }} style={{ padding: '10px 16px', borderRadius: '8px', backgroundColor: '#111', color: 'white', fontSize: '13px', fontWeight: '600', border: 'none', cursor: 'pointer' }}>Post Notice</button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         {tab === 'history' && (
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
