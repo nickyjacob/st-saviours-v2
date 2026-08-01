@@ -105,6 +105,36 @@ export async function POST(req: Request) {
       })
     }
 
+    if (type === 'pitch_closure') {
+      const { data: coaches } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('is_approved', true)
+        .eq('role', 'coach')
+      if (coaches && coaches.length > 0) {
+        const coachEmails = coaches.map((c: { email: string }) => c.email)
+        const html = emailWrapper(`
+          <h2 style="margin:0 0 4px;font-size:18px;color:#dc2626">Pitch Closure Notice 🔒</h2>
+          <p style="color:#6b7280;font-size:13px;margin:0 0 16px">The following pitch has been closed.</p>
+          ${bookingTable({
+            'Pitch': booking.pitch_name,
+            'Date(s)': booking.date_display,
+            'Reason': booking.purpose,
+          })}
+          <a href="https://st-saviours-v2.vercel.app/dashboard"
+             style="display:inline-block;background:#111;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px;margin-top:8px">
+            View Pitch Planner →
+          </a>
+        `)
+        await resend.emails.send({
+          from: 'onboarding@resend.dev',
+          to: coachEmails,
+          subject: `🔒 Pitch Closure — ${booking.pitch_name} on ${booking.date_display}`,
+          html,
+        })
+      }
+    }
+
     if (type === 'booking_approved') {
       const html = emailWrapper(`
         <h2 style="margin:0 0 4px;font-size:18px;color:#16a34a">Booking Approved ✅</h2>
