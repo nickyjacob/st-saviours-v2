@@ -419,7 +419,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
         </div>
         <div style={{ display: 'flex', gap: '6px' }}>
           {!isMobile && <button style={{ border: '1px solid #d1d5db', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', backgroundColor: 'white' }}>Print / Save</button>}
-          <a href="/new-booking" style={{ backgroundColor: '#111', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', textDecoration: 'none', whiteSpace: 'nowrap' }}>+ New Booking</a>
+          {userRole !== 'viewer' && <a href="/new-booking" style={{ backgroundColor: '#111', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', textDecoration: 'none', whiteSpace: 'nowrap' }}>+ New Booking</a>}
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap', fontSize: '12px' }}>
