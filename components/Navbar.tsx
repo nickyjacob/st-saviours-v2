@@ -37,6 +37,7 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
     { label: 'Planner', href: '/planner' },
     ...(!isViewer ? [{ label: 'My Bookings', href: '/my-bookings' }] : []),
     ...(!isViewer ? [{ label: 'New Booking', href: '/new-booking' }] : []),
+    ...((['player', 'coach', 'admin'].includes(userRole)) ? [{ label: 'Physio', href: '/physio' }] : []),
     { label: 'Fixtures', href: '/fixtures' },
     { label: 'Results', href: '/results' },
     { label: 'Calendar Sync', href: '/calendar-sync' },

@@ -65,6 +65,10 @@ export default function AdminPage() {
   const [historyLoaded, setHistoryLoaded] = useState(false)
   const [notices, setNotices] = useState<{id: string; title: string; body: string; created_at: string}[]>([])
   const [adminResults, setAdminResults] = useState<{id: string; team_name: string; opposition: string; our_goals: number; our_points: number; our_two_pointers: number; their_goals: number; their_points: number; their_two_pointers: number; result: string; competition: string; match_date: string; sport: string; notes: string}[]>([])
+  const [physioRequests, setPhysioRequests] = useState<{id: string; player_id: string; injury_description: string; body_part: string; date_of_injury: string; urgency: string; status: string; admin_note: string; requested_at: string}[]>([])
+  const [physioFilter, setPhysioFilter] = useState('pending')
+  const [physioNote, setPhysioNote] = useState('')
+  const [physioProfiles, setPhysioProfiles] = useState<Record<string, string>>({})
   const [noticeTitle, setNoticeTitle] = useState('')
   const [noticeBody, setNoticeBody] = useState('')
   const [noticeModal, setNoticeModal] = useState(false)
@@ -102,6 +106,51 @@ export default function AdminPage() {
   async function fetchNotices() {
     const { data } = await supabase.from('notices').select('*').order('created_at', { ascending: false })
     if (data) setNotices(data)
+  }
+
+  async function fetchPhysioRequests() {
+    const { data } = await supabase.from('physio_requests').select('*').order('requested_at', { ascending: false })
+    if (data) {
+      setPhysioRequests(data)
+      const ids = Array.from(new Set(data.map((r: {player_id: string}) => r.player_id)))
+      if (ids.length > 0) {
+        const { data: profiles } = await supabase.from('profiles').select('id, full_name, email').in('id', ids)
+        if (profiles) {
+          const map: Record<string, string> = {}
+          profiles.forEach((p: {id: string; full_name: string; email: string}) => { map[p.id] = p.full_name || p.email })
+          setPhysioProfiles(map)
+        }
+      }
+    }
+  }
+
+  async function handlePhysioDecision(id: string, status: string) {
+    await supabase.from('physio_requests').update({ status, admin_note: physioNote, decided_at: new Date().toISOString(), decided_by: currentUserId }).eq('id', id)
+    try {
+      const req = physioRequests.find(r => r.id === id)
+      if (req) {
+        const { data: profile } = await supabase.from('profiles').select('email').eq('id', req.player_id).single()
+        if (profile?.email) {
+          await fetch('/api/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: status === 'approved' ? 'physio_approved' : 'physio_declined',
+              userEmail: profile.email,
+              booking: {
+                team_name: req.body_part,
+                pitch_name: req.body_part,
+                date_display: new Date(req.date_of_injury + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
+                time_display: physioNote || '',
+                purpose: req.injury_description,
+              }
+            })
+          })
+        }
+      }
+    } catch (e) { console.error('Email failed:', e) }
+    setPhysioNote('')
+    await fetchPhysioRequests()
   }
 
   async function fetchAdminResults() {
@@ -295,9 +344,10 @@ export default function AdminPage() {
             { key: 'closures', label: 'Closures', dot: '#111' },
             { key: 'notices', label: 'Notices', dot: '#2563eb' },
             { key: 'results', label: 'Results', dot: '#16a34a' },
+            { key: 'physio', label: 'Physio', dot: '#dc2626' },
             { key: 'history', label: 'History', dot: '#111' },
           ].map(t => (
-            <button key={t.key} onClick={() => { setTab(t.key); if (t.key === 'history' && !historyLoaded) loadHistory(); if (t.key === 'results') fetchAdminResults() }} style={{ padding: '4px 10px', borderRadius: '20px', border: '1px solid #d1d5db', fontSize: '11px', fontWeight: '500', backgroundColor: tab === t.key ? '#111' : 'white', color: tab === t.key ? 'white' : '#374151', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <button key={t.key} onClick={() => { setTab(t.key); if (t.key === 'history' && !historyLoaded) loadHistory(); if (t.key === 'results') fetchAdminResults(); if (t.key === 'physio') fetchPhysioRequests() }} style={{ padding: '4px 10px', borderRadius: '20px', border: '1px solid #d1d5db', fontSize: '11px', fontWeight: '500', backgroundColor: tab === t.key ? '#111' : 'white', color: tab === t.key ? 'white' : '#374151', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: t.dot, display: 'inline-block' }}></span>
               {t.label}
             </button>
@@ -407,6 +457,50 @@ export default function AdminPage() {
           </div>
         )}
 
+        {tab === 'physio' && (
+          <div>
+            <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#111', marginBottom: '16px' }}>🏥 Physio Requests</h2>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+              {['pending', 'approved', 'declined'].map(s => {
+                const count = physioRequests.filter(r => r.status === s).length
+                const colour = s === 'approved' ? '#16a34a' : s === 'declined' ? '#dc2626' : '#f9ab2b'
+                return (
+                  <button key={s} onClick={() => setPhysioFilter(s)} style={{ padding: '6px 14px', borderRadius: '20px', border: `1px solid ${colour}`, fontSize: '12px', fontWeight: '600', backgroundColor: physioFilter === s ? colour : 'white', color: physioFilter === s ? 'white' : colour, cursor: 'pointer' }}>
+                    {s.charAt(0).toUpperCase() + s.slice(1)} ({count})
+                  </button>
+                )
+              })}
+            </div>
+            {physioRequests.filter(r => r.status === physioFilter).length === 0 && (
+              <div style={{ textAlign: 'center', padding: '40px', backgroundColor: 'white', borderRadius: '10px', color: '#888' }}>No {physioFilter} requests</div>
+            )}
+            {physioRequests.filter(r => r.status === physioFilter).map(r => (
+              <div key={r.id} style={{ backgroundColor: r.status === 'approved' ? '#f0fdf4' : r.status === 'declined' ? '#fef2f2' : '#fff8e1', borderLeft: `4px solid ${r.status === 'approved' ? '#16a34a' : r.status === 'declined' ? '#dc2626' : '#f9ab2b'}`, borderRadius: '8px', padding: '12px 16px', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '13px', fontWeight: '700', color: '#111', marginBottom: '2px' }}>{physioProfiles[r.player_id] || r.player_id}</div>
+                    <div style={{ fontSize: '13px', color: '#374151', marginBottom: '4px' }}><span style={{ fontWeight: '600' }}>{r.body_part}</span> — {r.injury_description}</div>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '11px', color: '#6b7280' }}>📅 {new Date(r.date_of_injury + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                      <span style={{ fontSize: '11px', color: r.urgency === 'urgent' ? '#dc2626' : '#6b7280', fontWeight: r.urgency === 'urgent' ? '700' : '400' }}>{r.urgency === 'urgent' ? '🔴 Urgent' : '🟡 Routine'}</span>
+                      <span style={{ fontSize: '11px', color: '#6b7280' }}>Submitted: {new Date(r.requested_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                    </div>
+                    {r.status === 'pending' && (
+                      <div style={{ marginTop: '10px' }}>
+                        <input value={physioNote} onChange={e => setPhysioNote(e.target.value)} placeholder="Optional note to player..." style={{ width: '100%', border: '1px solid #d1d5db', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', color: '#111', marginBottom: '8px', outline: 'none' }} />
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button onClick={() => handlePhysioDecision(r.id, 'approved')} style={{ flex: 1, padding: '6px', borderRadius: '6px', backgroundColor: '#16a34a', color: 'white', border: 'none', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>✅ Approve</button>
+                          <button onClick={() => handlePhysioDecision(r.id, 'declined')} style={{ flex: 1, padding: '6px', borderRadius: '6px', backgroundColor: '#dc2626', color: 'white', border: 'none', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>❌ Decline</button>
+                        </div>
+                      </div>
+                    )}
+                    {r.admin_note && <div style={{ marginTop: '8px', fontSize: '12px', color: '#374151', fontStyle: 'italic' }}>Note: {r.admin_note}</div>}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         {tab === 'results' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>

@@ -135,6 +135,30 @@ export async function POST(req: Request) {
       }
     }
 
+    if (type === 'physio_request') {
+      const html = emailWrapper(`
+        <h2 style="margin:0 0 4px;font-size:18px;color:#dc2626">New Physio Request 🏥</h2>
+        <p style="color:#6b7280;font-size:13px;margin:0 0 16px">A new physio request has been submitted.</p>
+        ${bookingTable({
+          'Body Part': booking.pitch_name,
+          'Description': booking.purpose,
+          'Injury Date': booking.date_display,
+          'Urgency': booking.time_display,
+          'Role': booking.team_name,
+        })}
+        <a href="https://st-saviours-v2.vercel.app/admin"
+           style="display:inline-block;background:#111;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px;margin-top:8px">
+          Review in Admin Panel →
+        </a>
+      `)
+      await resend.emails.send({
+        from: 'onboarding@resend.dev',
+        to: ['nickyjacob100@yahoo.ie'],
+        subject: `🏥 New Physio Request — ${booking.pitch_name} Injury`,
+        html,
+      })
+    }
+
     if (type === 'booking_approved') {
       const html = emailWrapper(`
         <h2 style="margin:0 0 4px;font-size:18px;color:#16a34a">Booking Approved ✅</h2>
@@ -156,6 +180,44 @@ export async function POST(req: Request) {
         from: 'onboarding@resend.dev',
         to: [userEmail],
         subject: `✅ Booking Approved — ${booking.team_name} on ${booking.date_display}`,
+        html,
+      })
+    }
+
+    if (type === 'physio_approved') {
+      const html = emailWrapper(`
+        <h2 style="margin:0 0 4px;font-size:18px;color:#16a34a">Physio Request Approved ✅</h2>
+        <p style="color:#6b7280;font-size:13px;margin:0 0 16px">Your physio request has been approved. Please contact the club physiotherapist directly.</p>
+        ${bookingTable({
+          'Body Part': booking.team_name,
+          'Description': booking.purpose,
+          'Injury Date': booking.date_display,
+        })}
+        ${booking.time_display ? `<p style="font-size:13px;color:#374151;margin-top:12px"><strong>Note from admin:</strong> ${booking.time_display}</p>` : ''}
+      `)
+      await resend.emails.send({
+        from: 'onboarding@resend.dev',
+        to: [userEmail],
+        subject: `✅ Physio Request Approved — ${booking.team_name} Injury`,
+        html,
+      })
+    }
+
+    if (type === 'physio_declined') {
+      const html = emailWrapper(`
+        <h2 style="margin:0 0 4px;font-size:18px;color:#dc2626">Physio Request Declined ❌</h2>
+        <p style="color:#6b7280;font-size:13px;margin:0 0 16px">Unfortunately your physio request has been declined. Please contact the club directly for more information.</p>
+        ${bookingTable({
+          'Body Part': booking.team_name,
+          'Description': booking.purpose,
+          'Injury Date': booking.date_display,
+        })}
+        ${booking.time_display ? `<p style="font-size:13px;color:#374151;margin-top:12px"><strong>Note from admin:</strong> ${booking.time_display}</p>` : ''}
+      `)
+      await resend.emails.send({
+        from: 'onboarding@resend.dev',
+        to: [userEmail],
+        subject: `❌ Physio Request Declined — ${booking.team_name} Injury`,
         html,
       })
     }
