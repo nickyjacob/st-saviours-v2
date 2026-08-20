@@ -7,6 +7,9 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [ageConfirmed, setAgeConfirmed] = useState(false)
+  const [gdprConsent, setGdprConsent] = useState(false)
+  const [physioConsent, setPhysioConsent] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -16,13 +19,25 @@ export default function RegisterPage() {
     setError('')
     if (password !== confirmPassword) { setError('Passwords do not match'); return }
     if (password.length < 6) { setError('Password must be at least 6 characters'); return }
+    if (!ageConfirmed) { setError('You must confirm you are 18 or older'); return }
+    if (!gdprConsent) { setError('You must agree to the data privacy statement'); return }
+    if (!physioConsent) { setError('You must consent to physio request data storage'); return }
     setLoading(true)
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { full_name: fullName } }
     })
     if (signUpError) { setError(signUpError.message); setLoading(false); return }
+    if (signUpData.user) {
+      await supabase.from('profiles').update({
+        gdpr_consent: true,
+        gdpr_consent_date: new Date().toISOString(),
+        physio_consent: true,
+        physio_consent_date: new Date().toISOString(),
+        age_confirmed: true,
+      }).eq('id', signUpData.user.id)
+    }
     try {
       await fetch('/api/send-email', {
         method: 'POST',
@@ -80,6 +95,21 @@ export default function RegisterPage() {
           <button type="submit" disabled={loading} className="w-full bg-gray-900 text-white rounded-lg py-3 font-semibold text-sm hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
             {loading ? 'Creating account...' : 'Create Account'}
           </button>
+          <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', fontSize: '13px', color: '#374151' }}>
+              <input type="checkbox" checked={ageConfirmed} onChange={e => setAgeConfirmed(e.target.checked)} style={{ marginTop: '2px', width: '16px', height: '16px', flexShrink: 0 }} />
+              <span>I confirm I am <strong>18 years of age or older</strong></span>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', fontSize: '13px', color: '#374151' }}>
+              <input type="checkbox" checked={gdprConsent} onChange={e => setGdprConsent(e.target.checked)} style={{ marginTop: '2px', width: '16px', height: '16px', flexShrink: 0 }} />
+              <span>I agree to my <strong>personal data</strong> being stored and used by St. Saviours GAA & LGFA for club administration purposes</span>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', fontSize: '13px', color: '#374151' }}>
+              <input type="checkbox" checked={physioConsent} onChange={e => setPhysioConsent(e.target.checked)} style={{ marginTop: '2px', width: '16px', height: '16px', flexShrink: 0 }} />
+              <span>I consent to my <strong>injury and physio request details</strong> being stored and shared with club administrators if I request physiotherapy approval</span>
+            </label>
+            <p style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>Your data is stored securely and used only for club administration. St. Saviours GAA & LGFA will never share your data with third parties.</p>
+          </div>
           <p className="text-center text-sm text-gray-500">Already have an account? <a href="/login" className="text-gray-900 font-semibold">Sign in</a></p>
         </form>
       </div>
