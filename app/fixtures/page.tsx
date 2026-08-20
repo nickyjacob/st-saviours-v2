@@ -25,6 +25,7 @@ interface Venue {
   eircode: string
   android_map_url: string
   ios_map_url: string
+  is_home: boolean
 }
 
 const SPORTS = ["Men's/Boys Hurling", "Men's/Boys Gaelic", "LGFA", "Other"]
