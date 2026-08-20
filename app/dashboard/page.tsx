@@ -173,10 +173,12 @@ export default function DashboardPage() {
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px 16px' }}>
 
         {/* Welcome */}
-        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-          <img src="/crest.png" alt="St Saviours" style={{ width: '64px', height: '64px', objectFit: 'contain', marginBottom: '8px' }} />
-          <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#111' }}>St. Saviours GAA & LGFA</h1>
-          <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '2px' }}>Welcome back, {fullName} 👋</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', backgroundColor: 'white', borderRadius: '10px', padding: '14px 16px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+          <img src="/crest.png" alt="St Saviours" style={{ width: '52px', height: '52px', objectFit: 'contain', flexShrink: 0 }} />
+          <div>
+            <h1 style={{ fontSize: '17px', fontWeight: 'bold', color: '#111', margin: 0 }}>St. Saviours GAA & LGFA</h1>
+            <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '2px', margin: 0 }}>Welcome back, {fullName} 👋</p>
+          </div>
         </div>
 
         {/* Admin pending alert */}
