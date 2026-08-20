@@ -33,7 +33,8 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
 
   const isViewer = userRole === 'viewer'
   const navItems = [
-    { label: 'Planner', href: '/dashboard' },
+    { label: 'Home', href: '/dashboard' },
+    { label: 'Planner', href: '/planner' },
     ...(!isViewer ? [{ label: 'My Bookings', href: '/my-bookings' }] : []),
     ...(!isViewer ? [{ label: 'New Booking', href: '/new-booking' }] : []),
     { label: 'Fixtures', href: '/fixtures' },
