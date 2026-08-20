@@ -26,9 +26,9 @@ interface Result {
 const SPORTS = ["Men's/Boys Hurling", "Men's/Boys Gaelic", "LGFA", "Other"]
 
 const SPORT_TEAMS: Record<string, string[]> = {
-  "Men's/Boys Hurling": ['U6','U7','U8','U9','U10','U11','U12','U13','U14','U15','U16','U18','U20','Junior','Senior'],
-  "Men's/Boys Gaelic": ['U6','U7','U8','U9','U10','U11','U12','U13','U14','U15','U16','U18','U20','Junior','Senior'],
-  'LGFA': ['U10','U11','U12','U13','U14','U16','U18','Junior','Senior'],
+  "Men's/Boys Hurling": ['U6','U7','U8','U9','U10','U11','U12','U13','U14','U15','U16','U18','U20','Junior','Intermediate','Pre-Intermediate','Senior'],
+  "Men's/Boys Gaelic": ['U6','U7','U8','U9','U10','U11','U12','U13','U14','U15','U16','U18','U20','Junior','Intermediate','Pre-Intermediate','Senior'],
+  'LGFA': ['U10','U11','U12','U13','U14','U16','U18','Junior','Intermediate','Senior'],
   'Other': ['Other'],
 }
 const COMPETITIONS = ['League', 'Championship', 'Friendly', 'Other']
@@ -36,7 +36,8 @@ const COMPETITIONS = ['League', 'Championship', 'Friendly', 'Other']
 function formatScore(goals: number, points: number, twoPointers: number, sport: string) {
   const isAdultFootball = sport === "Men's/Boys Gaelic"
   if (isAdultFootball && twoPointers > 0) {
-    return `${goals}-${points} (${twoPointers}tp)`
+    const displayPoints = points + (twoPointers * 2)
+    return `${goals}-${displayPoints} (${twoPointers}tp)`
   }
   return `${goals}-${points}`
 }
