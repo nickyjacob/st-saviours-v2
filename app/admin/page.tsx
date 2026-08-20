@@ -71,6 +71,8 @@ export default function AdminPage() {
   const [physioProfiles, setPhysioProfiles] = useState<Record<string, string>>({})
   const [noticeTitle, setNoticeTitle] = useState('')
   const [noticeBody, setNoticeBody] = useState('')
+  const [noticePinned, setNoticePinned] = useState(false)
+  const [noticeExpiry, setNoticeExpiry] = useState('')
   const [noticeModal, setNoticeModal] = useState(false)
   const [historyLoading, setHistoryLoading] = useState(false)
   const [historyUserFilter, setHistoryUserFilter] = useState('')
@@ -563,9 +565,19 @@ export default function AdminPage() {
                     <label style={{ fontSize: '13px', fontWeight: '600', color: '#111', display: 'block', marginBottom: '6px' }}>Message</label>
                     <textarea value={noticeBody} onChange={e => setNoticeBody(e.target.value)} placeholder="Enter your announcement here..." rows={4} style={{ width: '100%', border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 12px', fontSize: '14px', color: '#111', outline: 'none', backgroundColor: 'white', resize: 'vertical' }} />
                   </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                    <div>
+                      <label style={{ fontSize: '13px', fontWeight: '600', color: '#111', display: 'block', marginBottom: '6px' }}>Expiry Date (optional)</label>
+                      <input type="date" value={noticeExpiry} onChange={e => setNoticeExpiry(e.target.value)} style={{ width: '100%', border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 12px', fontSize: '14px', color: '#111', outline: 'none', backgroundColor: 'white' }} />
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '24px' }}>
+                      <input type="checkbox" id="pinned" checked={noticePinned} onChange={e => setNoticePinned(e.target.checked)} style={{ width: '16px', height: '16px' }} />
+                      <label htmlFor="pinned" style={{ fontSize: '13px', fontWeight: '600', color: '#111', cursor: 'pointer' }}>📌 Pin this notice</label>
+                    </div>
+                  </div>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                    <button onClick={() => { setNoticeModal(false); setNoticeTitle(''); setNoticeBody('') }} style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '13px', fontWeight: '600', color: '#374151', backgroundColor: 'white', cursor: 'pointer' }}>Cancel</button>
-                    <button onClick={async () => { if (!noticeTitle || !noticeBody) return; await supabase.from('notices').insert({ title: noticeTitle, body: noticeBody, created_by: currentUserId }); setNoticeModal(false); setNoticeTitle(''); setNoticeBody(''); fetchNotices() }} style={{ padding: '10px 16px', borderRadius: '8px', backgroundColor: '#111', color: 'white', fontSize: '13px', fontWeight: '600', border: 'none', cursor: 'pointer' }}>Post Notice</button>
+                    <button onClick={() => { setNoticeModal(false); setNoticeTitle(''); setNoticeBody(''); setNoticePinned(false); setNoticeExpiry('') }} style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '13px', fontWeight: '600', color: '#374151', backgroundColor: 'white', cursor: 'pointer' }}>Cancel</button>
+                    <button onClick={async () => { if (!noticeTitle || !noticeBody) return; await supabase.from('notices').insert({ title: noticeTitle, body: noticeBody, created_by: currentUserId, is_pinned: noticePinned, expires_at: noticeExpiry ? new Date(noticeExpiry + 'T23:59:59').toISOString() : null }); setNoticeModal(false); setNoticeTitle(''); setNoticeBody(''); setNoticePinned(false); setNoticeExpiry(''); fetchNotices() }} style={{ padding: '10px 16px', borderRadius: '8px', backgroundColor: '#111', color: 'white', fontSize: '13px', fontWeight: '600', border: 'none', cursor: 'pointer' }}>Post Notice</button>
                   </div>
                 </div>
               </div>

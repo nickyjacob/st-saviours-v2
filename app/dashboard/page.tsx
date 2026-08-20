@@ -76,7 +76,7 @@ export default function DashboardPage() {
       const today = new Date().toISOString().split('T')[0]
 
       const [noticeRes, fixtureRes, resultRes] = await Promise.all([
-        supabase.from('notices').select('*').eq('is_active', true).order('created_at', { ascending: false }).limit(5),
+        supabase.from('notices').select('*').eq('is_active', true).or('expires_at.is.null,expires_at.gt.' + new Date().toISOString()).order('is_pinned', { ascending: false }).order('created_at', { ascending: false }).limit(5),
         supabase.from('fixtures').select('*').gte('fixture_date', today).order('fixture_date', { ascending: true }).limit(2),
         supabase.from('results').select('*').order('match_date', { ascending: false }).limit(2),
       ])
@@ -198,7 +198,7 @@ export default function DashboardPage() {
           <div style={{ marginBottom: '16px' }}>
             {activeNotices.map(n => (
               <div key={n.id} style={{ backgroundColor: '#eff6ff', borderLeft: '4px solid #2563eb', borderRadius: '8px', padding: '10px 14px', marginBottom: '8px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                <span style={{ fontSize: '16px' }}>📢</span>
+                <span style={{ fontSize: '16px' }}>{n.is_pinned ? '📌' : '📢'}</span>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: '600', fontSize: '13px', color: '#1e40af' }}>{n.title}</div>
                   <div style={{ fontSize: '12px', color: '#1e3a8a', marginTop: '2px' }}>{n.body}</div>
