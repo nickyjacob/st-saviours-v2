@@ -64,6 +64,7 @@ export default function AdminPage() {
   const [newClosure, setNewClosure] = useState({ pitch_id: '', reason: '', start_date: '', end_date: '' })
   const [historyLoaded, setHistoryLoaded] = useState(false)
   const [notices, setNotices] = useState<{id: string; title: string; body: string; created_at: string}[]>([])
+  const [adminResults, setAdminResults] = useState<{id: string; team_name: string; opposition: string; our_goals: number; our_points: number; our_two_pointers: number; their_goals: number; their_points: number; their_two_pointers: number; result: string; competition: string; match_date: string; sport: string; notes: string}[]>([])
   const [noticeTitle, setNoticeTitle] = useState('')
   const [noticeBody, setNoticeBody] = useState('')
   const [noticeModal, setNoticeModal] = useState(false)
@@ -101,6 +102,11 @@ export default function AdminPage() {
   async function fetchNotices() {
     const { data } = await supabase.from('notices').select('*').order('created_at', { ascending: false })
     if (data) setNotices(data)
+  }
+
+  async function fetchAdminResults() {
+    const { data } = await supabase.from('results').select('*').order('match_date', { ascending: false })
+    if (data) setAdminResults(data)
   }
 
   async function fetchClosures() {
@@ -288,9 +294,10 @@ export default function AdminPage() {
             { key: 'users', label: `Users (${profiles.length})`, dot: '#6b7280' },
             { key: 'closures', label: 'Closures', dot: '#111' },
             { key: 'notices', label: 'Notices', dot: '#2563eb' },
+            { key: 'results', label: 'Results', dot: '#16a34a' },
             { key: 'history', label: 'History', dot: '#111' },
           ].map(t => (
-            <button key={t.key} onClick={() => { setTab(t.key); if (t.key === 'history' && !historyLoaded) loadHistory() }} style={{ padding: '4px 10px', borderRadius: '20px', border: '1px solid #d1d5db', fontSize: '11px', fontWeight: '500', backgroundColor: tab === t.key ? '#111' : 'white', color: tab === t.key ? 'white' : '#374151', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <button key={t.key} onClick={() => { setTab(t.key); if (t.key === 'history' && !historyLoaded) loadHistory(); if (t.key === 'results') fetchAdminResults() }} style={{ padding: '4px 10px', borderRadius: '20px', border: '1px solid #d1d5db', fontSize: '11px', fontWeight: '500', backgroundColor: tab === t.key ? '#111' : 'white', color: tab === t.key ? 'white' : '#374151', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: t.dot, display: 'inline-block' }}></span>
               {t.label}
             </button>
@@ -400,6 +407,35 @@ export default function AdminPage() {
           </div>
         )}
 
+        {tab === 'results' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#111' }}>🏆 Match Results</h2>
+              <a href="/results" style={{ backgroundColor: '#111', color: 'white', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', textDecoration: 'none' }}>+ Post Result</a>
+            </div>
+            {adminResults.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '40px', color: '#888', backgroundColor: 'white', borderRadius: '10px' }}>No results yet</div>
+            )}
+            {adminResults.map(r => {
+              const isAdultFootball = r.sport === "Men's/Boys Gaelic"
+              const ourScore = isAdultFootball && r.our_two_pointers > 0 ? `${r.our_goals}-${r.our_points} (${r.our_two_pointers}tp)` : `${r.our_goals}-${r.our_points}`
+              const theirScore = isAdultFootball && r.their_two_pointers > 0 ? `${r.their_goals}-${r.their_points} (${r.their_two_pointers}tp)` : `${r.their_goals}-${r.their_points}`
+              const border = r.result === 'win' ? '#2e7d32' : r.result === 'loss' ? '#dc2626' : '#f9ab2b'
+              const bg = r.result === 'win' ? '#f0fdf4' : r.result === 'loss' ? '#fef2f2' : '#fefce8'
+              const label = r.result === 'win' ? '🟢 WIN' : r.result === 'loss' ? '🔴 LOSS' : '🟡 DRAW'
+              return (
+                <div key={r.id} style={{ backgroundColor: bg, borderLeft: `4px solid ${border}`, borderRadius: '8px', padding: '10px 14px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontSize: '12px', fontWeight: '700', color: border, marginBottom: '2px' }}>{label} · {r.team_name}</div>
+                    <div style={{ fontSize: '13px', color: '#111' }}><span style={{ fontWeight: '600' }}>St Saviours {ourScore}</span> v {r.opposition} {theirScore}</div>
+                    <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>{r.competition} · {new Date(r.match_date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                  </div>
+                  <button onClick={async () => { if (!confirm('Delete this result?')) return; await supabase.from('results').delete().eq('id', r.id); fetchAdminResults() }} style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid #fca5a5', color: '#dc2626', backgroundColor: 'white', fontSize: '12px', cursor: 'pointer' }}>Delete</button>
+                </div>
+              )
+            })}
+          </div>
+        )}
         {tab === 'notices' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
