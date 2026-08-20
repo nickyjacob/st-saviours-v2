@@ -23,8 +23,15 @@ interface Result {
   created_at: string
 }
 
-const SPORTS = ["Men's/Boys Hurling", "Men's/Boys Gaelic", "LGFA", "Camogie", "Other"]
-const COMPETITIONS = ['County League', 'County Championship', 'Munster Championship', 'All Ireland', 'Féile', 'Blitz', 'Friendly', 'Other']
+const SPORTS = ["Men's/Boys Hurling", "Men's/Boys Gaelic", "LGFA", "Other"]
+
+const SPORT_TEAMS: Record<string, string[]> = {
+  "Men's/Boys Hurling": ['U6','U7','U8','U9','U10','U11','U12','U13','U14','U15','U16','U18','U20','Junior','Senior'],
+  "Men's/Boys Gaelic": ['U6','U7','U8','U9','U10','U11','U12','U13','U14','U15','U16','U18','U20','Junior','Senior'],
+  'LGFA': ['U10','U11','U12','U13','U14','U16','U18','Junior','Senior'],
+  'Other': ['Other'],
+}
+const COMPETITIONS = ['League', 'Championship', 'Friendly', 'Other']
 
 function formatScore(goals: number, points: number, twoPointers: number, sport: string) {
   const isAdultFootball = sport === "Men's/Boys Gaelic"
@@ -195,7 +202,10 @@ export default function ResultsPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
               <div>
                 <label style={labelStyle}>Our Team</label>
-                <input value={form.team_name} onChange={e => setForm({ ...form, team_name: e.target.value })} placeholder="e.g. U16 Hurling" style={inputStyle} />
+                <select value={form.team_name} onChange={e => setForm({ ...form, team_name: e.target.value })} style={inputStyle}>
+                  <option value="">Select team...</option>
+                  {(SPORT_TEAMS[form.sport] || []).map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
               </div>
               <div>
                 <label style={labelStyle}>Opposition</label>
