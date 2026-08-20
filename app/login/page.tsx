@@ -70,7 +70,7 @@ if (signInError) {
   className="w-36 h-36 object-contain mb-4"
 />
           <h1 className="text-2xl font-bold text-gray-900">St. Saviours GAA & LGFA</h1>
-          <p className="text-gray-500 text-sm mt-1">Pitch Booking System</p>
+          <p className="text-gray-500 text-sm mt-1">Club App</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
