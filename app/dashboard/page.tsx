@@ -73,8 +73,8 @@ export default function DashboardPage() {
             </div>
             {recentResults.map(r => {
               const isAdultFootball = r.sport === "Men's/Boys Gaelic"
-              const ourScore = isAdultFootball && r.our_two_pointers > 0 ? `${r.our_goals}-${r.our_points} (${r.our_two_pointers}tp)` : `${r.our_goals}-${r.our_points}`
-              const theirScore = isAdultFootball && r.their_two_pointers > 0 ? `${r.their_goals}-${r.their_points} (${r.their_two_pointers}tp)` : `${r.their_goals}-${r.their_points}`
+              const ourScore = isAdultFootball && r.our_two_pointers > 0 ? `${r.our_goals}-${r.our_points + (r.our_two_pointers * 2)} (${r.our_two_pointers}×2pt)` : `${r.our_goals}-${r.our_points}`
+              const theirScore = isAdultFootball && r.their_two_pointers > 0 ? `${r.their_goals}-${r.their_points + (r.their_two_pointers * 2)} (${r.their_two_pointers}×2pt)` : `${r.their_goals}-${r.their_points}`
               const bg = r.result === 'win' ? '#f0fdf4' : r.result === 'loss' ? '#fef2f2' : '#fefce8'
               const border = r.result === 'win' ? '#2e7d32' : r.result === 'loss' ? '#dc2626' : '#f9ab2b'
               const label = r.result === 'win' ? '🟢 WIN' : r.result === 'loss' ? '🔴 LOSS' : '🟡 DRAW'

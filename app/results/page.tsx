@@ -37,7 +37,7 @@ function formatScore(goals: number, points: number, twoPointers: number, sport: 
   const isAdultFootball = sport === "Men's/Boys Gaelic"
   if (isAdultFootball && twoPointers > 0) {
     const displayPoints = points + (twoPointers * 2)
-    return `${goals}-${displayPoints} (${twoPointers}tp)`
+    return `${goals}-${displayPoints} (${twoPointers}×2pt)`
   }
   return `${goals}-${points}`
 }
