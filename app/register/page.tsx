@@ -23,21 +23,19 @@ export default function RegisterPage() {
     if (!gdprConsent) { setError('You must agree to the data privacy statement'); return }
     if (!physioConsent) { setError('You must consent to physio request data storage'); return }
     setLoading(true)
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName } }
+      options: {
+        data: {
+          full_name: fullName,
+          gdpr_consent: true,
+          physio_consent: true,
+          age_confirmed: true,
+        }
+      }
     })
     if (signUpError) { setError(signUpError.message); setLoading(false); return }
-    if (signUpData.user) {
-      await supabase.from('profiles').update({
-        gdpr_consent: true,
-        gdpr_consent_date: new Date().toISOString(),
-        physio_consent: true,
-        physio_consent_date: new Date().toISOString(),
-        age_confirmed: true,
-      }).eq('id', signUpData.user.id)
-    }
     try {
       await fetch('/api/send-email', {
         method: 'POST',
