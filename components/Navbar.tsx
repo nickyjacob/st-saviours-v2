@@ -11,19 +11,23 @@ interface NavbarProps {
 export default function Navbar({ activePage, userRole }: NavbarProps) {
   const [userName, setUserName] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [resolvedRole, setResolvedRole] = useState(userRole || '')
 
   useEffect(() => {
-    async function getName() {
+    async function getProfile() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
       const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name')
+        .select('full_name, role')
         .eq('id', session.user.id)
         .single()
-      if (profile) setUserName(profile.full_name || '')
+    if (profile) {
+        setUserName(profile.full_name || '')
+        setResolvedRole(profile.role || '')
+      }
     }
-    getName()
+    getProfile()
   }, [])
 
   async function handleLogout() {
@@ -31,17 +35,17 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
     window.location.href = '/login'
   }
 
-  const isViewer = userRole === 'viewer'
+  const isViewer = resolvedRole === 'viewer'
   const navItems = [
     { label: 'Home', href: '/dashboard' },
     { label: 'Planner', href: '/planner' },
     ...(!isViewer ? [{ label: 'My Bookings', href: '/my-bookings' }] : []),
     ...(!isViewer ? [{ label: 'New Booking', href: '/new-booking' }] : []),
-    ...((['player', 'coach', 'admin'].includes(userRole)) ? [{ label: 'Physio', href: '/physio' }] : []),
+    ...((['player', 'coach', 'admin'].includes(resolvedRole)) ? [{ label: 'Physio', href: '/physio' }] : []),
     { label: 'Fixtures', href: '/fixtures' },
     { label: 'Results', href: '/results' },
     { label: 'Calendar Sync', href: '/calendar-sync' },
-    ...(userRole === 'admin' ? [
+    ...(resolvedRole === 'admin' ? [
       { label: 'Admin', href: '/admin' },
       { label: 'Stats', href: '/stats' },
     ] : []),

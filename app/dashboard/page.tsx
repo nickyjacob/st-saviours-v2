@@ -129,7 +129,7 @@ export default function DashboardPage() {
 
   const navButtons: Record<string, { label: string; href: string; emoji: string; colour: string }[]> = {
     admin: [
-      { label: 'Planner', href: '/planner', emoji: '📅', colour: '#2e7d32' },
+      { label: 'Pitch Planner', href: '/planner', emoji: '📅', colour: '#2e7d32' },
       { label: 'New Booking', href: '/new-booking', emoji: '📋', colour: '#111' },
       { label: 'Fixtures', href: '/fixtures', emoji: '🏟', colour: '#2563eb' },
       { label: 'Results', href: '/results', emoji: '🏆', colour: '#d97706' },
@@ -139,21 +139,22 @@ export default function DashboardPage() {
       { label: 'Stats', href: '/stats', emoji: '📊', colour: '#374151' },
     ],
     coach: [
-      { label: 'Planner', href: '/planner', emoji: '📅', colour: '#2e7d32' },
+      { label: 'Pitch Planner', href: '/planner', emoji: '📅', colour: '#2e7d32' },
       { label: 'New Booking', href: '/new-booking', emoji: '📋', colour: '#111' },
       { label: 'Fixtures', href: '/fixtures', emoji: '🏟', colour: '#2563eb' },
       { label: 'Results', href: '/results', emoji: '🏆', colour: '#d97706' },
       { label: 'My Bookings', href: '/my-bookings', emoji: '📁', colour: '#7c3aed' },
       { label: 'Session Plan', href: '/session-planner', emoji: '📋', colour: '#0891b2' },
+      { label: 'Physio', href: '/physio', emoji: '🏥', colour: '#dc2626' },
     ],
     player: [
-      { label: 'Planner', href: '/planner', emoji: '📅', colour: '#2e7d32' },
+      { label: 'Pitch Planner', href: '/planner', emoji: '📅', colour: '#2e7d32' },
       { label: 'Fixtures', href: '/fixtures', emoji: '🏟', colour: '#2563eb' },
       { label: 'Results', href: '/results', emoji: '🏆', colour: '#d97706' },
-      { label: 'Physio Request', href: '/physio', emoji: '🏥', colour: '#dc2626' },
+      { label: 'Physio', href: '/physio', emoji: '🏥', colour: '#dc2626' },
     ],
     viewer: [
-      { label: 'Planner', href: '/planner', emoji: '📅', colour: '#2e7d32' },
+      { label: 'Pitch Planner', href: '/planner', emoji: '📅', colour: '#2e7d32' },
       { label: 'Fixtures', href: '/fixtures', emoji: '🏟', colour: '#2563eb' },
       { label: 'Results', href: '/results', emoji: '🏆', colour: '#d97706' },
     ],
