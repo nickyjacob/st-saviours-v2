@@ -240,9 +240,29 @@ export default function FixturesPage() {
                   {(SPORT_TEAMS[form.sport] || []).map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
-              <div>
+              <div style={{ position: 'relative' }}>
                 <label style={labelStyle}>Opposition</label>
-                <input value={form.opposition} onChange={e => setForm({ ...form, opposition: e.target.value })} placeholder="e.g. Ballyduff" style={inputStyle} />
+                <input
+                  value={form.opposition}
+                  onChange={e => setForm({ ...form, opposition: e.target.value })}
+                  onFocus={() => form.opposition.length > 0}
+                  placeholder="Search club name..."
+                  style={inputStyle}
+                  autoComplete="off"
+                />
+                {form.opposition.length > 0 && venues.filter(v => v.name.toLowerCase().includes(form.opposition.toLowerCase())).length > 0 && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: 'white', border: '1px solid #d1d5db', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', zIndex: 100, maxHeight: '200px', overflowY: 'auto' }}>
+                    {venues.filter(v => v.name.toLowerCase().includes(form.opposition.toLowerCase())).slice(0, 8).map(v => (
+                      <div key={v.id}
+                        onClick={() => setForm({ ...form, opposition: v.name })}
+                        style={{ padding: '8px 12px', cursor: 'pointer', borderBottom: '1px solid #f3f4f6', fontSize: '13px', color: '#111' }}
+                        onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#f9fafb')}
+                        onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'white')}>
+                        {v.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -268,7 +288,21 @@ export default function FixturesPage() {
               </div>
               <div>
                 <label style={labelStyle}>Home / Away</label>
-                <select value={form.home_away} onChange={e => setForm({ ...form, home_away: e.target.value })} style={inputStyle}>
+                <select value={form.home_away} onChange={e => {
+                  const val = e.target.value
+                  if (val === 'home') {
+                    const homeVenue = venues.find(v => v.is_home)
+                    if (homeVenue) {
+                      setForm({ ...form, home_away: val, venue_id: homeVenue.id, venue_name: homeVenue.name })
+                      setVenueSearch(homeVenue.name)
+                    } else {
+                      setForm({ ...form, home_away: val })
+                    }
+                  } else {
+                    setForm({ ...form, home_away: val, venue_id: '', venue_name: '' })
+                    setVenueSearch('')
+                  }
+                }} style={inputStyle}>
                   <option value="home">🏠 Home</option>
                   <option value="away">🚌 Away</option>
                 </select>
