@@ -8,6 +8,8 @@ interface Notice {
   title: string
   body: string
   created_at: string
+  is_pinned: boolean
+  expires_at: string | null
 }
 
 interface Fixture {

@@ -563,7 +563,7 @@ export default function AdminPage() {
                   </div>
                   <div style={{ marginBottom: '16px' }}>
                     <label style={{ fontSize: '13px', fontWeight: '600', color: '#111', display: 'block', marginBottom: '6px' }}>Message</label>
-                    <textarea value={noticeBody} onChange={e => setNoticeBody(e.target.value)} placeholder="Enter your announcement here..." rows={4} style={{ width: '100%', border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 12px', fontSize: '14px', color: '#111', outline: 'none', backgroundColor: 'white', resize: 'vertical' }} />
+                    <textarea value={noticeBody} onChange={e => setNoticeBody(e.target.value)} placeholder="Enter your announcement here..." rows={2} style={{ width: '100%', border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 12px', fontSize: '14px', color: '#111', outline: 'none', backgroundColor: 'white', resize: 'vertical' }} />
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
                     <div>
