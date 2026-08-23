@@ -74,6 +74,7 @@ export default function AdminPage() {
   const [noticePinned, setNoticePinned] = useState(false)
   const [noticeExpiry, setNoticeExpiry] = useState('')
   const [noticeModal, setNoticeModal] = useState(false)
+  const [editingNotice, setEditingNotice] = useState<{id: string} | null>(null)
   const [historyLoading, setHistoryLoading] = useState(false)
   const [historyUserFilter, setHistoryUserFilter] = useState('')
   const [historyDateFilter, setHistoryDateFilter] = useState('')
@@ -549,14 +550,17 @@ export default function AdminPage() {
                     <div style={{ fontSize: '13px', color: '#374151', marginTop: '4px' }}>{n.body}</div>
                     <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '6px' }}>{new Date(n.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
                   </div>
-                  <button onClick={async () => { await supabase.from('notices').delete().eq('id', n.id); fetchNotices() }} style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid #fca5a5', color: '#dc2626', backgroundColor: 'white', fontSize: '12px', cursor: 'pointer', marginLeft: '12px' }}>Remove</button>
+                  <div style={{ display: 'flex', gap: '6px', marginLeft: '12px' }}>
+                    <button onClick={() => { setEditingNotice({ id: n.id }); setNoticeTitle(n.title); setNoticeBody(n.body); setNoticePinned(n.is_pinned || false); setNoticeExpiry(n.expires_at ? n.expires_at.split('T')[0] : ''); setNoticeModal(true) }} style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid #d1d5db', color: '#374151', backgroundColor: 'white', fontSize: '12px', cursor: 'pointer' }}>Edit</button>
+                    <button onClick={async () => { await supabase.from('notices').delete().eq('id', n.id); fetchNotices() }} style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid #fca5a5', color: '#dc2626', backgroundColor: 'white', fontSize: '12px', cursor: 'pointer' }}>Remove</button>
+                  </div>
                 </div>
               </div>
             ))}
             {noticeModal && (
               <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
                 <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
-                  <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: '#111' }}>📢 Add Notice</h2>
+                  <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: '#111' }}>{editingNotice ? '📢 Edit Notice' : '📢 Add Notice'}</h2>
                   <div style={{ marginBottom: '12px' }}>
                     <label style={{ fontSize: '13px', fontWeight: '600', color: '#111', display: 'block', marginBottom: '6px' }}>Title</label>
                     <input type="text" value={noticeTitle} onChange={e => setNoticeTitle(e.target.value)} placeholder="e.g. Pitch closed this Saturday" style={{ width: '100%', border: '1px solid #d1d5db', borderRadius: '8px', padding: '10px 12px', fontSize: '14px', color: '#111', outline: 'none', backgroundColor: 'white' }} />
@@ -576,8 +580,8 @@ export default function AdminPage() {
                     </div>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                    <button onClick={() => { setNoticeModal(false); setNoticeTitle(''); setNoticeBody(''); setNoticePinned(false); setNoticeExpiry('') }} style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '13px', fontWeight: '600', color: '#374151', backgroundColor: 'white', cursor: 'pointer' }}>Cancel</button>
-                    <button onClick={async () => { if (!noticeTitle || !noticeBody) return; await supabase.from('notices').insert({ title: noticeTitle, body: noticeBody, created_by: currentUserId, is_pinned: noticePinned, expires_at: noticeExpiry ? new Date(noticeExpiry + 'T23:59:59').toISOString() : null }); setNoticeModal(false); setNoticeTitle(''); setNoticeBody(''); setNoticePinned(false); setNoticeExpiry(''); fetchNotices() }} style={{ padding: '10px 16px', borderRadius: '8px', backgroundColor: '#111', color: 'white', fontSize: '13px', fontWeight: '600', border: 'none', cursor: 'pointer' }}>Post Notice</button>
+                    <button onClick={() => { setNoticeModal(false); setNoticeTitle(''); setNoticeBody(''); setNoticePinned(false); setNoticeExpiry(''); setEditingNotice(null) }} style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '13px', fontWeight: '600', color: '#374151', backgroundColor: 'white', cursor: 'pointer' }}>Cancel</button>
+                    <button onClick={async () => { if (!noticeTitle || !noticeBody) return; if (editingNotice) { await supabase.from('notices').update({ title: noticeTitle, body: noticeBody, is_pinned: noticePinned, expires_at: noticeExpiry ? new Date(noticeExpiry + 'T23:59:59').toISOString() : null }).eq('id', editingNotice.id) } else { await supabase.from('notices').insert({ title: noticeTitle, body: noticeBody, created_by: currentUserId, is_pinned: noticePinned, expires_at: noticeExpiry ? new Date(noticeExpiry + 'T23:59:59').toISOString() : null }) } setNoticeModal(false); setNoticeTitle(''); setNoticeBody(''); setNoticePinned(false); setNoticeExpiry(''); setEditingNotice(null); fetchNotices() }} style={{ padding: '10px 16px', borderRadius: '8px', backgroundColor: '#111', color: 'white', fontSize: '13px', fontWeight: '600', border: 'none', cursor: 'pointer' }}>{editingNotice ? 'Update Notice' : 'Post Notice'}</button>
                   </div>
                 </div>
               </div>
