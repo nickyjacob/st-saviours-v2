@@ -63,7 +63,7 @@ export default function AdminPage() {
   const [pitches, setPitches] = useState<{id: number; name: string; colour: string}[]>([])
   const [newClosure, setNewClosure] = useState({ pitch_id: '', reason: '', start_date: '', end_date: '' })
   const [historyLoaded, setHistoryLoaded] = useState(false)
-  const [notices, setNotices] = useState<{id: string; title: string; body: string; created_at: string}[]>([])
+  const [notices, setNotices] = useState<{id: string; title: string; body: string; created_at: string; is_pinned: boolean; expires_at: string | null}[]>([])
   const [adminResults, setAdminResults] = useState<{id: string; team_name: string; opposition: string; our_goals: number; our_points: number; our_two_pointers: number; their_goals: number; their_points: number; their_two_pointers: number; result: string; competition: string; match_date: string; sport: string; notes: string}[]>([])
   const [physioRequests, setPhysioRequests] = useState<{id: string; player_id: string; injury_description: string; body_part: string; date_of_injury: string; urgency: string; status: string; admin_note: string; requested_at: string}[]>([])
   const [physioFilter, setPhysioFilter] = useState('pending')
