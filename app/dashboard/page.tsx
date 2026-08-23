@@ -20,8 +20,8 @@ interface Fixture {
   home_away: string
   fixture_date: string
   fixture_time: string
-  competition: string
   sport: string
+  competition: string
 }
 
 interface Result {
@@ -231,7 +231,7 @@ export default function DashboardPage() {
             {fixtures.map(f => (
               <div key={f.id} style={{ backgroundColor: 'white', borderLeft: `4px solid ${f.home_away === 'home' ? '#2e7d32' : '#2563eb'}`, borderRadius: '8px', padding: '10px 14px', marginBottom: '6px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
                 <div style={{ fontSize: '11px', fontWeight: '700', color: f.home_away === 'home' ? '#2e7d32' : '#2563eb', marginBottom: '2px' }}>{f.home_away === 'home' ? '🏠 Home' : '🚌 Away'} · {formatDate(f.fixture_date)}{f.fixture_time ? ` · ${fmt(f.fixture_time)}` : ''}</div>
-                <div style={{ fontSize: '13px', fontWeight: '700', color: '#111' }}>{f.team_name} vs {f.opposition}</div>
+                <div style={{ fontSize: '13px', fontWeight: '700', color: '#111' }}>{f.team_name}{f.sport && f.sport !== 'Other' ? ` · ${f.sport}` : ''} vs {f.opposition}</div>
                 <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>📍 {f.venue_name} · {f.competition}</div>
               </div>
             ))}
