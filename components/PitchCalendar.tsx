@@ -126,7 +126,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
   const [selectedFixture, setSelectedFixture] = useState<{id: string; team_name: string; opposition: string; venue_name: string; home_away: string; fixture_date: string; fixture_time: string; competition: string; sport: string; notes: string} | null>(null)
   const [loading, setLoading] = useState(true)
   const [closures, setClosures] = useState<Closure[]>([])
-  const [fixtures, setFixtures] = useState<{id: string; team_name: string; opposition: string; venue_name: string; home_away: string; fixture_date: string; fixture_time: string; competition: string; sport: string}[]>([])
+  const [fixtures, setFixtures] = useState<{id: string; team_name: string; opposition: string; venue_name: string; home_away: string; fixture_date: string; fixture_time: string; competition: string; sport: string; notes: string}[]>([])
   const [calendarView, setCalendarView] = useState<'bookings' | 'fixtures' | 'all'>('all')
 
   useEffect(() => {
