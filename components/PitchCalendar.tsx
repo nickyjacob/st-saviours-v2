@@ -123,6 +123,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
   const [selectedPitch, setSelectedPitch] = useState('all')
   const [selectedTeam, setSelectedTeam] = useState('all')
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
+  const [selectedFixture, setSelectedFixture] = useState<{id: string; team_name: string; opposition: string; venue_name: string; home_away: string; fixture_date: string; fixture_time: string; competition: string; sport: string; notes: string} | null>(null)
   const [loading, setLoading] = useState(true)
   const [closures, setClosures] = useState<Closure[]>([])
   const [fixtures, setFixtures] = useState<{id: string; team_name: string; opposition: string; venue_name: string; home_away: string; fixture_date: string; fixture_time: string; competition: string; sport: string}[]>([])
@@ -254,7 +255,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
           </div>
         ))}
         {dayFixtures.map(f => (
-          <div key={f.id} style={{ backgroundColor: '#eff6ff', borderLeft: '4px solid #2563eb', borderRadius: '6px', padding: '6px 10px', marginBottom: '5px' }}>
+          <div key={f.id} onClick={() => setSelectedFixture(f)} style={{ backgroundColor: '#eff6ff', borderLeft: '4px solid #2563eb', borderRadius: '6px', padding: '6px 10px', marginBottom: '5px', cursor: 'pointer' }}>
             <div style={{ fontSize: '10px', color: '#2563eb', fontWeight: 'bold' }}>{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · {f.home_away === 'home' ? '🏠 Home' : '🚌 Away'}</div>
             <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#111' }}>{f.team_name} vs {f.opposition}</div>
             <div style={{ fontSize: '11px', color: '#6b7280' }}>📍 {f.venue_name} · {f.competition}</div>
@@ -300,7 +301,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
                 </div>
               ))}
               {dayFixtures.map(f => (
-                <div key={f.id} style={{ backgroundColor: '#eff6ff', borderLeft: '4px solid #2563eb', borderRadius: '6px', padding: '6px 10px', marginBottom: '5px' }}>
+                <div key={f.id} onClick={() => setSelectedFixture(f)} style={{ backgroundColor: '#eff6ff', borderLeft: '4px solid #2563eb', borderRadius: '6px', padding: '6px 10px', marginBottom: '5px', cursor: 'pointer' }}>
                   <div style={{ fontSize: '10px', color: '#2563eb', fontWeight: 'bold' }}>{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · {f.home_away === 'home' ? '🏠 Home' : '🚌 Away'}</div>
                   <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#111' }}>{f.team_name} {f.sport !== 'Other' ? `· ${f.sport}` : ''} vs {f.opposition}</div>
                   <div style={{ fontSize: '11px', color: '#6b7280' }}>📍 {f.venue_name} · {f.competition}</div>
@@ -320,18 +321,19 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
     const days: Date[] = []
     let day = monthStart
     while (day <= monthEnd) { days.push(new Date(day)); day = addDays(day, 1) }
-    const daysWithBookings = days.filter(d => getBookingsForDay(d).length > 0 || getClosuresForDay(d).length > 0)
+    const daysWithBookings = days.filter(d => getBookingsForDay(d).length > 0 || getClosuresForDay(d).length > 0 || getDayFixtures(d).length > 0)
     if (daysWithBookings.length === 0) return (
       <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af', backgroundColor: 'white', borderRadius: '10px' }}>
         <div style={{ fontSize: '28px', marginBottom: '8px' }}>&#x1f4c5;</div>
-        <div style={{ fontSize: '13px' }}>No bookings this month</div>
+        <div style={{ fontSize: '13px' }}>Nothing this month</div>
       </div>
     )
     return (
       <div>
         {daysWithBookings.map(d => {
-          const dayBookings = getBookingsForDay(d)
+          const dayBookings = calendarView !== 'fixtures' ? getBookingsForDay(d) : []
           const dayClosures = getClosuresForDay(d)
+          const dayFixtures = calendarView !== 'bookings' ? getDayFixtures(d) : []
           return (
             <div key={d.toISOString()} style={{ marginBottom: '16px' }}>
               <div style={{ fontSize: '12px', fontWeight: '700', color: '#374151', padding: '5px 0', borderBottom: '1px solid #e5e7eb', marginBottom: '6px' }}>
@@ -341,6 +343,13 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
                 <div key={c.id} style={{ backgroundColor: '#f3f4f6', borderLeft: '4px solid #6b7280', borderRadius: '6px', padding: '8px 12px', marginBottom: '5px' }}>
                   <div style={{ fontWeight: '600', fontSize: '12px', color: '#6b7280' }}>&#x1f512; {c.pitch_name} — Closed</div>
                   <div style={{ fontSize: '11px', color: '#9ca3af' }}>{c.reason}</div>
+                </div>
+              ))}
+              {dayFixtures.map(f => (
+                <div key={f.id} onClick={() => setSelectedFixture(f)} style={{ backgroundColor: '#eff6ff', borderLeft: '4px solid #2563eb', borderRadius: '6px', padding: '6px 10px', marginBottom: '5px', cursor: 'pointer' }}>
+                  <div style={{ fontSize: '10px', color: '#2563eb', fontWeight: 'bold' }}>{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · {f.home_away === 'home' ? '🏠 Home' : '🚌 Away'}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#111' }}>{f.team_name} {f.sport !== 'Other' ? `· ${f.sport}` : ''} vs {f.opposition}</div>
+                  <div style={{ fontSize: '11px', color: '#6b7280' }}>📍 {f.venue_name} · {f.competition}</div>
                 </div>
               ))}
               {dayBookings.map(b => <MobileBookingRow key={b.id} b={b} onClick={() => setSelectedBooking(b)} />)}
@@ -400,7 +409,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
                     {calendarView !== 'fixtures' && dayBookings.slice(0,3).map(b => <BookingCard key={b.id} booking={b} onClick={() => setSelectedBooking(b)} compact />)}
                     {calendarView !== 'fixtures' && dayBookings.length > 3 && <div style={{ fontSize: '9px', color: '#9ca3af', paddingLeft: '2px' }}>+{dayBookings.length - 3} more</div>}
                     {calendarView !== 'bookings' && getDayFixtures(day).map(f => (
-                      <div key={f.id} style={{ backgroundColor: '#eff6ff', borderLeft: '3px solid #2563eb', borderRadius: '4px', padding: '2px 4px' }}>
+                      <div key={f.id} onClick={() => setSelectedFixture(f)} style={{ backgroundColor: '#eff6ff', borderLeft: '3px solid #2563eb', borderRadius: '4px', padding: '2px 4px', cursor: 'pointer' }}>
                         <div style={{ color: '#2563eb', fontWeight: 'bold', fontSize: '9px' }}>📅 {f.home_away === 'home' ? '🏠' : '🚌'} {f.fixture_time ? f.fixture_time.slice(0,5) : ''}</div>
                         <div style={{ color: '#111', fontSize: '9px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.team_name} vs {f.opposition}</div>
                       </div>
@@ -437,7 +446,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
                   </div>
                 ))}
                 {dayFixtures.map(f => (
-                  <div key={f.id} style={{ backgroundColor: '#eff6ff', borderLeft: '4px solid #2563eb', borderRadius: '6px', padding: '5px 7px' }}>
+                  <div key={f.id} onClick={() => setSelectedFixture(f)} style={{ backgroundColor: '#eff6ff', borderLeft: '4px solid #2563eb', borderRadius: '6px', padding: '5px 7px', cursor: 'pointer' }}>
                     <div style={{ color: '#2563eb', fontWeight: 'bold', fontSize: '11px' }}>📅 {f.home_away === 'home' ? '🏠' : '🚌'} {f.fixture_time ? f.fixture_time.slice(0,5) : ''}</div>
                     <div style={{ color: '#111', fontSize: '11px', marginTop: '1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.team_name} vs {f.opposition}</div>
                     <div style={{ color: '#6b7280', fontSize: '10px', marginTop: '1px' }}>📍 {f.venue_name}</div>
@@ -456,7 +465,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
         <div>
-          <h1 style={{ fontSize: isMobile ? '18px' : '24px', fontWeight: 'bold', color: '#111' }}>Pitch Planner</h1>
+          <h1 style={{ fontSize: isMobile ? '18px' : '24px', fontWeight: 'bold', color: '#111' }}>Calendar</h1>
           <p style={{ color: '#6b7280', fontSize: '12px' }}>St. Saviours GAA & LGFA</p>
         </div>
         <div style={{ display: 'flex', gap: '6px' }}>
@@ -518,6 +527,30 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
         : view === 'month' ? renderMonthView()
         : renderWeekView()}
       {selectedBooking && <BookingModal booking={selectedBooking} onClose={() => setSelectedBooking(null)} currentUserId={currentUserId} userRole={userRole} />}
+      {selectedFixture && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">{selectedFixture.team_name} vs {selectedFixture.opposition}</h2>
+                <p className="text-gray-500 text-sm mt-1">{selectedFixture.sport}</p>
+              </div>
+              <button onClick={() => setSelectedFixture(null)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+            </div>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between"><span className="text-gray-500">Date</span><span className="font-semibold text-gray-900">{new Date(selectedFixture.fixture_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Time</span><span className="font-semibold text-gray-900">{selectedFixture.fixture_time ? selectedFixture.fixture_time.slice(0,5) : 'TBC'}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Venue</span><span className="font-semibold text-gray-900">{selectedFixture.venue_name}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Home/Away</span><span className="font-semibold text-gray-900">{selectedFixture.home_away === 'home' ? '🏠 Home' : '🚌 Away'}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Competition</span><span className="font-semibold text-gray-900">{selectedFixture.competition}</span></div>
+              {selectedFixture.notes && <div className="flex justify-between"><span className="text-gray-500">Notes</span><span className="font-semibold text-gray-900">{selectedFixture.notes}</span></div>}
+            </div>
+            <div className="mt-6">
+              <a href={`https://maps.google.com/?q=${selectedFixture.venue_name}`} target="_blank" rel="noopener noreferrer" className="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-semibold text-sm">📍 Get Directions</a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
