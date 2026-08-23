@@ -125,6 +125,8 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [loading, setLoading] = useState(true)
   const [closures, setClosures] = useState<Closure[]>([])
+  const [fixtures, setFixtures] = useState<{id: string; team_name: string; opposition: string; venue_name: string; home_away: string; fixture_date: string; fixture_time: string; competition: string; sport: string}[]>([])
+  const [calendarView, setCalendarView] = useState<'bookings' | 'fixtures' | 'all'>('all')
 
   useEffect(() => {
     const mobile = window.innerWidth < 768
@@ -141,11 +143,17 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
 
   useEffect(() => { fetchPitches() }, [])
   useEffect(() => { fetchClosures() }, [])
+  useEffect(() => { fetchFixtures() }, [])
   useEffect(() => { fetchBookings() }, [currentDate, view, selectedDay])
 
   async function fetchPitches() {
     const { data } = await supabase.from('pitches').select('id, name, colour').eq('is_active', true).order('sort_order')
     if (data) setPitches(data)
+  }
+
+  async function fetchFixtures() {
+    const { data } = await supabase.from('fixtures').select('*').order('fixture_date', { ascending: true })
+    if (data) setFixtures(data)
   }
 
   async function fetchClosures() {
@@ -193,6 +201,11 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
     })
   }
 
+  function getDayFixtures(date: Date) {
+    const dateStr = format(date, 'yyyy-MM-dd')
+    return fixtures.filter(f => f.fixture_date === dateStr)
+  }
+
   function getClosuresForDay(date: Date) {
     const dateStr = format(date, 'yyyy-MM-dd')
     return closures.filter(c => {
@@ -229,8 +242,9 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
   }
 
   function renderDayView() {
-    const dayBookings = getBookingsForDay(selectedDay)
+    const dayBookings = calendarView !== 'fixtures' ? getBookingsForDay(selectedDay) : []
     const dayClosures = getClosuresForDay(selectedDay)
+    const dayFixtures = calendarView !== 'bookings' ? getDayFixtures(selectedDay) : []
     return (
       <div>
         {dayClosures.map(c => (
@@ -239,17 +253,23 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
             <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '2px' }}>{c.reason}</div>
           </div>
         ))}
-        {dayBookings.length === 0 && dayClosures.length === 0 && (
+        {dayFixtures.map(f => (
+          <div key={f.id} style={{ backgroundColor: '#eff6ff', borderLeft: '4px solid #2563eb', borderRadius: '6px', padding: '6px 10px', marginBottom: '5px' }}>
+            <div style={{ fontSize: '10px', color: '#2563eb', fontWeight: 'bold' }}>{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · {f.home_away === 'home' ? '🏠 Home' : '🚌 Away'}</div>
+            <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#111' }}>{f.team_name} vs {f.opposition}</div>
+            <div style={{ fontSize: '11px', color: '#6b7280' }}>📍 {f.venue_name} · {f.competition}</div>
+          </div>
+        ))}
+        {dayBookings.length === 0 && dayClosures.length === 0 && dayFixtures.length === 0 && (
           <div style={{ textAlign: 'center', padding: '40px', backgroundColor: 'white', borderRadius: '10px' }}>
             <div style={{ fontSize: '28px', marginBottom: '8px' }}>&#x1f4c5;</div>
-            <div style={{ fontSize: '13px', color: '#111' }}>No bookings</div>
+            <div style={{ fontSize: '13px', color: '#111' }}>Nothing scheduled</div>
           </div>
         )}
         {dayBookings.map(b => <MobileBookingRow key={b.id} b={b} onClick={() => setSelectedBooking(b)} />)}
       </div>
     )
   }
-
   function renderMobileWeekView() {
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 })
     const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
@@ -263,9 +283,10 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
     return (
       <div>
         {days.map(d => {
-          const dayBookings = getBookingsForDay(d)
+          const dayBookings = calendarView !== 'fixtures' ? getBookingsForDay(d) : []
           const dayClosures = getClosuresForDay(d)
-          if (dayBookings.length === 0 && dayClosures.length === 0) return null
+          const dayFixtures = calendarView !== 'bookings' ? getDayFixtures(d) : []
+          if (dayBookings.length === 0 && dayClosures.length === 0 && dayFixtures.length === 0) return null
           return (
             <div key={d.toISOString()} style={{ marginBottom: '16px' }}>
               <div style={{ fontSize: '12px', fontWeight: '700', color: isToday(d) ? '#111' : '#374151', padding: '5px 0', borderBottom: `2px solid ${isToday(d) ? '#111' : '#e5e7eb'}`, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -276,6 +297,13 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
                 <div key={c.id} style={{ backgroundColor: '#f3f4f6', borderLeft: '4px solid #6b7280', borderRadius: '6px', padding: '8px 12px', marginBottom: '5px' }}>
                   <div style={{ fontWeight: '600', fontSize: '12px', color: '#6b7280' }}>&#x1f512; {c.pitch_name} — Closed</div>
                   <div style={{ fontSize: '11px', color: '#9ca3af' }}>{c.reason}</div>
+                </div>
+              ))}
+              {dayFixtures.map(f => (
+                <div key={f.id} style={{ backgroundColor: '#eff6ff', borderLeft: '4px solid #2563eb', borderRadius: '6px', padding: '6px 10px', marginBottom: '5px' }}>
+                  <div style={{ fontSize: '10px', color: '#2563eb', fontWeight: 'bold' }}>{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · {f.home_away === 'home' ? '🏠 Home' : '🚌 Away'}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#111' }}>{f.team_name} vs {f.opposition}</div>
+                  <div style={{ fontSize: '11px', color: '#6b7280' }}>📍 {f.venue_name} · {f.competition}</div>
                 </div>
               ))}
               {dayBookings.map(b => <MobileBookingRow key={b.id} b={b} onClick={() => setSelectedBooking(b)} />)}
@@ -436,6 +464,15 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
           <option value="all">All Teams</option>
           {uniqueTeams.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
+      </div>
+      <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', border: '1px solid #d1d5db', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
+          {(['bookings', 'fixtures', 'all'] as const).map(v => (
+            <button key={v} onClick={() => setCalendarView(v)} style={{ padding: '5px 10px', fontSize: '11px', fontWeight: '500', backgroundColor: calendarView === v ? '#111' : 'white', color: calendarView === v ? 'white' : '#374151', border: 'none', cursor: 'pointer' }}>
+              {v === 'bookings' ? '📋 Bookings' : v === 'fixtures' ? '📅 Fixtures' : '🏟 All'}
+            </button>
+          ))}
+        </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', gap: '4px' }}>
         <div style={{ display: 'flex', border: '1px solid #d1d5db', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
