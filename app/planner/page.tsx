@@ -36,7 +36,7 @@ export default function PlannerPage() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Navbar activePage="Planner" userRole={userRole} />
+      <Navbar activePage="Calendar" userRole={userRole} />
       <main className="p-6">
         <PitchCalendar userRole={userRole} currentUserId={currentUserId} />
       </main>

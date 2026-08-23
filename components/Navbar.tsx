@@ -38,7 +38,7 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
   const isViewer = resolvedRole === 'viewer'
   const navItems = [
     { label: 'Home', href: '/dashboard' },
-    { label: 'Planner', href: '/planner' },
+    { label: 'Calendar', href: '/planner' },
     ...(!isViewer ? [{ label: 'My Bookings', href: '/my-bookings' }] : []),
     ...(!isViewer ? [{ label: 'New Booking', href: '/new-booking' }] : []),
     ...((['player', 'coach', 'admin'].includes(resolvedRole)) ? [{ label: 'Physio', href: '/physio' }] : []),

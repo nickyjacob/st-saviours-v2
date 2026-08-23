@@ -131,7 +131,7 @@ export default function DashboardPage() {
 
   const navButtons: Record<string, { label: string; href: string; emoji: string; colour: string }[]> = {
     admin: [
-      { label: 'Pitch Planner', href: '/planner', emoji: '📅', colour: '#2e7d32' },
+      { label: 'Calendar', href: '/planner', emoji: '📅', colour: '#2e7d32' },
       { label: 'New Booking', href: '/new-booking', emoji: '📋', colour: '#111' },
       { label: 'Fixtures', href: '/fixtures', emoji: '🏟', colour: '#2563eb' },
       { label: 'Results', href: '/results', emoji: '🏆', colour: '#d97706' },
@@ -141,7 +141,7 @@ export default function DashboardPage() {
       { label: 'Stats', href: '/stats', emoji: '📊', colour: '#374151' },
     ],
     coach: [
-      { label: 'Pitch Planner', href: '/planner', emoji: '📅', colour: '#2e7d32' },
+      { label: 'Calendar', href: '/planner', emoji: '📅', colour: '#2e7d32' },
       { label: 'New Booking', href: '/new-booking', emoji: '📋', colour: '#111' },
       { label: 'Fixtures', href: '/fixtures', emoji: '🏟', colour: '#2563eb' },
       { label: 'Results', href: '/results', emoji: '🏆', colour: '#d97706' },
@@ -150,13 +150,13 @@ export default function DashboardPage() {
       { label: 'Physio', href: '/physio', emoji: '🏥', colour: '#dc2626' },
     ],
     player: [
-      { label: 'Pitch Planner', href: '/planner', emoji: '📅', colour: '#2e7d32' },
+      { label: 'Calendar', href: '/planner', emoji: '📅', colour: '#2e7d32' },
       { label: 'Fixtures', href: '/fixtures', emoji: '🏟', colour: '#2563eb' },
       { label: 'Results', href: '/results', emoji: '🏆', colour: '#d97706' },
       { label: 'Physio', href: '/physio', emoji: '🏥', colour: '#dc2626' },
     ],
     viewer: [
-      { label: 'Pitch Planner', href: '/planner', emoji: '📅', colour: '#2e7d32' },
+      { label: 'Calendar', href: '/planner', emoji: '📅', colour: '#2e7d32' },
       { label: 'Fixtures', href: '/fixtures', emoji: '🏟', colour: '#2563eb' },
       { label: 'Results', href: '/results', emoji: '🏆', colour: '#d97706' },
     ],

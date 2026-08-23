@@ -302,7 +302,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
               {dayFixtures.map(f => (
                 <div key={f.id} style={{ backgroundColor: '#eff6ff', borderLeft: '4px solid #2563eb', borderRadius: '6px', padding: '6px 10px', marginBottom: '5px' }}>
                   <div style={{ fontSize: '10px', color: '#2563eb', fontWeight: 'bold' }}>{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · {f.home_away === 'home' ? '🏠 Home' : '🚌 Away'}</div>
-                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#111' }}>{f.team_name} vs {f.opposition}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#111' }}>{f.team_name} {f.sport !== 'Other' ? `· ${f.sport}` : ''} vs {f.opposition}</div>
                   <div style={{ fontSize: '11px', color: '#6b7280' }}>📍 {f.venue_name} · {f.competition}</div>
                 </div>
               ))}
@@ -397,8 +397,14 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
                         <div style={{ color: '#6b7280', fontSize: '9px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.pitch_name}</div>
                       </div>
                     ))}
-                    {dayBookings.slice(0,3).map(b => <BookingCard key={b.id} booking={b} onClick={() => setSelectedBooking(b)} compact />)}
-                    {dayBookings.length > 3 && <div style={{ fontSize: '9px', color: '#9ca3af', paddingLeft: '2px' }}>+{dayBookings.length - 3} more</div>}
+                    {calendarView !== 'fixtures' && dayBookings.slice(0,3).map(b => <BookingCard key={b.id} booking={b} onClick={() => setSelectedBooking(b)} compact />)}
+                    {calendarView !== 'fixtures' && dayBookings.length > 3 && <div style={{ fontSize: '9px', color: '#9ca3af', paddingLeft: '2px' }}>+{dayBookings.length - 3} more</div>}
+                    {calendarView !== 'bookings' && getDayFixtures(day).map(f => (
+                      <div key={f.id} style={{ backgroundColor: '#eff6ff', borderLeft: '3px solid #2563eb', borderRadius: '4px', padding: '2px 4px' }}>
+                        <div style={{ color: '#2563eb', fontWeight: 'bold', fontSize: '9px' }}>📅 {f.home_away === 'home' ? '🏠' : '🚌'} {f.fixture_time ? f.fixture_time.slice(0,5) : ''}</div>
+                        <div style={{ color: '#111', fontSize: '9px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.team_name} vs {f.opposition}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )
@@ -419,7 +425,8 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(120px, 1fr))', minWidth: '700px', borderTop: '1px solid #e5e7eb' }}>
           {days.map((day, di) => {
-            const dayBookings = getBookingsForDay(day)
+            const dayBookings = calendarView !== 'fixtures' ? getBookingsForDay(day) : []
+            const dayFixtures = calendarView !== 'bookings' ? getDayFixtures(day) : []
             return (
               <div key={di} style={{ minHeight: '180px', padding: '6px', display: 'flex', flexDirection: 'column', gap: '4px', backgroundColor: isToday(day) ? '#f0fdf4' : 'white', borderLeft: di > 0 ? '1px solid #e5e7eb' : 'none' }}>
                 {getClosuresForDay(day).map(c => (
@@ -427,6 +434,13 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
                     <div style={{ color: '#6b7280', fontWeight: 'bold', fontSize: '11px' }}>&#x1f512; Pitch Closed</div>
                     <div style={{ color: '#6b7280', fontSize: '11px', marginTop: '1px' }}>{c.pitch_name}</div>
                     <div style={{ color: '#9ca3af', fontSize: '10px', marginTop: '1px' }}>{c.reason}</div>
+                  </div>
+                ))}
+                {dayFixtures.map(f => (
+                  <div key={f.id} style={{ backgroundColor: '#eff6ff', borderLeft: '4px solid #2563eb', borderRadius: '6px', padding: '5px 7px' }}>
+                    <div style={{ color: '#2563eb', fontWeight: 'bold', fontSize: '11px' }}>📅 {f.home_away === 'home' ? '🏠' : '🚌'} {f.fixture_time ? f.fixture_time.slice(0,5) : ''}</div>
+                    <div style={{ color: '#111', fontSize: '11px', marginTop: '1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.team_name} vs {f.opposition}</div>
+                    <div style={{ color: '#6b7280', fontSize: '10px', marginTop: '1px' }}>📍 {f.venue_name}</div>
                   </div>
                 ))}
                 {dayBookings.map(b => <BookingCard key={b.id} booking={b} onClick={() => setSelectedBooking(b)} />)}
