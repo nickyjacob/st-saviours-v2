@@ -2,6 +2,7 @@
 
 import { supabase } from '@/lib/supabase'
 import {
+  Bell,
   Calendar,
   CalendarCheck,
   ChevronDown,
@@ -267,7 +268,21 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
               </>
             )}
           </div>
+          <span
+            className='nav-desktop-links'
+            style={{ display: 'flex', alignItems: 'center', padding: '4px' }}
+            aria-hidden='true'
+          >
+            <Bell size={20} color='#d1d5db' />
+          </span>
           <button onClick={handleLogout} style={{ backgroundColor: 'white', color: '#111', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }} className='nav-desktop-links'>Sign out</button>
+          <span
+            className='nav-hamburger'
+            style={{ display: 'flex', alignItems: 'center', padding: '4px' }}
+            aria-hidden='true'
+          >
+            <Bell size={22} color='white' />
+          </span>
           <button onClick={() => setMenuOpen(!menuOpen)} className='nav-hamburger' style={{ backgroundColor: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {menuOpen ? (
               <svg width='24' height='24' fill='none' stroke='currentColor' strokeWidth='2' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' d='M6 18L18 6M6 6l12 12'/></svg>
