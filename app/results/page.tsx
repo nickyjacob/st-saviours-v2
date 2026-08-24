@@ -55,11 +55,12 @@ export default function ResultsPage() {
   const [filterComp, setFilterComp] = useState('')
   const [showModal, setShowModal] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [fixtures, setFixtures] = useState<{id: string; team_name: string; opposition: string; fixture_date: string; competition: string; home_away: string; sport: string}[]>([])
   const [form, setForm] = useState({
     team_name: '', opposition: '', sport: "Men's/Boys Hurling",
     our_goals: 0, our_points: 0, our_two_pointers: 0,
     their_goals: 0, their_points: 0, their_two_pointers: 0,
-    competition: '', match_date: '', home_away: 'home', notes: ''
+    competition: '', match_date: '', home_away: 'home', notes: '', fixture_id: ''
   })
 
   useEffect(() => {
@@ -70,11 +71,16 @@ export default function ResultsPage() {
       if (!profile || !profile.is_approved) { window.location.href = '/pending'; return }
       setUserRole(profile.role || '')
       setCurrentUserId(session.user.id)
-      await fetchResults()
+      await Promise.all([fetchResults(), fetchFixtures()])
       setLoading(false)
     }
     init()
   }, [])
+
+  async function fetchFixtures() {
+    const { data } = await supabase.from('fixtures').select('id, team_name, opposition, fixture_date, competition, home_away, sport').order('fixture_date', { ascending: false })
+    if (data) setFixtures(data)
+  }
 
   async function fetchResults() {
     const { data } = await supabase.from('results').select('*').order('match_date', { ascending: false })
@@ -93,7 +99,7 @@ export default function ResultsPage() {
       posted_by: currentUserId
     })
     setShowModal(false)
-    setForm({ team_name: '', opposition: '', sport: "Men's/Boys Hurling", our_goals: 0, our_points: 0, our_two_pointers: 0, their_goals: 0, their_points: 0, their_two_pointers: 0, competition: '', match_date: '', home_away: 'home', notes: '' })
+    setForm({ team_name: '', opposition: '', sport: "Men's/Boys Hurling", our_goals: 0, our_points: 0, our_two_pointers: 0, their_goals: 0, their_points: 0, their_two_pointers: 0, competition: '', match_date: '', home_away: 'home', notes: '', fixture_id: '' })
     await fetchResults()
     setSubmitting(false)
   }
@@ -192,6 +198,23 @@ export default function ResultsPage() {
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
           <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
             <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: '#111' }}>🏆 Post Result</h2>
+
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Link to Fixture (optional)</label>
+              <select value={form.fixture_id} onChange={e => {
+                const selected = fixtures.find(f => f.id === e.target.value)
+                if (selected) {
+                  setForm({ ...form, fixture_id: selected.id, team_name: selected.team_name, opposition: selected.opposition, competition: selected.competition, home_away: selected.home_away, sport: selected.sport, match_date: selected.fixture_date })
+                } else {
+                  setForm({ ...form, fixture_id: '' })
+                }
+              }} style={inputStyle}>
+                <option value="">Select a fixture...</option>
+                {fixtures.map(f => (
+                  <option key={f.id} value={f.id}>{f.team_name} vs {f.opposition} · {new Date(f.fixture_date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</option>
+                ))}
+              </select>
+            </div>
 
             <div style={fieldStyle}>
               <label style={labelStyle}>Sport</label>
