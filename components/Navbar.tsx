@@ -1,7 +1,16 @@
 'use client'
 
 import { supabase } from '@/lib/supabase'
-import { ChevronDown } from 'lucide-react'
+import {
+  Calendar,
+  CalendarCheck,
+  ChevronDown,
+  Home,
+  LucideIcon,
+  MoreHorizontal,
+  Stethoscope,
+  Swords,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 interface NavbarProps {
@@ -12,6 +21,15 @@ interface NavbarProps {
 interface NavItem {
   label: string
   href: string
+}
+
+interface BottomTab {
+  id: string
+  label: string
+  href?: string
+  icon: LucideIcon
+  isActive: boolean
+  onClick?: () => void
 }
 
 export default function Navbar({ activePage, userRole }: NavbarProps) {
@@ -103,6 +121,68 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
       color: activePage === label ? 'white' : '#d1d5db',
       marginBottom: '2px',
     } as const
+  }
+
+  const fourthTab: BottomTab | null = isViewer
+    ? null
+    : resolvedRole === 'player'
+      ? {
+          id: 'physio',
+          label: 'Physio',
+          href: '/physio',
+          icon: Stethoscope,
+          isActive: activePage === 'Physio',
+        }
+      : {
+          id: 'book',
+          label: 'Book',
+          href: '/new-booking',
+          icon: CalendarCheck,
+          isActive: activePage === 'New Booking',
+        }
+
+  const moreOnlyActivePages = [
+    'My Bookings',
+    'Calendar Sync',
+    'Admin',
+    'Stats',
+    ...(fourthTab?.id === 'book' ? ['Physio'] as const : []),
+  ]
+
+  const bottomTabs: BottomTab[] = [
+    {
+      id: 'home',
+      label: 'Home',
+      href: '/dashboard',
+      icon: Home,
+      isActive: activePage === 'Home',
+    },
+    {
+      id: 'calendar',
+      label: 'Calendar',
+      href: '/planner',
+      icon: Calendar,
+      isActive: activePage === 'Calendar',
+    },
+    {
+      id: 'club',
+      label: 'Club',
+      href: '/fixtures',
+      icon: Swords,
+      isActive: activePage === 'Fixtures' || activePage === 'Results',
+    },
+    ...(fourthTab ? [fourthTab] : []),
+    {
+      id: 'more',
+      label: 'More',
+      icon: MoreHorizontal,
+      isActive: menuOpen || moreOnlyActivePages.includes(activePage || ''),
+      onClick: () => setMenuOpen(open => !open),
+    },
+  ]
+
+  function bottomTabClass(isActive: boolean) {
+    return `flex flex-1 flex-col items-center justify-center gap-0.5 border-none bg-transparent px-1 py-2 text-[10px] font-medium no-underline cursor-pointer ${isActive ? 'text-ink' : 'text-neutral'}`
   }
 
   return (
@@ -218,6 +298,46 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
           </div>
         </div>
       )}
+
+      <nav
+        className='nav-bottom-bar fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white'
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        {bottomTabs.map(tab => {
+          const Icon = tab.icon
+          const content = (
+            <>
+              <Icon className='h-5 w-5' aria-hidden='true' />
+              <span>{tab.label}</span>
+            </>
+          )
+
+          if (tab.onClick) {
+            return (
+              <button
+                key={tab.id}
+                type='button'
+                onClick={tab.onClick}
+                className={bottomTabClass(tab.isActive)}
+                aria-current={tab.isActive ? 'page' : undefined}
+              >
+                {content}
+              </button>
+            )
+          }
+
+          return (
+            <a
+              key={tab.id}
+              href={tab.href}
+              className={bottomTabClass(tab.isActive)}
+              aria-current={tab.isActive ? 'page' : undefined}
+            >
+              {content}
+            </a>
+          )
+        })}
+      </nav>
     </>
   )
 }
