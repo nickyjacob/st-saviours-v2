@@ -1,6 +1,7 @@
 'use client'
 
 import { supabase } from '@/lib/supabase'
+import { ChevronDown } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 interface NavbarProps {
@@ -8,9 +9,15 @@ interface NavbarProps {
   userRole?: string
 }
 
+interface NavItem {
+  label: string
+  href: string
+}
+
 export default function Navbar({ activePage, userRole }: NavbarProps) {
   const [userName, setUserName] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [moreOpen, setMoreOpen] = useState(false)
   const [resolvedRole, setResolvedRole] = useState(userRole || '')
 
   useEffect(() => {
@@ -36,7 +43,26 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
   }
 
   const isViewer = resolvedRole === 'viewer'
-  const navItems = [
+
+  const primaryNavItems: NavItem[] = [
+    { label: 'Home', href: '/dashboard' },
+    { label: 'Calendar', href: '/planner' },
+    { label: 'Fixtures', href: '/fixtures' },
+    { label: 'Results', href: '/results' },
+    ...(!isViewer ? [{ label: 'My Bookings', href: '/my-bookings' }] : []),
+  ]
+
+  const secondaryNavItems: NavItem[] = [
+    ...(!isViewer ? [{ label: 'New Booking', href: '/new-booking' }] : []),
+    ...((['player', 'coach', 'admin'].includes(resolvedRole)) ? [{ label: 'Physio', href: '/physio' }] : []),
+    { label: 'Calendar Sync', href: '/calendar-sync' },
+    ...(resolvedRole === 'admin' ? [
+      { label: 'Admin', href: '/admin' },
+      { label: 'Stats', href: '/stats' },
+    ] : []),
+  ]
+
+  const navItems: NavItem[] = [
     { label: 'Home', href: '/dashboard' },
     { label: 'Calendar', href: '/planner' },
     ...(!isViewer ? [{ label: 'My Bookings', href: '/my-bookings' }] : []),
@@ -51,6 +77,34 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
     ] : []),
   ]
 
+  const isSecondaryActive = secondaryNavItems.some(item => item.label === activePage)
+
+  function navLinkStyle(label: string, isActive = activePage === label) {
+    return {
+      padding: '6px 12px',
+      borderRadius: '6px',
+      fontSize: '13px',
+      fontWeight: '500',
+      textDecoration: 'none',
+      backgroundColor: isActive ? '#374151' : 'transparent',
+      color: isActive ? 'white' : '#d1d5db',
+    } as const
+  }
+
+  function mobileNavLinkStyle(label: string) {
+    return {
+      display: 'block',
+      padding: '12px 16px',
+      borderRadius: '8px',
+      fontSize: '15px',
+      fontWeight: '500',
+      textDecoration: 'none',
+      backgroundColor: activePage === label ? '#374151' : 'transparent',
+      color: activePage === label ? 'white' : '#d1d5db',
+      marginBottom: '2px',
+    } as const
+  }
+
   return (
     <>
       <nav style={{ backgroundColor: '#111', color: 'white', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '56px', position: 'sticky', top: 0, zIndex: 100 }}>
@@ -63,8 +117,8 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
         </a>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} className='nav-desktop-links'>
-          {navItems.map(item => (
-            <a key={item.href} href={item.href} style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: '500', textDecoration: 'none', backgroundColor: activePage === item.label ? '#374151' : 'transparent', color: activePage === item.label ? 'white' : '#d1d5db' }}>
+          {primaryNavItems.map(item => (
+            <a key={item.href} href={item.href} style={navLinkStyle(item.label)}>
               {item.label}
             </a>
           ))}
@@ -72,6 +126,67 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '13px', color: '#9ca3af' }} className='nav-desktop-links'>{userName}</span>
+          <div style={{ position: 'relative' }} className='nav-desktop-links'>
+            <button
+              type='button'
+              onClick={() => setMoreOpen(open => !open)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                fontSize: '13px',
+                fontWeight: '500',
+                backgroundColor: isSecondaryActive || moreOpen ? '#374151' : 'transparent',
+                color: isSecondaryActive || moreOpen ? 'white' : '#d1d5db',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              More
+              <ChevronDown
+                size={14}
+                style={{
+                  transform: moreOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.15s ease',
+                }}
+              />
+            </button>
+            {moreOpen && (
+              <>
+                <div
+                  style={{ position: 'fixed', inset: 0, zIndex: 98 }}
+                  onClick={() => setMoreOpen(false)}
+                />
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '100%',
+                    right: 0,
+                    marginTop: '4px',
+                    backgroundColor: '#111',
+                    borderRadius: '8px',
+                    padding: '8px',
+                    minWidth: '180px',
+                    zIndex: 99,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                  }}
+                >
+                  {secondaryNavItems.map(item => (
+                    <a
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMoreOpen(false)}
+                      style={mobileNavLinkStyle(item.label)}
+                    >
+                      {item.label}
+                    </a>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
           <button onClick={handleLogout} style={{ backgroundColor: 'white', color: '#111', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }} className='nav-desktop-links'>Sign out</button>
           <button onClick={() => setMenuOpen(!menuOpen)} className='nav-hamburger' style={{ backgroundColor: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {menuOpen ? (
@@ -92,7 +207,7 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
             </div>
             <div style={{ padding: '8px' }}>
               {navItems.map(item => (
-                <a key={item.href} href={item.href} onClick={() => setMenuOpen(false)} style={{ display: 'block', padding: '12px 16px', borderRadius: '8px', fontSize: '15px', fontWeight: '500', textDecoration: 'none', backgroundColor: activePage === item.label ? '#374151' : 'transparent', color: activePage === item.label ? 'white' : '#d1d5db', marginBottom: '2px' }}>
+                <a key={item.href} href={item.href} onClick={() => setMenuOpen(false)} style={mobileNavLinkStyle(item.label)}>
                   {item.label}
                 </a>
               ))}
