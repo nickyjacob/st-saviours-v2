@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import Button from '@/components/ui/Button'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -60,8 +61,10 @@ if (signInError) {
     window.location.href = '/dashboard'
   }
 
+  const inputClass = 'w-full min-h-[44px] rounded-lg border border-gray-200 bg-white px-4 text-sm text-ink outline-none focus:outline-none focus:ring-2 focus:ring-approved'
+
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-ink flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
         <div className="flex flex-col items-center mb-6">
   <img
@@ -83,7 +86,7 @@ if (signInError) {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className={inputClass}
               placeholder="your@email.com"
             />
           </div>
@@ -97,7 +100,7 @@ if (signInError) {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className={inputClass}
               placeholder="••••••••"
             />
           </div>
@@ -108,13 +111,9 @@ if (signInError) {
             </p>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gray-900 text-white rounded-lg py-3 font-semibold text-sm hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
+          <Button type="submit" disabled={loading} className="w-full">
             {loading ? 'Signing in...' : 'Sign In'}
-          </button>
+          </Button>
           <div className="flex justify-between text-sm mt-2">
             <a href="/forgot-password" className="text-gray-500 hover:text-gray-900">Forgot password?</a>
             <a href="/register" className="text-gray-500 hover:text-gray-900">Create account</a>
