@@ -250,7 +250,7 @@ export default function FixturesPage() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 p-4">
+        <div className="fixed inset-0 z-[110] overflow-y-auto bg-black/50 p-4">
           <div className="mx-auto my-8 w-full max-w-[500px] max-h-[90vh] min-h-0 overflow-y-auto rounded-xl bg-white p-6">
             <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-ink">
               <Calendar className="h-5 w-5 shrink-0" aria-hidden="true" />
