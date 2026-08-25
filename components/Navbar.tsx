@@ -9,6 +9,7 @@ import {
   Home,
   LucideIcon,
   MoreHorizontal,
+  Settings,
   Stethoscope,
   Shield,
 } from 'lucide-react'
@@ -22,6 +23,7 @@ interface NavbarProps {
 interface NavItem {
   label: string
   href: string
+  icon?: LucideIcon
 }
 
 interface BottomTab {
@@ -74,7 +76,7 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
   const secondaryNavItems: NavItem[] = [
     ...(!isViewer ? [{ label: 'New Booking', href: '/new-booking' }] : []),
     ...((['player', 'coach', 'admin'].includes(resolvedRole)) ? [{ label: 'Physio', href: '/physio' }] : []),
-    { label: 'Calendar Sync', href: '/calendar-sync' },
+    { label: 'Settings', href: '/settings', icon: Settings },
     ...(resolvedRole === 'admin' ? [
       { label: 'Admin', href: '/admin' },
       { label: 'Stats', href: '/stats' },
@@ -89,7 +91,7 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
     ...((['player', 'coach', 'admin'].includes(resolvedRole)) ? [{ label: 'Physio', href: '/physio' }] : []),
     { label: 'Fixtures', href: '/fixtures' },
     { label: 'Results', href: '/results' },
-    { label: 'Calendar Sync', href: '/calendar-sync' },
+    { label: 'Settings', href: '/settings', icon: Settings },
     ...(resolvedRole === 'admin' ? [
       { label: 'Admin', href: '/admin' },
       { label: 'Stats', href: '/stats' },
@@ -144,7 +146,7 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
 
   const moreOnlyActivePages = [
     'My Bookings',
-    'Calendar Sync',
+    'Settings',
     'Admin',
     'Stats',
     ...(fourthTab?.id === 'book' ? ['Physio'] as const : []),
@@ -254,16 +256,20 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
                     boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
                   }}
                 >
-                  {secondaryNavItems.map(item => (
+                  {secondaryNavItems.map(item => {
+                    const Icon = item.icon
+                    return (
                     <a
                       key={item.href}
                       href={item.href}
                       onClick={() => setMoreOpen(false)}
-                      style={mobileNavLinkStyle(item.label)}
+                      style={Icon ? { ...mobileNavLinkStyle(item.label), display: 'flex', alignItems: 'center', gap: '8px' } : mobileNavLinkStyle(item.label)}
                     >
+                      {Icon ? <Icon size={16} aria-hidden='true' /> : null}
                       {item.label}
                     </a>
-                  ))}
+                    )
+                  })}
                 </div>
               </>
             )}
@@ -301,11 +307,15 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
               <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '2px' }}>Signed in</div>
             </div>
             <div style={{ padding: '8px' }}>
-              {navItems.map(item => (
-                <a key={item.href} href={item.href} onClick={() => setMenuOpen(false)} style={mobileNavLinkStyle(item.label)}>
+              {navItems.map(item => {
+                const Icon = item.icon
+                return (
+                <a key={item.href} href={item.href} onClick={() => setMenuOpen(false)} style={Icon ? { ...mobileNavLinkStyle(item.label), display: 'flex', alignItems: 'center', gap: '8px' } : mobileNavLinkStyle(item.label)}>
+                  {Icon ? <Icon size={16} aria-hidden='true' /> : null}
                   {item.label}
                 </a>
-              ))}
+                )
+              })}
             </div>
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px', borderTop: '1px solid #374151' }}>
               <button onClick={handleLogout} style={{ width: '100%', backgroundColor: 'white', color: '#111', border: 'none', borderRadius: '8px', padding: '12px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>Sign out</button>
