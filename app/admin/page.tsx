@@ -65,6 +65,7 @@ const formatDateTime = (d: string) => new Date(d).toLocaleDateString('en-GB', { 
 
 export default function AdminPage() {
   const [tab, setTab] = useState('pending')
+  const [bookingFilter, setBookingFilter] = useState('pending')
   const [currentUserId, setCurrentUserId] = useState('')
   const [bookings, setBookings] = useState<Booking[]>([])
   const [profiles, setProfiles] = useState<Profile[]>([])
@@ -315,11 +316,11 @@ export default function AdminPage() {
   const pending = bookings.filter(b => b.status === 'pending')
   const approved = bookings.filter(b => b.status === 'approved')
   const rejected = bookings.filter(b => b.status === 'rejected')
-  const awaitingUsers = profiles.filter(p => !p.is_approved)
   const today = new Date().toISOString().split('T')[0]
   const upcomingClosures = closures.filter(c => c.end_date >= today)
   const pastClosures = closures.filter(c => c.end_date < today)
 
+  const isBookingsTab = ['pending', 'approved', 'rejected'].includes(tab)
   const tabBookings = tab === 'pending' ? pending : tab === 'approved' ? approved : tab === 'rejected' ? rejected : []
 
   const inputStyle = { width: '100%', border: '1px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', fontSize: '13px', backgroundColor: 'white' }
@@ -341,40 +342,41 @@ export default function AdminPage() {
           Admin Panel
         </h1>
 
-        <div className="mb-5 grid grid-cols-4 gap-2">
+        <div className={`flex flex-wrap gap-1.5 ${isBookingsTab ? 'mb-2' : 'mb-5'}`}>
           {[
-            { label: 'Pending', value: pending.length, valueClass: 'text-pending', borderClass: 'border-pending/20' },
-            { label: 'Approved', value: approved.length, valueClass: 'text-approved', borderClass: 'border-approved/20' },
-            { label: 'Rejected', value: rejected.length, valueClass: 'text-rejected', borderClass: 'border-rejected/20' },
-            { label: 'Awaiting', value: awaitingUsers.length, valueClass: 'text-accent', borderClass: 'border-accent/20' },
-          ].map(card => (
-            <div key={card.label} className={`rounded-lg border bg-white px-1.5 py-2.5 text-center shadow-sm ${card.borderClass}`}>
-              <div className={`text-[22px] font-bold ${card.valueClass}`}>{card.value}</div>
-              <div className="mt-0.5 text-[11px] text-neutral">{card.label}</div>
-            </div>
-          ))}
+            { key: 'bookings', label: 'Bookings', dot: 'bg-ink', selectedClass: 'border-ink bg-ink text-white' },
+            { key: 'users', label: `Users (${profiles.length})`, dot: 'bg-neutral', selectedClass: 'border-neutral bg-neutral text-white' },
+            { key: 'closures', label: 'Closures', dot: 'bg-ink', selectedClass: 'border-neutral bg-neutral text-white' },
+            { key: 'notices', label: 'Notices', dot: 'bg-info', selectedClass: 'border-info bg-info text-white' },
+            { key: 'results', label: 'Results', dot: 'bg-approved', selectedClass: 'border-approved bg-approved text-white' },
+            { key: 'physio', label: 'Physio', dot: 'bg-rejected', selectedClass: 'border-rejected bg-rejected text-white' },
+            { key: 'history', label: 'History', dot: 'bg-ink', selectedClass: 'border-neutral bg-neutral text-white' },
+          ].map(t => {
+            const selected = t.key === 'bookings' ? isBookingsTab : tab === t.key
+            return (
+              <button key={t.key} onClick={() => { if (t.key === 'bookings') { if (!isBookingsTab) setTab(bookingFilter) } else { setTab(t.key); if (t.key === 'history' && !historyLoaded) loadHistory(); if (t.key === 'results') fetchAdminResults(); if (t.key === 'physio') fetchPhysioRequests() } }} className={`flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium ${selected ? t.selectedClass : 'border-gray-200 bg-white text-ink'}`}>
+                <span className={`inline-block h-2 w-2 rounded-full ${selected ? 'bg-white' : t.dot}`}></span>
+                {t.label}
+              </button>
+            )
+          })}
         </div>
+        {isBookingsTab && (
+          <div className="mb-5 flex flex-wrap gap-1.5">
+            {[
+              { key: 'pending', label: `Pending (${pending.length})`, dot: 'bg-pending', selectedClass: 'border-pending bg-pending text-white' },
+              { key: 'approved', label: `Approved (${approved.length})`, dot: 'bg-approved', selectedClass: 'border-approved bg-approved text-white' },
+              { key: 'rejected', label: `Rejected (${rejected.length})`, dot: 'bg-rejected', selectedClass: 'border-rejected bg-rejected text-white' },
+            ].map(t => (
+              <button key={t.key} onClick={() => { setTab(t.key); setBookingFilter(t.key) }} className={`flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium ${tab === t.key ? t.selectedClass : 'border-gray-200 bg-white text-ink'}`}>
+                <span className={`inline-block h-2 w-2 rounded-full ${tab === t.key ? 'bg-white' : t.dot}`}></span>
+                {t.label}
+              </button>
+            ))}
+          </div>
+        )}
 
-        <div className="mb-5 flex flex-wrap gap-1.5">
-          {[
-            { key: 'pending', label: `Pending (${pending.length})`, dot: 'bg-pending' },
-            { key: 'approved', label: `Approved (${approved.length})`, dot: 'bg-approved' },
-            { key: 'rejected', label: `Rejected (${rejected.length})`, dot: 'bg-rejected' },
-            { key: 'users', label: `Users (${profiles.length})`, dot: 'bg-neutral' },
-            { key: 'closures', label: 'Closures', dot: 'bg-ink' },
-            { key: 'notices', label: 'Notices', dot: 'bg-info' },
-            { key: 'results', label: 'Results', dot: 'bg-approved' },
-            { key: 'physio', label: 'Physio', dot: 'bg-rejected' },
-            { key: 'history', label: 'History', dot: 'bg-ink' },
-          ].map(t => (
-            <button key={t.key} onClick={() => { setTab(t.key); if (t.key === 'history' && !historyLoaded) loadHistory(); if (t.key === 'results') fetchAdminResults(); if (t.key === 'physio') fetchPhysioRequests() }} className={`flex cursor-pointer items-center gap-1 rounded-full border border-gray-200 px-2.5 py-1 text-[11px] font-medium ${tab === t.key ? 'bg-ink text-white' : 'bg-white text-ink'}`}>
-              <span className={`inline-block h-2 w-2 rounded-full ${t.dot}`}></span>
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        {['pending','approved','rejected'].includes(tab) && (
+        {isBookingsTab && (
           <div>
             {tabBookings.length === 0 ? (
               <div className="rounded-[10px] bg-white px-4 py-10 text-center text-neutral">No {tab} bookings</div>
