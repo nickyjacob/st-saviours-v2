@@ -388,7 +388,10 @@ export default function AdminPage() {
                     <span className="text-[13px] text-ink">{formatDate(b.booking_date)}</span>
                     <span className="text-[13px] text-ink">{fmt(b.start_time)} – {fmt(b.end_time)}</span>
                   </div>
-                  <div style={{ fontSize: '13px', color: b.pitch_colour || '#2e7d32', fontWeight: '600', marginTop: '2px' }}>{b.pitch_name}</div>
+                  <div className="mt-0.5 flex items-center gap-1.5 text-[13px] font-semibold text-ink">
+                    <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: b.pitch_colour || '#888' }} aria-hidden="true" />
+                    {b.pitch_name}
+                  </div>
                   <div className="text-xs text-neutral">{b.team_name} · {b.purpose}</div>
                 </div>
                 <div className="ml-3 flex gap-1.5">

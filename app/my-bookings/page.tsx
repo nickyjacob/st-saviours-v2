@@ -75,7 +75,6 @@ export default function MyBookingsPage() {
     const bg = isApproved ? '#f1f8f1' : isPending ? '#fff8e1' : '#f5f5f5'
     const borderColour = isApproved ? '#2e7d32' : isPending ? '#f9ab2b' : '#9e9e9e'
     const borderStyle = isPending ? 'dashed' : 'solid'
-    const pitchColour = isApproved ? '#2e7d32' : isPending ? '#f9ab2b' : '#9e9e9e'
     const cardStyle = { backgroundColor: bg, borderRadius: '8px', borderLeft: '4px ' + borderStyle + ' ' + borderColour, padding: '8px 12px', marginBottom: '6px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }
     return (
       <div style={cardStyle}>
@@ -83,7 +82,10 @@ export default function MyBookingsPage() {
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: '13px', fontWeight: '700', color: '#111' }}>{formatDate(b.booking_date)}</div>
             <div style={{ fontSize: '12px', color: '#374151', marginTop: '1px' }}>{fmt(b.start_time)} – {fmt(b.end_time)}</div>
-            <div style={{ fontSize: '12px', fontWeight: '600', color: pitchColour, marginTop: '1px' }}>{b.pitch_name}</div>
+            <div className="mt-px flex items-center gap-1.5 text-xs font-semibold text-ink">
+              <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: b.pitch_colour || '#888' }} aria-hidden="true" />
+              {b.pitch_name}
+            </div>
             <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '1px' }}>{b.team_name} · {b.purpose}</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px', flexShrink: 0 }}>
