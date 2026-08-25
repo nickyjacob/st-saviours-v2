@@ -331,7 +331,7 @@ export default function DashboardPage() {
                 return (
                   <Card key={r.id} statusColor={tone} className="p-3 shadow-sm">
                     <div className="mb-0.5">
-                      <Badge tone={tone} variant="solid" className="mr-2 inline-flex shrink-0 align-middle">
+                      <Badge tone={tone} variant="solid" className="inline-flex shrink-0 align-middle mr-2">
                         {resultLabel(r.result)}
                       </Badge>
                       <span className="text-[13px] font-bold text-ink align-middle">
