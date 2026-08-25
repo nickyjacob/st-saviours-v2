@@ -10,7 +10,7 @@ import {
   LucideIcon,
   MoreHorizontal,
   Stethoscope,
-  Swords,
+  Shield,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
@@ -169,7 +169,7 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
       id: 'club',
       label: 'Club',
       href: '/fixtures',
-      icon: Swords,
+      icon: Shield,
       isActive: activePage === 'Fixtures' || activePage === 'Results',
     },
     ...(fourthTab ? [fourthTab] : []),

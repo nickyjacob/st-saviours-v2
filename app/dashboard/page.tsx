@@ -10,6 +10,7 @@ import {
   BarChart3,
   Bus,
   Calendar,
+  Goal,
   CalendarCheck,
   Home,
   ListChecks,
@@ -19,7 +20,6 @@ import {
   Pin,
   Settings,
   Stethoscope,
-  Swords,
   Trophy,
   X,
 } from 'lucide-react'
@@ -175,7 +175,7 @@ export default function DashboardPage() {
     admin: [
       { label: 'Calendar', href: '/planner', icon: Calendar, tone: 'approved' },
       { label: 'New Booking', href: '/new-booking', icon: CalendarCheck, tone: 'ink' },
-      { label: 'Fixtures', href: '/fixtures', icon: Swords, tone: 'info' },
+      { label: 'Fixtures', href: '/fixtures', icon: Goal, tone: 'info' },
       { label: 'Results', href: '/results', icon: Trophy, tone: 'pending' },
       { label: 'My Bookings', href: '/my-bookings', icon: CalendarCheck, tone: 'accent' },
       { label: 'Session Plan', href: '/session-planner', icon: ListChecks, tone: 'info' },
@@ -185,7 +185,7 @@ export default function DashboardPage() {
     coach: [
       { label: 'Calendar', href: '/planner', icon: Calendar, tone: 'approved' },
       { label: 'New Booking', href: '/new-booking', icon: CalendarCheck, tone: 'ink' },
-      { label: 'Fixtures', href: '/fixtures', icon: Swords, tone: 'info' },
+      { label: 'Fixtures', href: '/fixtures', icon: Goal, tone: 'info' },
       { label: 'Results', href: '/results', icon: Trophy, tone: 'pending' },
       { label: 'My Bookings', href: '/my-bookings', icon: CalendarCheck, tone: 'accent' },
       { label: 'Session Plan', href: '/session-planner', icon: ListChecks, tone: 'info' },
@@ -193,13 +193,13 @@ export default function DashboardPage() {
     ],
     player: [
       { label: 'Calendar', href: '/planner', icon: Calendar, tone: 'approved' },
-      { label: 'Fixtures', href: '/fixtures', icon: Swords, tone: 'info' },
+      { label: 'Fixtures', href: '/fixtures', icon: Goal, tone: 'info' },
       { label: 'Results', href: '/results', icon: Trophy, tone: 'pending' },
       { label: 'Physio', href: '/physio', icon: Stethoscope, tone: 'rejected' },
     ],
     viewer: [
       { label: 'Calendar', href: '/planner', icon: Calendar, tone: 'approved' },
-      { label: 'Fixtures', href: '/fixtures', icon: Swords, tone: 'info' },
+      { label: 'Fixtures', href: '/fixtures', icon: Goal, tone: 'info' },
       { label: 'Results', href: '/results', icon: Trophy, tone: 'pending' },
     ],
   }
