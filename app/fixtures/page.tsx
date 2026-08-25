@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
+import { Bus, Calendar, Clock, Home, MapPin } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
 
@@ -37,6 +38,17 @@ const SPORT_TEAMS: Record<string, string[]> = {
 }
 const COMPETITIONS = ['League', 'Championship', 'Friendly', 'Other']
 const TIME_SLOTS = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30','20:00','20:30','21:00']
+
+function HomeAwayMark({ homeAway }: { homeAway: string }) {
+  const isHome = homeAway === 'home'
+  const Icon = isHome ? Home : Bus
+  return (
+    <span className={`inline-flex items-center gap-1 text-[11px] font-bold ${isHome ? 'text-approved' : 'text-info'}`}>
+      <Icon className="h-3 w-3 shrink-0" aria-hidden="true" />
+      {isHome ? 'Home' : 'Away'}
+    </span>
+  )
+}
 
 export default function FixturesPage() {
   const [userRole, setUserRole] = useState('')
@@ -138,12 +150,9 @@ export default function FixturesPage() {
     return true
   })
 
-  const homeAwayIcon = (h: string) => h === 'home' ? '🏠 Home' : '🚌 Away'
-  const homeAwayColour = (h: string) => h === 'home' ? '#2e7d32' : '#2563eb'
-
-  const inputStyle = { width: '100%', border: '1px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', fontSize: '14px', color: '#111', outline: 'none', backgroundColor: 'white' }
-  const labelStyle = { fontSize: '13px', fontWeight: '600' as const, color: '#111', display: 'block' as const, marginBottom: '4px' }
-  const fieldStyle = { marginBottom: '12px' }
+  const inputClass = 'w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-ink outline-none'
+  const labelClass = 'mb-1 block text-[13px] font-semibold text-ink'
+  const fieldClass = 'mb-3'
 
   function getDirectionsUrl(venue: Venue) {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
@@ -151,33 +160,36 @@ export default function FixturesPage() {
   }
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f4f4f4' }}>
-      <div style={{ textAlign: 'center', padding: '48px', color: '#888' }}>Loading...</div>
+    <div className="min-h-screen bg-gray-100">
+      <div className="p-12 text-center text-neutral">Loading...</div>
     </div>
   )
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f4f4f4' }}>
+    <div className="min-h-screen bg-gray-100">
       <Navbar activePage="Fixtures" userRole={userRole} />
-      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '24px 16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+      <div className="mx-auto max-w-[800px] px-4 py-6">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-2.5">
           <div>
-            <h1 style={{ fontSize: '22px', fontWeight: 'bold', color: '#111' }}>📅 Fixtures</h1>
-            <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '2px' }}>St. Saviours GAA & LGFA</p>
+            <h1 className="flex items-center gap-2 text-[22px] font-bold text-ink">
+              <Calendar className="h-5 w-5 shrink-0" aria-hidden="true" />
+              Fixtures
+            </h1>
+            <p className="mt-0.5 text-[13px] text-neutral">St. Saviours GAA & LGFA</p>
           </div>
           {(userRole === 'coach' || userRole === 'admin') && (
-            <button onClick={() => setShowModal(true)} style={{ backgroundColor: '#111', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>+ Add Fixture</button>
+            <button onClick={() => setShowModal(true)} className="cursor-pointer rounded-lg border-none bg-ink px-4 py-2 text-[13px] font-semibold text-white">+ Add Fixture</button>
           )}
         </div>
 
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+        <div className="mb-4 flex flex-wrap gap-2">
           {['upcoming', 'past', 'all'].map(t => (
-            <button key={t} onClick={() => setFilterType(t)} style={{ padding: '5px 12px', borderRadius: '20px', border: '1px solid #d1d5db', fontSize: '12px', fontWeight: '500', backgroundColor: filterType === t ? '#111' : 'white', color: filterType === t ? 'white' : '#374151', cursor: 'pointer' }}>
+            <button key={t} onClick={() => setFilterType(t)} className={`cursor-pointer rounded-full border border-gray-200 px-3 py-[5px] text-xs font-medium ${filterType === t ? 'bg-ink text-white' : 'bg-white text-ink'}`}>
               {t.charAt(0).toUpperCase() + t.slice(1)}
             </button>
           ))}
           {teams.length > 0 && (
-            <select value={filterTeam} onChange={e => setFilterTeam(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '20px', padding: '5px 10px', fontSize: '12px', color: '#111', backgroundColor: 'white' }}>
+            <select value={filterTeam} onChange={e => setFilterTeam(e.target.value)} className="rounded-full border border-gray-200 bg-white px-2.5 py-[5px] text-xs text-ink">
               <option value="">All Teams</option>
               {teams.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
@@ -185,35 +197,50 @@ export default function FixturesPage() {
         </div>
 
         {filtered.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '40px', backgroundColor: 'white', borderRadius: '10px', color: '#888' }}>No fixtures found</div>
+          <div className="rounded-[10px] bg-white px-4 py-10 text-center text-neutral">No fixtures found</div>
         )}
 
         {filtered.map(f => {
           const venue = venues.find(v => v.id === f.venue_id)
+          const isHome = f.home_away === 'home'
           return (
-            <div key={f.id} style={{ backgroundColor: 'white', borderRadius: '8px', borderLeft: `4px solid ${homeAwayColour(f.home_away)}`, padding: '12px 16px', marginBottom: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: '700', color: homeAwayColour(f.home_away) }}>{homeAwayIcon(f.home_away)}</span>
-                    <span style={{ fontSize: '11px', color: '#6b7280' }}>📅 {new Date(f.fixture_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                    {f.fixture_time && <span style={{ fontSize: '11px', color: '#6b7280' }}>⏰ {f.fixture_time.slice(0,5)}</span>}
+            <div key={f.id} className={`mb-2 rounded-lg border-l-4 bg-white px-4 py-3 shadow-sm ${isHome ? 'border-l-approved' : 'border-l-info'}`}>
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1">
+                  <div className="mb-1 flex flex-wrap items-center gap-2">
+                    <HomeAwayMark homeAway={f.home_away} />
+                    <span className="inline-flex items-center gap-1 text-[11px] text-neutral">
+                      <Calendar className="h-3 w-3 shrink-0" aria-hidden="true" />
+                      {new Date(f.fixture_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
+                    {f.fixture_time && (
+                      <span className="inline-flex items-center gap-1 text-[11px] text-neutral">
+                        <Clock className="h-3 w-3 shrink-0" aria-hidden="true" />
+                        {f.fixture_time.slice(0,5)}
+                      </span>
+                    )}
                   </div>
-                  <div style={{ fontSize: '14px', fontWeight: '700', color: '#111', marginBottom: '2px' }}>{f.team_name}</div>
-                  <div style={{ fontSize: '13px', color: '#111', marginBottom: '4px' }}>vs <span style={{ fontWeight: '600' }}>{f.opposition}</span></div>
-                  <div style={{ fontSize: '12px', color: '#374151', marginBottom: '4px' }}>
-                    📍 {f.venue_name}
-                    {venue?.town_area ? ` · ${venue.town_area}` : ''}
-                    {venue?.eircode ? ` · ${venue.eircode}` : ''}
+                  <div className="mb-0.5 text-sm font-bold text-ink">{f.team_name}</div>
+                  <div className="mb-1 text-[13px] text-ink">vs <span className="font-semibold">{f.opposition}</span></div>
+                  <div className="mb-1 flex items-start gap-1 text-xs text-ink">
+                    <MapPin className="mt-0.5 h-3 w-3 shrink-0" aria-hidden="true" />
+                    <span>
+                      {f.venue_name}
+                      {venue?.town_area ? ` · ${venue.town_area}` : ''}
+                      {venue?.eircode ? ` · ${venue.eircode}` : ''}
+                    </span>
                   </div>
-                  <div style={{ fontSize: '11px', color: '#6b7280' }}>{f.competition} · {f.sport}</div>
-                  {f.notes && <div style={{ fontSize: '11px', color: '#374151', marginTop: '4px', fontStyle: 'italic' }}>{f.notes}</div>}
+                  <div className="text-[11px] text-neutral">{f.competition} · {f.sport}</div>
+                  {f.notes && <div className="mt-1 text-[11px] italic text-ink">{f.notes}</div>}
                   {venue && (
-                    <a href={getDirectionsUrl(venue)} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: '8px', backgroundColor: '#2563eb', color: 'white', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: '600', textDecoration: 'none' }}>📍 Get Directions</a>
+                    <a href={getDirectionsUrl(venue)} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 rounded-md bg-info px-2.5 py-1 text-[11px] font-semibold text-white no-underline">
+                      <MapPin className="h-3 w-3" aria-hidden="true" />
+                      Get Directions
+                    </a>
                   )}
                 </div>
                 {(userRole === 'admin' || f.posted_by === currentUserId) && (
-                  <button onClick={() => handleDelete(f.id)} style={{ padding: '3px 8px', borderRadius: '6px', border: '1px solid #fca5a5', color: '#dc2626', backgroundColor: 'white', fontSize: '11px', cursor: 'pointer', flexShrink: 0 }}>Delete</button>
+                  <button onClick={() => handleDelete(f.id)} className="shrink-0 cursor-pointer rounded-md border border-rejected/40 bg-white px-2 py-[3px] text-[11px] text-rejected">Delete</button>
                 )}
               </div>
             </div>
@@ -222,43 +249,44 @@ export default function FixturesPage() {
       </div>
 
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
-          <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: '#111' }}>📅 Add Fixture</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-xl bg-white p-6">
+            <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-ink">
+              <Calendar className="h-5 w-5 shrink-0" aria-hidden="true" />
+              Add Fixture
+            </h2>
 
-            <div style={fieldStyle}>
-              <label style={labelStyle}>Sport</label>
-              <select value={form.sport} onChange={e => setForm({ ...form, sport: e.target.value, team_name: '' })} style={inputStyle}>
+            <div className={fieldClass}>
+              <label className={labelClass}>Sport</label>
+              <select value={form.sport} onChange={e => setForm({ ...form, sport: e.target.value, team_name: '' })} className={inputClass}>
                 {SPORTS.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+            <div className="mb-3 grid grid-cols-2 gap-3">
               <div>
-                <label style={labelStyle}>Our Team</label>
-                <select value={form.team_name} onChange={e => setForm({ ...form, team_name: e.target.value })} style={inputStyle}>
+                <label className={labelClass}>Our Team</label>
+                <select value={form.team_name} onChange={e => setForm({ ...form, team_name: e.target.value })} className={inputClass}>
                   <option value="">Select team...</option>
                   {(SPORT_TEAMS[form.sport] || []).map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
-              <div style={{ position: 'relative' }}>
-                <label style={labelStyle}>Opposition</label>
+              <div className="relative">
+                <label className={labelClass}>Opposition</label>
                 <input
                   value={form.opposition}
                   onChange={e => setForm({ ...form, opposition: e.target.value })}
                   onFocus={() => form.opposition.length > 0}
                   placeholder="Search club name..."
-                  style={inputStyle}
+                  className={inputClass}
                   autoComplete="off"
                 />
                 {form.opposition.length > 0 && venues.filter(v => v.name.toLowerCase().includes(form.opposition.toLowerCase())).length > 0 && (
-                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: 'white', border: '1px solid #d1d5db', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', zIndex: 100, maxHeight: '200px', overflowY: 'auto' }}>
+                  <div className="absolute left-0 right-0 top-full z-[100] max-h-[200px] overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-md">
                     {venues.filter(v => v.name.toLowerCase().includes(form.opposition.toLowerCase())).slice(0, 8).map(v => (
                       <div key={v.id}
                         onClick={() => setForm({ ...form, opposition: v.name })}
-                        style={{ padding: '8px 12px', cursor: 'pointer', borderBottom: '1px solid #f3f4f6', fontSize: '13px', color: '#111' }}
-                        onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#f9fafb')}
-                        onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'white')}>
+                        className="cursor-pointer border-b border-gray-100 px-3 py-2 text-[13px] text-ink hover:bg-gray-50">
                         {v.name}
                       </div>
                     ))}
@@ -267,28 +295,28 @@ export default function FixturesPage() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+            <div className="mb-3 grid grid-cols-2 gap-3">
               <div>
-                <label style={labelStyle}>Date</label>
-                <input type="date" value={form.fixture_date} min={new Date().toISOString().split('T')[0]} onChange={e => setForm({ ...form, fixture_date: e.target.value })} style={inputStyle} />
+                <label className={labelClass}>Date</label>
+                <input type="date" value={form.fixture_date} min={new Date().toISOString().split('T')[0]} onChange={e => setForm({ ...form, fixture_date: e.target.value })} className={inputClass} />
               </div>
               <div>
-                <label style={labelStyle}>Time</label>
-                <select value={form.fixture_time} onChange={e => setForm({ ...form, fixture_time: e.target.value })} style={inputStyle}>
+                <label className={labelClass}>Time</label>
+                <select value={form.fixture_time} onChange={e => setForm({ ...form, fixture_time: e.target.value })} className={inputClass}>
                   {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+            <div className="mb-3 grid grid-cols-2 gap-3">
               <div>
-                <label style={labelStyle}>Competition</label>
-                <select value={form.competition} onChange={e => setForm({ ...form, competition: e.target.value })} style={inputStyle}>
+                <label className={labelClass}>Competition</label>
+                <select value={form.competition} onChange={e => setForm({ ...form, competition: e.target.value })} className={inputClass}>
                   {COMPETITIONS.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div>
-                <label style={labelStyle}>Home / Away</label>
+                <label className={labelClass}>Home / Away</label>
                 <select value={form.home_away} onChange={e => {
                   const val = e.target.value
                   if (val === 'home') {
@@ -303,45 +331,43 @@ export default function FixturesPage() {
                     setForm({ ...form, home_away: val, venue_id: '', venue_name: '' })
                     setVenueSearch('')
                   }
-                }} style={inputStyle}>
-                  <option value="home">🏠 Home</option>
-                  <option value="away">🚌 Away</option>
+                }} className={inputClass}>
+                  <option value="home">Home</option>
+                  <option value="away">Away</option>
                 </select>
               </div>
             </div>
 
-            <div style={{ ...fieldStyle, position: 'relative' }} ref={venueRef}>
-              <label style={labelStyle}>Venue</label>
+            <div className={`${fieldClass} relative`} ref={venueRef}>
+              <label className={labelClass}>Venue</label>
               <input
                 value={venueSearch}
                 onChange={e => { setVenueSearch(e.target.value); setVenueDropdown(true); setForm({ ...form, venue_id: '', venue_name: e.target.value }) }}
                 onFocus={() => setVenueDropdown(true)}
                 placeholder="Search venue or type name..."
-                style={inputStyle}
+                className={inputClass}
               />
               {venueDropdown && venueSearch.length > 0 && filteredVenues.length > 0 && (
-                <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: 'white', border: '1px solid #d1d5db', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', zIndex: 100, maxHeight: '200px', overflowY: 'auto' }}>
+                <div className="absolute left-0 right-0 top-full z-[100] max-h-[200px] overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-md">
                   {filteredVenues.slice(0, 8).map(v => (
                     <div key={v.id} onClick={() => selectVenue(v)}
-                      style={{ padding: '8px 12px', cursor: 'pointer', borderBottom: '1px solid #f3f4f6', fontSize: '13px', color: '#111' }}
-                      onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#f9fafb')}
-                      onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'white')}>
-                      <div style={{ fontWeight: '600' }}>{v.name}</div>
-                      <div style={{ fontSize: '11px', color: '#6b7280' }}>{v.town_area} · {v.eircode}</div>
+                      className="cursor-pointer border-b border-gray-100 px-3 py-2 text-[13px] text-ink hover:bg-gray-50">
+                      <div className="font-semibold">{v.name}</div>
+                      <div className="text-[11px] text-neutral">{v.town_area} · {v.eircode}</div>
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            <div style={fieldStyle}>
-              <label style={labelStyle}>Notes (optional)</label>
-              <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="e.g. County Final — bring full panel" rows={2} style={{ ...inputStyle, resize: 'vertical' as const }} />
+            <div className={fieldClass}>
+              <label className={labelClass}>Notes (optional)</label>
+              <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="e.g. County Final — bring full panel" rows={2} className={`${inputClass} resize-y`} />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-              <button onClick={() => { setShowModal(false); resetForm() }} style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '13px', fontWeight: '600', color: '#374151', backgroundColor: 'white', cursor: 'pointer' }}>Cancel</button>
-              <button onClick={handleSubmit} disabled={submitting} style={{ padding: '10px 16px', borderRadius: '8px', backgroundColor: '#111', color: 'white', fontSize: '13px', fontWeight: '600', border: 'none', cursor: 'pointer', opacity: submitting ? 0.7 : 1 }}>
+            <div className="flex justify-end gap-2.5">
+              <button onClick={() => { setShowModal(false); resetForm() }} className="cursor-pointer rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-[13px] font-semibold text-ink">Cancel</button>
+              <button onClick={handleSubmit} disabled={submitting} className={`cursor-pointer rounded-lg border-none bg-ink px-4 py-2.5 text-[13px] font-semibold text-white ${submitting ? 'opacity-70' : ''}`}>
                 {submitting ? 'Adding...' : 'Add Fixture'}
               </button>
             </div>

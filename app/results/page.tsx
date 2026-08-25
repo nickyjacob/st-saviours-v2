@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { Bus, Calendar, Home, Shuffle, Trophy } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
 
@@ -44,6 +45,20 @@ function formatScore(goals: number, points: number, twoPointers: number, sport: 
 
 function calcTotal(goals: number, points: number, twoPointers: number) {
   return (goals * 3) + points + (twoPointers * 2)
+}
+
+function HomeAwayMark({ homeAway }: { homeAway: string }) {
+  const isHome = homeAway === 'home'
+  const isAway = homeAway === 'away'
+  const Icon = isHome ? Home : isAway ? Bus : Shuffle
+  const label = homeAway.charAt(0).toUpperCase() + homeAway.slice(1)
+  const tone = isHome ? 'text-approved' : isAway ? 'text-info' : 'text-neutral'
+  return (
+    <span className={`inline-flex items-center gap-1 text-[11px] ${tone}`}>
+      <Icon className="h-3 w-3 shrink-0" aria-hidden="true" />
+      {label}
+    </span>
+  )
 }
 
 export default function ResultsPage() {
@@ -122,72 +137,77 @@ export default function ResultsPage() {
   const resultBg = (r: string) => r === 'win' ? '#f0fdf4' : r === 'loss' ? '#fef2f2' : '#fefce8'
   const resultBorder = (r: string) => r === 'win' ? '#2e7d32' : r === 'loss' ? '#dc2626' : '#f9ab2b'
   const resultLabel = (r: string) => r === 'win' ? '🟢 WIN' : r === 'loss' ? '🔴 LOSS' : '🟡 DRAW'
-  const homeAwayIcon = (h: string) => h === 'home' ? '🏠' : h === 'away' ? '🚌' : '🔄'
 
-  const inputStyle = { width: '100%', border: '1px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', fontSize: '14px', color: '#111', outline: 'none', backgroundColor: 'white' }
-  const labelStyle = { fontSize: '13px', fontWeight: '600' as const, color: '#111', display: 'block' as const, marginBottom: '4px' }
-  const fieldStyle = { marginBottom: '12px' }
+  const inputClass = 'w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-ink outline-none'
+  const labelClass = 'mb-1 block text-[13px] font-semibold text-ink'
+  const fieldClass = 'mb-3'
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f4f4f4' }}>
-      <div style={{ textAlign: 'center', padding: '48px', color: '#888' }}>Loading...</div>
+    <div className="min-h-screen bg-gray-100">
+      <div className="p-12 text-center text-neutral">Loading...</div>
     </div>
   )
 
   const isAdultFootball = form.sport === "Men's/Boys Gaelic"
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f4f4f4' }}>
+    <div className="min-h-screen bg-gray-100">
       <Navbar activePage="Results" userRole={userRole} />
-      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '24px 16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+      <div className="mx-auto max-w-[800px] px-4 py-6">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-2.5">
           <div>
-            <h1 style={{ fontSize: '22px', fontWeight: 'bold', color: '#111' }}>🏆 Match Results</h1>
-            <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '2px' }}>St. Saviours GAA & LGFA</p>
+            <h1 className="flex items-center gap-2 text-[22px] font-bold text-ink">
+              <Trophy className="h-5 w-5 shrink-0" aria-hidden="true" />
+              Match Results
+            </h1>
+            <p className="mt-0.5 text-[13px] text-neutral">St. Saviours GAA & LGFA</p>
           </div>
           {(userRole === 'coach' || userRole === 'admin') && (
-            <button onClick={() => setShowModal(true)} style={{ backgroundColor: '#111', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>+ Post Result</button>
+            <button onClick={() => setShowModal(true)} className="cursor-pointer rounded-lg border-none bg-ink px-4 py-2 text-[13px] font-semibold text-white">+ Post Result</button>
           )}
         </div>
 
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-          <select value={filterTeam} onChange={e => setFilterTeam(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '6px', padding: '5px 10px', fontSize: '12px', color: '#111', backgroundColor: 'white' }}>
+        <div className="mb-4 flex flex-wrap gap-2">
+          <select value={filterTeam} onChange={e => setFilterTeam(e.target.value)} className="rounded-md border border-gray-200 bg-white px-2.5 py-[5px] text-xs text-ink">
             <option value="">All Teams</option>
             {teams.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
-          <select value={filterComp} onChange={e => setFilterComp(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '6px', padding: '5px 10px', fontSize: '12px', color: '#111', backgroundColor: 'white' }}>
+          <select value={filterComp} onChange={e => setFilterComp(e.target.value)} className="rounded-md border border-gray-200 bg-white px-2.5 py-[5px] text-xs text-ink">
             <option value="">All Competitions</option>
             {COMPETITIONS.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           {(filterTeam || filterComp) && (
-            <button onClick={() => { setFilterTeam(''); setFilterComp('') }} style={{ border: '1px solid #d1d5db', borderRadius: '6px', padding: '5px 10px', fontSize: '12px', cursor: 'pointer', backgroundColor: 'white', color: '#111' }}>Clear</button>
+            <button onClick={() => { setFilterTeam(''); setFilterComp('') }} className="cursor-pointer rounded-md border border-gray-200 bg-white px-2.5 py-[5px] text-xs text-ink">Clear</button>
           )}
         </div>
 
         {filtered.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '40px', backgroundColor: 'white', borderRadius: '10px', color: '#888' }}>No results yet</div>
+          <div className="rounded-[10px] bg-white px-4 py-10 text-center text-neutral">No results yet</div>
         )}
 
         {filtered.map(r => (
           <div key={r.id} style={{ backgroundColor: resultBg(r.result), borderRadius: '8px', borderLeft: `4px solid ${resultBorder(r.result)}`, padding: '12px 16px', marginBottom: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' }}>
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1">
+                <div className="mb-1 flex flex-wrap items-center gap-2">
                   <span style={{ fontSize: '11px', fontWeight: '700', color: resultColour(r.result) }}>{resultLabel(r.result)}</span>
-                  <span style={{ fontSize: '11px', color: '#6b7280' }}>{homeAwayIcon(r.home_away)} {r.home_away.charAt(0).toUpperCase() + r.home_away.slice(1)}</span>
-                  <span style={{ fontSize: '11px', color: '#6b7280' }}>📅 {new Date(r.match_date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                  <HomeAwayMark homeAway={r.home_away} />
+                  <span className="inline-flex items-center gap-1 text-[11px] text-neutral">
+                    <Calendar className="h-3 w-3 shrink-0" aria-hidden="true" />
+                    {new Date(r.match_date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </span>
                 </div>
-                <div style={{ fontSize: '14px', fontWeight: '700', color: '#111', marginBottom: '2px' }}>{r.team_name}</div>
-                <div style={{ fontSize: '13px', color: '#111', marginBottom: '2px' }}>
-                  <span style={{ fontWeight: '600' }}>St Saviours: {formatScore(r.our_goals, r.our_points, r.our_two_pointers, r.sport)}</span>
+                <div className="mb-0.5 text-sm font-bold text-ink">{r.team_name}</div>
+                <div className="mb-0.5 text-[13px] text-ink">
+                  <span className="font-semibold">St Saviours: {formatScore(r.our_goals, r.our_points, r.our_two_pointers, r.sport)}</span>
                   {' v '}
                   <span>{r.opposition}: {formatScore(r.their_goals, r.their_points, r.their_two_pointers, r.sport)}</span>
                 </div>
-                <div style={{ fontSize: '11px', color: '#6b7280' }}>{r.competition} · {r.sport}</div>
-                {r.notes && <div style={{ fontSize: '11px', color: '#374151', marginTop: '4px', fontStyle: 'italic' }}>{r.notes}</div>}
+                <div className="text-[11px] text-neutral">{r.competition} · {r.sport}</div>
+                {r.notes && <div className="mt-1 text-[11px] italic text-ink">{r.notes}</div>}
               </div>
               {(userRole === 'admin' || r.posted_by === currentUserId) && (
-                <button onClick={() => handleDelete(r.id)} style={{ padding: '3px 8px', borderRadius: '6px', border: '1px solid #fca5a5', color: '#dc2626', backgroundColor: 'white', fontSize: '11px', cursor: 'pointer', flexShrink: 0 }}>Delete</button>
+                <button onClick={() => handleDelete(r.id)} className="shrink-0 cursor-pointer rounded-md border border-rejected/40 bg-white px-2 py-[3px] text-[11px] text-rejected">Delete</button>
               )}
             </div>
           </div>
@@ -195,12 +215,15 @@ export default function ResultsPage() {
       </div>
 
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
-          <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: '#111' }}>🏆 Post Result</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-xl bg-white p-6">
+            <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-ink">
+              <Trophy className="h-5 w-5 shrink-0" aria-hidden="true" />
+              Post Result
+            </h2>
 
-            <div style={fieldStyle}>
-              <label style={labelStyle}>Link to Fixture (optional)</label>
+            <div className={fieldClass}>
+              <label className={labelClass}>Link to Fixture (optional)</label>
               <select value={form.fixture_id} onChange={e => {
                 const selected = fixtures.find(f => f.id === e.target.value)
                 if (selected) {
@@ -208,7 +231,7 @@ export default function ResultsPage() {
                 } else {
                   setForm({ ...form, fixture_id: '' })
                 }
-              }} style={inputStyle}>
+              }} className={inputClass}>
                 <option value="">Select a fixture...</option>
                 {fixtures.map(f => (
                   <option key={f.id} value={f.id}>{f.team_name} vs {f.opposition} · {new Date(f.fixture_date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</option>
@@ -216,98 +239,98 @@ export default function ResultsPage() {
               </select>
             </div>
 
-            <div style={fieldStyle}>
-              <label style={labelStyle}>Sport</label>
-              <select value={form.sport} onChange={e => setForm({ ...form, sport: e.target.value })} style={inputStyle}>
+            <div className={fieldClass}>
+              <label className={labelClass}>Sport</label>
+              <select value={form.sport} onChange={e => setForm({ ...form, sport: e.target.value })} className={inputClass}>
                 {SPORTS.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+            <div className="mb-3 grid grid-cols-2 gap-3">
               <div>
-                <label style={labelStyle}>Our Team</label>
-                <select value={form.team_name} onChange={e => setForm({ ...form, team_name: e.target.value })} style={inputStyle}>
+                <label className={labelClass}>Our Team</label>
+                <select value={form.team_name} onChange={e => setForm({ ...form, team_name: e.target.value })} className={inputClass}>
                   <option value="">Select team...</option>
                   {(SPORT_TEAMS[form.sport] || []).map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
               <div>
-                <label style={labelStyle}>Opposition</label>
-                <input value={form.opposition} onChange={e => setForm({ ...form, opposition: e.target.value })} placeholder="e.g. Ballyduff" style={inputStyle} />
+                <label className={labelClass}>Opposition</label>
+                <input value={form.opposition} onChange={e => setForm({ ...form, opposition: e.target.value })} placeholder="e.g. Ballyduff" className={inputClass} />
               </div>
             </div>
 
-            <div style={fieldStyle}>
-              <label style={labelStyle}>Our Score</label>
-              <div style={{ display: 'grid', gridTemplateColumns: isAdultFootball ? '1fr 1fr 1fr' : '1fr 1fr', gap: '8px' }}>
+            <div className={fieldClass}>
+              <label className={labelClass}>Our Score</label>
+              <div className={`grid gap-2 ${isAdultFootball ? 'grid-cols-3' : 'grid-cols-2'}`}>
                 <div>
-                  <label style={{ fontSize: '11px', color: '#6b7280', display: 'block', marginBottom: '2px' }}>Goals</label>
-                  <input type="number" min="0" value={form.our_goals} onChange={e => setForm({ ...form, our_goals: parseInt(e.target.value) || 0 })} style={inputStyle} />
+                  <label className="mb-0.5 block text-[11px] text-neutral">Goals</label>
+                  <input type="number" min="0" value={form.our_goals} onChange={e => setForm({ ...form, our_goals: parseInt(e.target.value) || 0 })} className={inputClass} />
                 </div>
                 <div>
-                  <label style={{ fontSize: '11px', color: '#6b7280', display: 'block', marginBottom: '2px' }}>Points</label>
-                  <input type="number" min="0" value={form.our_points} onChange={e => setForm({ ...form, our_points: parseInt(e.target.value) || 0 })} style={inputStyle} />
+                  <label className="mb-0.5 block text-[11px] text-neutral">Points</label>
+                  <input type="number" min="0" value={form.our_points} onChange={e => setForm({ ...form, our_points: parseInt(e.target.value) || 0 })} className={inputClass} />
                 </div>
                 {isAdultFootball && (
                   <div>
-                    <label style={{ fontSize: '11px', color: '#6b7280', display: 'block', marginBottom: '2px' }}>2-Pointers</label>
-                    <input type="number" min="0" value={form.our_two_pointers} onChange={e => setForm({ ...form, our_two_pointers: parseInt(e.target.value) || 0 })} style={inputStyle} />
+                    <label className="mb-0.5 block text-[11px] text-neutral">2-Pointers</label>
+                    <input type="number" min="0" value={form.our_two_pointers} onChange={e => setForm({ ...form, our_two_pointers: parseInt(e.target.value) || 0 })} className={inputClass} />
                   </div>
                 )}
               </div>
             </div>
 
-            <div style={fieldStyle}>
-              <label style={labelStyle}>Their Score</label>
-              <div style={{ display: 'grid', gridTemplateColumns: isAdultFootball ? '1fr 1fr 1fr' : '1fr 1fr', gap: '8px' }}>
+            <div className={fieldClass}>
+              <label className={labelClass}>Their Score</label>
+              <div className={`grid gap-2 ${isAdultFootball ? 'grid-cols-3' : 'grid-cols-2'}`}>
                 <div>
-                  <label style={{ fontSize: '11px', color: '#6b7280', display: 'block', marginBottom: '2px' }}>Goals</label>
-                  <input type="number" min="0" value={form.their_goals} onChange={e => setForm({ ...form, their_goals: parseInt(e.target.value) || 0 })} style={inputStyle} />
+                  <label className="mb-0.5 block text-[11px] text-neutral">Goals</label>
+                  <input type="number" min="0" value={form.their_goals} onChange={e => setForm({ ...form, their_goals: parseInt(e.target.value) || 0 })} className={inputClass} />
                 </div>
                 <div>
-                  <label style={{ fontSize: '11px', color: '#6b7280', display: 'block', marginBottom: '2px' }}>Points</label>
-                  <input type="number" min="0" value={form.their_points} onChange={e => setForm({ ...form, their_points: parseInt(e.target.value) || 0 })} style={inputStyle} />
+                  <label className="mb-0.5 block text-[11px] text-neutral">Points</label>
+                  <input type="number" min="0" value={form.their_points} onChange={e => setForm({ ...form, their_points: parseInt(e.target.value) || 0 })} className={inputClass} />
                 </div>
                 {isAdultFootball && (
                   <div>
-                    <label style={{ fontSize: '11px', color: '#6b7280', display: 'block', marginBottom: '2px' }}>2-Pointers</label>
-                    <input type="number" min="0" value={form.their_two_pointers} onChange={e => setForm({ ...form, their_two_pointers: parseInt(e.target.value) || 0 })} style={inputStyle} />
+                    <label className="mb-0.5 block text-[11px] text-neutral">2-Pointers</label>
+                    <input type="number" min="0" value={form.their_two_pointers} onChange={e => setForm({ ...form, their_two_pointers: parseInt(e.target.value) || 0 })} className={inputClass} />
                   </div>
                 )}
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+            <div className="mb-3 grid grid-cols-2 gap-3">
               <div>
-                <label style={labelStyle}>Competition</label>
-                <select value={form.competition} onChange={e => setForm({ ...form, competition: e.target.value })} style={inputStyle}>
+                <label className={labelClass}>Competition</label>
+                <select value={form.competition} onChange={e => setForm({ ...form, competition: e.target.value })} className={inputClass}>
                   <option value="">Select...</option>
                   {COMPETITIONS.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div>
-                <label style={labelStyle}>Home / Away</label>
-                <select value={form.home_away} onChange={e => setForm({ ...form, home_away: e.target.value })} style={inputStyle}>
-                  <option value="home">🏠 Home</option>
-                  <option value="away">🚌 Away</option>
-                  <option value="neutral">🔄 Neutral</option>
+                <label className={labelClass}>Home / Away</label>
+                <select value={form.home_away} onChange={e => setForm({ ...form, home_away: e.target.value })} className={inputClass}>
+                  <option value="home">Home</option>
+                  <option value="away">Away</option>
+                  <option value="neutral">Neutral</option>
                 </select>
               </div>
             </div>
 
-            <div style={fieldStyle}>
-              <label style={labelStyle}>Match Date</label>
-              <input type="date" value={form.match_date} onChange={e => setForm({ ...form, match_date: e.target.value })} style={inputStyle} />
+            <div className={fieldClass}>
+              <label className={labelClass}>Match Date</label>
+              <input type="date" value={form.match_date} onChange={e => setForm({ ...form, match_date: e.target.value })} className={inputClass} />
             </div>
 
-            <div style={fieldStyle}>
-              <label style={labelStyle}>Notes (optional)</label>
-              <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="e.g. Great performance from the whole team!" rows={2} style={{ ...inputStyle, resize: 'vertical' as const }} />
+            <div className={fieldClass}>
+              <label className={labelClass}>Notes (optional)</label>
+              <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="e.g. Great performance from the whole team!" rows={2} className={`${inputClass} resize-y`} />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-              <button onClick={() => setShowModal(false)} style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '13px', fontWeight: '600', color: '#374151', backgroundColor: 'white', cursor: 'pointer' }}>Cancel</button>
-              <button onClick={handleSubmit} disabled={submitting} style={{ padding: '10px 16px', borderRadius: '8px', backgroundColor: '#111', color: 'white', fontSize: '13px', fontWeight: '600', border: 'none', cursor: 'pointer', opacity: submitting ? 0.7 : 1 }}>
+            <div className="flex justify-end gap-2.5">
+              <button onClick={() => setShowModal(false)} className="cursor-pointer rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-[13px] font-semibold text-ink">Cancel</button>
+              <button onClick={handleSubmit} disabled={submitting} className={`cursor-pointer rounded-lg border-none bg-ink px-4 py-2.5 text-[13px] font-semibold text-white ${submitting ? 'opacity-70' : ''}`}>
                 {submitting ? 'Posting...' : 'Post Result'}
               </button>
             </div>
