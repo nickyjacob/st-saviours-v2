@@ -1,6 +1,8 @@
 'use client'
 
 import Navbar from '@/components/Navbar'
+import Button from '@/components/ui/Button'
+import { AlertTriangle, Check, Pencil } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useParams } from 'next/navigation'
@@ -190,73 +192,74 @@ async function checkConflict(pId: string, d: string, st: string, et: string) {
     window.location.href = '/my-bookings'
   }
 
-  const inputStyle = (hasError: boolean) => ({
-    width: '100%', border: `1px solid ${hasError ? '#dc2626' : '#d1d5db'}`,
-    borderRadius: '8px', padding: '10px 12px', fontSize: '14px',
-    outline: 'none', backgroundColor: 'white', color: '#111',
-  })
-  const labelStyle = { fontSize: '14px', fontWeight: '600', color: '#111', marginBottom: '6px', display: 'block' }
-  const fieldStyle = { marginBottom: '16px' }
-  const requiredStar = <span style={{ color: '#dc2626' }}> *</span>
+  const fieldClass = (hasError: boolean) =>
+    `w-full min-h-[44px] rounded-lg border bg-white px-3 text-sm text-ink outline-none focus:outline-none focus:ring-2 focus:ring-approved ${hasError ? 'border-rejected' : 'border-gray-200'}`
+  const labelClass = 'mb-1.5 block text-sm font-semibold text-ink'
+  const fieldWrapClass = 'mb-4'
+  const requiredStar = <span className="text-rejected"> *</span>
+  const errorClass = 'mt-1 text-xs text-rejected'
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f4f4f4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <p style={{ color: '#888' }}>Loading...</p>
+    <div className="flex min-h-screen items-center justify-center bg-gray-100">
+      <p className="text-neutral">Loading...</p>
     </div>
   )
 
   if (notFound) return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f4f4f4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ textAlign: 'center' }}>
-        <p style={{ color: '#111', marginBottom: '12px' }}>Booking not found.</p>
-        <a href="/my-bookings" style={{ color: '#111', fontWeight: '600' }}>Back to My Bookings</a>
+    <div className="flex min-h-screen items-center justify-center bg-gray-100">
+      <div className="text-center">
+        <p className="mb-3 text-ink">Booking not found.</p>
+        <a href="/my-bookings" className="font-semibold text-ink">Back to My Bookings</a>
       </div>
     </div>
   )
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f4f4f4' }}>
-<Navbar activePage="" userRole={userRole} />
+    <div className="min-h-screen bg-gray-100">
+      <Navbar activePage="" userRole={userRole} />
 
-      <div style={{ maxWidth: '640px', margin: '32px auto', padding: '0 16px' }}>
-        <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '32px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <h1 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '4px', color: '#111' }}>&#9998; Edit Booking</h1>
-          <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '24px' }}>Fields marked <span style={{ color: '#dc2626' }}>*</span> are required</p>
+      <div className="mx-auto my-8 max-w-[640px] px-4">
+        <div className="rounded-xl bg-white p-8 shadow-sm">
+          <h1 className="mb-1 flex items-center gap-2 text-[22px] font-bold text-ink">
+            <Pencil className="h-5 w-5 shrink-0" aria-hidden="true" />
+            Edit Booking
+          </h1>
+          <p className="mb-6 text-[13px] text-neutral">Fields marked <span className="text-rejected">*</span> are required</p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '16px' }}>
+          <div className="mb-4 grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3">
             <div>
-              <label style={labelStyle}>Sport / Code{requiredStar}</label>
-              <select value={sport} onChange={e => { setSport(e.target.value); setAgeGroup('') }} style={inputStyle(!!errors.sport)}>
+              <label className={labelClass}>Sport / Code{requiredStar}</label>
+              <select value={sport} onChange={e => { setSport(e.target.value); setAgeGroup('') }} className={fieldClass(!!errors.sport)}>
                 <option value="">Select sport...</option>
                 {Object.keys(SPORTS).map(s => <option key={s} value={s}>{s}</option>)}
               </select>
-              {errors.sport && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Please select a sport</p>}
+              {errors.sport && <p className={errorClass}>Please select a sport</p>}
             </div>
             <div>
-              <label style={labelStyle}>Pitch{requiredStar}</label>
-              <select value={pitchId} onChange={e => handlePitchChange(e.target.value)} style={inputStyle(!!errors.pitchId)}>
+              <label className={labelClass}>Pitch{requiredStar}</label>
+              <select value={pitchId} onChange={e => handlePitchChange(e.target.value)} className={fieldClass(!!errors.pitchId)}>
                 <option value="">Select a pitch...</option>
                 {pitches.map(p => <option key={p.id} value={String(p.id)}>{p.name}</option>)}
               </select>
-              {errors.pitchId && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Please select a pitch</p>}
+              {errors.pitchId && <p className={errorClass}>Please select a pitch</p>}
             </div>
           </div>
 
           {sport && SPORTS[sport] && (
-            <div style={fieldStyle}>
-              <label style={labelStyle}>Age Group / Team{requiredStar}</label>
-              <select value={ageGroup} onChange={e => setAgeGroup(e.target.value)} style={inputStyle(!!errors.ageGroup)}>
+            <div className={fieldWrapClass}>
+              <label className={labelClass}>Age Group / Team{requiredStar}</label>
+              <select value={ageGroup} onChange={e => setAgeGroup(e.target.value)} className={fieldClass(!!errors.ageGroup)}>
                 <option value="">Select age group...</option>
                 {SPORTS[sport].map(a => <option key={a} value={a}>{a}</option>)}
               </select>
-              {errors.ageGroup && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Please select an age group</p>}
+              {errors.ageGroup && <p className={errorClass}>Please select an age group</p>}
             </div>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+          <div className="mb-4 grid grid-cols-2 gap-3">
             <div>
-              <label style={labelStyle}>Purpose</label>
-              <select value={purpose} onChange={e => setPurpose(e.target.value)} style={inputStyle(false)}>
+              <label className={labelClass}>Purpose</label>
+              <select value={purpose} onChange={e => setPurpose(e.target.value)} className={fieldClass(false)}>
                 <option value="">Select purpose...</option>
                 <option value="Training">Training</option>
                 <option value="Match / Fixture">Match / Fixture</option>
@@ -264,8 +267,8 @@ async function checkConflict(pId: string, d: string, st: string, et: string) {
               </select>
             </div>
             <div>
-              <label style={labelStyle}>Dressing Rooms</label>
-              <select value={dressingRoom} onChange={e => setDressingRoom(e.target.value)} style={inputStyle(false)}>
+              <label className={labelClass}>Dressing Rooms</label>
+              <select value={dressingRoom} onChange={e => setDressingRoom(e.target.value)} className={fieldClass(false)}>
                 <option value="none">No dressing room required</option>
                 <option value="rooms_1_2">Rooms 1 & 2</option>
                 <option value="rooms_3_4">Rooms 3 & 4</option>
@@ -274,69 +277,79 @@ async function checkConflict(pId: string, d: string, st: string, et: string) {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+          <div className="mb-4 grid grid-cols-2 gap-3">
             <div>
-              <label style={labelStyle}>Showers Required?</label>
-              <select value={showers} onChange={e => setShowers(e.target.value)} style={inputStyle(false)}>
+              <label className={labelClass}>Showers Required?</label>
+              <select value={showers} onChange={e => setShowers(e.target.value)} className={fieldClass(false)}>
                 <option value="no">No</option>
                 <option value="yes">Yes</option>
               </select>
             </div>
             <div>
-              <label style={labelStyle}>No. of People</label>
-              <input type="number" value={approxNumbers} onChange={e => setApproxNumbers(e.target.value)} placeholder="e.g. 25" style={inputStyle(false)} />
+              <label className={labelClass}>No. of People</label>
+              <input type="number" value={approxNumbers} onChange={e => setApproxNumbers(e.target.value)} placeholder="e.g. 25" className={fieldClass(false)} />
             </div>
           </div>
 
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Date{requiredStar}</label>
-            <input type="date" value={date} onChange={e => handleDateChange(e.target.value)} style={inputStyle(!!errors.date)} />
-            {errors.date && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Please select a date</p>}
+          <div className={fieldWrapClass}>
+            <label className={labelClass}>Date{requiredStar}</label>
+            <input type="date" value={date} onChange={e => handleDateChange(e.target.value)} className={fieldClass(!!errors.date)} />
+            {errors.date && <p className={errorClass}>Please select a date</p>}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+          <div className="mb-4 grid grid-cols-2 gap-3">
             <div>
-              <label style={labelStyle}>Start Time{requiredStar}</label>
-              <select value={startTime} onChange={e => handleStartTimeChange(e.target.value)} style={inputStyle(!!errors.startTime)}>
+              <label className={labelClass}>Start Time{requiredStar}</label>
+              <select value={startTime} onChange={e => handleStartTimeChange(e.target.value)} className={fieldClass(!!errors.startTime)}>
                 <option value="">Start...</option>
                 {TIME_SLOTS.map(t => <option key={t} value={t}>{fmt(t)}</option>)}
               </select>
-              {errors.startTime && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Required</p>}
+              {errors.startTime && <p className={errorClass}>Required</p>}
             </div>
             <div>
-              <label style={labelStyle}>End Time{requiredStar}</label>
-              <select value={endTime} onChange={e => handleEndTimeChange(e.target.value)} style={inputStyle(!!errors.endTime)}>
+              <label className={labelClass}>End Time{requiredStar}</label>
+              <select value={endTime} onChange={e => handleEndTimeChange(e.target.value)} className={fieldClass(!!errors.endTime)}>
                 <option value="">End...</option>
                 {TIME_SLOTS.map(t => <option key={t} value={t}>{fmt(t)}</option>)}
               </select>
-              {errors.endTime && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Required</p>}
+              {errors.endTime && <p className={errorClass}>Required</p>}
             </div>
           </div>
 
           {conflict !== null && (
-            <div style={{ padding: '10px 14px', borderRadius: '8px', marginBottom: '16px', backgroundColor: conflict ? '#fef2f2' : '#f0fdf4', border: `1px solid ${conflict ? '#fca5a5' : '#86efac'}`, color: conflict ? '#dc2626' : '#16a34a', fontWeight: '600', fontSize: '14px' }}>
-              {conflict ? '⚠ Conflict detected — this pitch is already booked at this time' : '✓ Available'}
+            <div className={`mb-4 rounded-lg border px-3.5 py-2.5 text-sm font-semibold ${conflict ? 'border-rejected/40 bg-rejected/10 text-rejected' : 'border-approved/40 bg-approved/10 text-approved'}`}>
+              {conflict ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  Conflict detected — this pitch is already booked at this time
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5">
+                  <Check className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  Available
+                </span>
+              )}
             </div>
           )}
 
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Additional Notes (optional)</label>
-            <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Any special requirements..." rows={3} style={{ ...inputStyle(false), resize: 'vertical' }} />
+          <div className={fieldWrapClass}>
+            <label className={labelClass}>Additional Notes (optional)</label>
+            <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Any special requirements..." rows={3} className={`${fieldClass(false)} resize-y py-2.5`} />
           </div>
 
           {submitError && (
-            <div style={{ padding: '10px 14px', borderRadius: '8px', marginBottom: '16px', backgroundColor: '#fef2f2', border: '1px solid #fca5a5', color: '#dc2626', fontSize: '14px' }}>
+            <div className="mb-4 rounded-lg border border-rejected/40 bg-rejected/10 px-3.5 py-2.5 text-sm text-rejected">
               {submitError}
             </div>
           )}
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
-            <button onClick={handleCancel} style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #fca5a5', fontSize: '13px', fontWeight: '600', color: '#dc2626', backgroundColor: 'white', cursor: 'pointer' }}>Cancel Booking</button>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <a href="/my-bookings" style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '13px', fontWeight: '600', color: '#374151', textDecoration: 'none', display: 'flex', alignItems: 'center' }}>Back</a>
-              <button onClick={handleSubmit} disabled={submitting} style={{ padding: '10px 20px', borderRadius: '8px', backgroundColor: '#111', color: 'white', fontSize: '13px', fontWeight: '600', border: 'none', cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1 }}>
+          <div className="mt-2 flex items-center justify-between">
+            <Button variant="rejected" onClick={handleCancel}>Cancel Booking</Button>
+            <div className="flex gap-2.5">
+              <Button variant="outline" onClick={() => { window.location.href = '/my-bookings' }}>Back</Button>
+              <Button variant="primary" onClick={handleSubmit} disabled={submitting}>
                 {submitting ? 'Saving...' : 'Save Changes'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

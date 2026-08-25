@@ -1,6 +1,19 @@
 'use client'
 
 import Navbar from '@/components/Navbar'
+import Button from '@/components/ui/Button'
+import {
+  AlertTriangle,
+  Calendar,
+  CalendarCheck,
+  Check,
+  Goal,
+  ListChecks,
+  MapPin,
+  Repeat,
+  Target,
+  X,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
@@ -274,113 +287,128 @@ if (!data && data !== false) return null
     }
   }
 
-  const inputStyle = (hasError: boolean) => ({
-    width: '100%', border: `1px solid ${hasError ? '#dc2626' : '#d1d5db'}`,
-    borderRadius: '8px', padding: '10px 12px', fontSize: '14px',
-    outline: 'none', backgroundColor: 'white', color: '#111',
-  })
-
-  const labelStyle = { fontSize: '14px', fontWeight: '600', color: '#111', marginBottom: '6px', display: 'block' }
-  const fieldStyle = { marginBottom: '16px' }
-  const requiredStar = <span style={{ color: '#dc2626' }}> *</span>
+  const fieldClass = (hasError: boolean) =>
+    `w-full min-h-[44px] rounded-lg border bg-white px-3 text-sm text-ink outline-none focus:outline-none focus:ring-2 focus:ring-approved ${hasError ? 'border-rejected' : 'border-gray-200'}`
+  const labelClass = 'mb-1.5 block text-sm font-semibold text-ink'
+  const fieldWrapClass = 'mb-4'
+  const requiredStar = <span className="text-rejected"> *</span>
+  const errorClass = 'mt-1 text-xs text-rejected'
 
   const totalBookings = bookingMode === 'single'
     ? (repeat > 0 ? repeat : 1)
     : multiDays.length * multiRepeat
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f4f4f4' }}>
-<Navbar activePage="New Booking" userRole={userRole} />
+    <div className="min-h-screen bg-gray-100">
+      <Navbar activePage="New Booking" userRole={userRole} />
 
-      <div style={{ maxWidth: '640px', margin: '32px auto', padding: '0 16px' }}>
-        <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '32px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <h1 style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px', color: '#111' }}>&#xff0b; New Booking</h1>
-          <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '24px' }}>Fields marked <span style={{ color: '#dc2626' }}>*</span> are required</p>
+      <div className="mx-auto my-8 max-w-[640px] px-4">
+        <div className="rounded-xl bg-white p-8 shadow-sm">
+          <h1 className="mb-1 flex items-center gap-2 text-[22px] font-bold text-ink">
+            <CalendarCheck className="h-5 w-5 shrink-0" aria-hidden="true" />
+            New Booking
+          </h1>
+          <p className="mb-6 text-[13px] text-neutral">Fields marked <span className="text-rejected">*</span> are required</p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '16px' }}>
+          <div className="mb-4 grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3">
             <div id="field-sport">
-              <label style={labelStyle}>Sport / Code{requiredStar}</label>
-              <select value={sport} onChange={e => { setSport(e.target.value); setAgeGroup('') }} style={inputStyle(!!errors.sport)}>
+              <label className={labelClass}>Sport / Code{requiredStar}</label>
+              <select value={sport} onChange={e => { setSport(e.target.value); setAgeGroup('') }} className={fieldClass(!!errors.sport)}>
                 <option value="">Select sport...</option>
                 {Object.keys(SPORTS).map(s => <option key={s} value={s}>{s}</option>)}
               </select>
-              {errors.sport && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Please select a sport</p>}
+              {errors.sport && <p className={errorClass}>Please select a sport</p>}
             </div>
             <div id="field-pitchId">
-              <label style={labelStyle}>Pitch{requiredStar}</label>
-              <select value={pitchId} onChange={e => setPitchId(e.target.value)} style={inputStyle(!!errors.pitchId)}>
+              <label className={labelClass}>Pitch{requiredStar}</label>
+              <select value={pitchId} onChange={e => setPitchId(e.target.value)} className={fieldClass(!!errors.pitchId)}>
                 <option value="">Select a pitch...</option>
                 {pitches.map(p => <option key={p.id} value={String(p.id)}>{p.name}</option>)}
               </select>
-              {errors.pitchId && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Please select a pitch</p>}
+              {errors.pitchId && <p className={errorClass}>Please select a pitch</p>}
             </div>
           </div>
 
           {sport && (
-            <div id="field-ageGroup" style={fieldStyle}>
-              <label style={labelStyle}>Age Group / Team{requiredStar}</label>
-              <select value={ageGroup} onChange={e => setAgeGroup(e.target.value)} style={inputStyle(!!errors.ageGroup)}>
+            <div id="field-ageGroup" className={fieldWrapClass}>
+              <label className={labelClass}>Age Group / Team{requiredStar}</label>
+              <select value={ageGroup} onChange={e => setAgeGroup(e.target.value)} className={fieldClass(!!errors.ageGroup)}>
                 <option value="">Select age group...</option>
                 {SPORTS[sport].map(a => <option key={a} value={a}>{a}</option>)}
               </select>
-              {errors.ageGroup && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Please select an age group</p>}
+              {errors.ageGroup && <p className={errorClass}>Please select an age group</p>}
             </div>
           )}
 
-          <div style={{ display: 'flex', border: '1px solid #d1d5db', borderRadius: '8px', overflow: 'hidden', marginBottom: '20px' }}>
-            <button onClick={() => setBookingMode('single')} style={{ flex: 1, padding: '10px', fontSize: '14px', fontWeight: '600', backgroundColor: bookingMode === 'single' ? '#111' : 'white', color: bookingMode === 'single' ? 'white' : '#374151', border: 'none', cursor: 'pointer' }}>Single / Recurring</button>
-            <button onClick={() => setBookingMode('multi')} style={{ flex: 1, padding: '10px', fontSize: '14px', fontWeight: '600', backgroundColor: bookingMode === 'multi' ? '#111' : 'white', color: bookingMode === 'multi' ? 'white' : '#374151', border: 'none', cursor: 'pointer' }}>Multi-day Pattern</button>
+          <div className="mb-5 flex overflow-hidden rounded-lg border border-gray-200">
+            <button onClick={() => setBookingMode('single')} className={`min-h-[44px] flex-1 cursor-pointer border-none px-3 text-sm font-semibold ${bookingMode === 'single' ? 'bg-ink text-white' : 'bg-white text-ink'}`}>Single / Recurring</button>
+            <button onClick={() => setBookingMode('multi')} className={`min-h-[44px] flex-1 cursor-pointer border-none px-3 text-sm font-semibold ${bookingMode === 'multi' ? 'bg-ink text-white' : 'bg-white text-ink'}`}>Multi-day Pattern</button>
           </div>
 
           {bookingMode === 'single' && (
             <div>
-              <div id="field-date" style={fieldStyle}>
-                <label style={labelStyle}>Date{requiredStar}</label>
-                <input type="date" value={date} min={new Date().toISOString().split('T')[0]} onChange={e => handleDateChange(e.target.value)} style={inputStyle(!!errors.date)} />
-                {errors.date && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Please select a date</p>}
+              <div id="field-date" className={fieldWrapClass}>
+                <label className={labelClass}>Date{requiredStar}</label>
+                <input type="date" value={date} min={new Date().toISOString().split('T')[0]} onChange={e => handleDateChange(e.target.value)} className={fieldClass(!!errors.date)} />
+                {errors.date && <p className={errorClass}>Please select a date</p>}
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+              <div className="mb-4 grid grid-cols-2 gap-3">
                 <div id="field-startTime">
-                  <label style={labelStyle}>Start Time{requiredStar}</label>
-                  <select value={startTime} onChange={e => handleStartTimeChange(e.target.value)} style={inputStyle(!!errors.startTime)}>
+                  <label className={labelClass}>Start Time{requiredStar}</label>
+                  <select value={startTime} onChange={e => handleStartTimeChange(e.target.value)} className={fieldClass(!!errors.startTime)}>
                     <option value="">Start...</option>
                     {TIME_SLOTS.map(t => <option key={t} value={t}>{fmt(t)}</option>)}
                   </select>
-                  {errors.startTime && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Required</p>}
+                  {errors.startTime && <p className={errorClass}>Required</p>}
                 </div>
                 <div>
-                  <label style={labelStyle}>End Time{requiredStar}</label>
-                  <select value={endTime} onChange={e => handleEndTimeChange(e.target.value)} style={inputStyle(!!errors.endTime)}>
+                  <label className={labelClass}>End Time{requiredStar}</label>
+                  <select value={endTime} onChange={e => handleEndTimeChange(e.target.value)} className={fieldClass(!!errors.endTime)}>
                     <option value="">End...</option>
                     {TIME_SLOTS.map(t => <option key={t} value={t}>{fmt(t)}</option>)}
                   </select>
-                  {errors.endTime && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>Required</p>}
+                  {errors.endTime && <p className={errorClass}>Required</p>}
                 </div>
               </div>
               {conflict !== null && (
-                <div style={{ padding: '10px 14px', borderRadius: '8px', marginBottom: '16px', backgroundColor: conflict ? '#fef2f2' : '#f0fdf4', border: `1px solid ${conflict ? '#fca5a5' : '#86efac'}`, color: conflict ? '#dc2626' : '#16a34a', fontWeight: '600', fontSize: '14px' }}>
-                  {conflict ? '⚠ Conflict detected — this pitch is already booked at this time' : '✓ Available'}
+                <div className={`mb-4 rounded-lg border px-3.5 py-2.5 text-sm font-semibold ${conflict ? 'border-rejected/40 bg-rejected/10 text-rejected' : 'border-approved/40 bg-approved/10 text-approved'}`}>
+                  {conflict ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      Conflict detected — this pitch is already booked at this time
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5">
+                      <Check className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      Available
+                    </span>
+                  )}
                 </div>
               )}
-              <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '16px', marginBottom: '16px', backgroundColor: '#f9fafb' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: '600', color: '#111' }}>
-                  <input type="checkbox" checked={repeat > 0} onChange={e => handleRepeatChange(e.target.checked ? 2 : 0)} style={{ width: '16px', height: '16px' }} />
-                  &#x1f504; Repeat this booking weekly
+              <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <label className="flex cursor-pointer items-center gap-2.5 text-sm font-semibold text-ink">
+                  <input type="checkbox" checked={repeat > 0} onChange={e => handleRepeatChange(e.target.checked ? 2 : 0)} className="h-4 w-4 accent-approved focus:outline-none focus:ring-2 focus:ring-approved" />
+                  <Repeat className="h-4 w-4 shrink-0 text-info" aria-hidden="true" />
+                  Repeat this booking weekly
                 </label>
                 {repeat > 0 && (
-                  <div style={{ marginTop: '12px' }}>
-                    <p style={{ fontSize: '13px', color: '#111', marginBottom: '8px' }}>Repeat for how many weeks total?</p>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                  <div className="mt-3">
+                    <p className="mb-2 text-[13px] text-ink">Repeat for how many weeks total?</p>
+                    <div className="flex gap-2">
                       {[2, 3, 4].map(w => (
-                        <button key={w} onClick={() => handleRepeatChange(w)} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #d1d5db', backgroundColor: repeat === w ? '#111' : 'white', color: repeat === w ? 'white' : '#374151', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>{w} weeks</button>
+                        <button key={w} onClick={() => handleRepeatChange(w)} className={`min-h-[44px] flex-1 cursor-pointer rounded-lg border border-gray-200 text-[13px] font-semibold ${repeat === w ? 'bg-ink text-white' : 'bg-white text-ink'}`}>{w} weeks</button>
                       ))}
                     </div>
                     {repeatDates.length > 0 && (
-                      <div style={{ marginTop: '12px', border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden' }}>
-                        <p style={{ fontSize: '13px', fontWeight: '600', padding: '8px 12px', backgroundColor: '#f3f4f6', borderBottom: '1px solid #e5e7eb' }}>&#x1f4c5; Dates that will be booked:</p>
+                      <div className="mt-3 overflow-hidden rounded-lg border border-gray-200">
+                        <p className="flex items-center gap-1.5 border-b border-gray-200 bg-gray-100 px-3 py-2 text-[13px] font-semibold text-ink">
+                          <Calendar className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                          Dates that will be booked:
+                        </p>
                         {repeatDates.map((d, i) => (
-                          <div key={d} style={{ padding: '8px 12px', backgroundColor: i === 0 ? '#eff6ff' : 'white', borderBottom: i < repeatDates.length - 1 ? '1px solid #e5e7eb' : 'none', fontSize: '13px', color: '#2563eb', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            &#x2705; {formatDateDisplay(d)}
+                          <div key={d} className={`flex items-center gap-2 px-3 py-2 text-[13px] text-info ${i === 0 ? 'bg-info/10' : 'bg-white'} ${i < repeatDates.length - 1 ? 'border-b border-gray-200' : ''}`}>
+                            <Check className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                            {formatDateDisplay(d)}
                           </div>
                         ))}
                       </div>
@@ -393,63 +421,81 @@ if (!data && data !== false) return null
 
           {bookingMode === 'multi' && (
             <div>
-              <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '16px', marginBottom: '16px', backgroundColor: '#f9fafb' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <div className="mb-2 flex items-center justify-between">
                   <div>
-                    <h3 style={{ fontSize: '15px', fontWeight: '600' }}>&#x1f4c5; Multi-day weekly pattern</h3>
-                    <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>Pick a start date and time for each training day</p>
+                    <h3 className="flex items-center gap-1.5 text-[15px] font-semibold text-ink">
+                      <Calendar className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      Multi-day weekly pattern
+                    </h3>
+                    <p className="mt-0.5 text-xs text-neutral">Pick a start date and time for each training day</p>
                   </div>
-                  <button onClick={() => setMultiDays([...multiDays, { date: '', start_time: '', end_time: '', conflict: null }])} style={{ backgroundColor: '#111', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer', fontWeight: '600' }}>+ Add Day</button>
+                  <button onClick={() => setMultiDays([...multiDays, { date: '', start_time: '', end_time: '', conflict: null }])} className="cursor-pointer rounded-lg border-none bg-ink px-3 py-1.5 text-xs font-semibold text-white">+ Add Day</button>
                 </div>
                 {multiDays.map((day, i) => (
-                  <div key={i} style={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '12px', marginBottom: '8px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ fontWeight: '600', fontSize: '13px' }}>DAY {i + 1}</span>
-                      {multiDays.length > 1 && <button onClick={() => setMultiDays(multiDays.filter((_, idx) => idx !== i))} style={{ color: '#dc2626', border: '1px solid #fca5a5', borderRadius: '6px', padding: '2px 8px', fontSize: '12px', cursor: 'pointer', backgroundColor: 'white' }}>&#x2715; Remove</button>}
+                  <div key={i} className="mb-2 rounded-lg border border-gray-200 bg-white p-3">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-[13px] font-semibold text-ink">DAY {i + 1}</span>
+                      {multiDays.length > 1 && (
+                        <button onClick={() => setMultiDays(multiDays.filter((_, idx) => idx !== i))} className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-rejected/40 bg-white px-2 py-0.5 text-xs text-rejected">
+                          <X className="h-3 w-3" aria-hidden="true" />
+                          Remove
+                        </button>
+                      )}
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                    <div className="grid grid-cols-3 gap-2">
                       <div>
-                        <label style={{ fontSize: '12px', fontWeight: '600', color: '#111', marginBottom: '4px', display: 'block' }}>Start Date{requiredStar}</label>
-                        <input type="date" value={day.date} onChange={e => handleMultiDayChange(i, 'date', e.target.value)} style={inputStyle(!!errors[`day_date_${i}`])} />
+                        <label className="mb-1 block text-xs font-semibold text-ink">Start Date{requiredStar}</label>
+                        <input type="date" value={day.date} onChange={e => handleMultiDayChange(i, 'date', e.target.value)} className={fieldClass(!!errors[`day_date_${i}`])} />
                       </div>
                       <div>
-                        <label style={{ fontSize: '12px', fontWeight: '600', color: '#111', marginBottom: '4px', display: 'block' }}>Start Time{requiredStar}</label>
-                        <select value={day.start_time} onChange={e => handleMultiDayChange(i, 'start_time', e.target.value)} style={inputStyle(!!errors[`day_start_${i}`])}>
+                        <label className="mb-1 block text-xs font-semibold text-ink">Start Time{requiredStar}</label>
+                        <select value={day.start_time} onChange={e => handleMultiDayChange(i, 'start_time', e.target.value)} className={fieldClass(!!errors[`day_start_${i}`])}>
                           <option value="">Start...</option>
                           {TIME_SLOTS.map(t => <option key={t} value={t}>{fmt(t)}</option>)}
                         </select>
                       </div>
                       <div>
-                        <label style={{ fontSize: '12px', fontWeight: '600', color: '#111', marginBottom: '4px', display: 'block' }}>End Time{requiredStar}</label>
-                        <select value={day.end_time} onChange={e => handleMultiDayChange(i, 'end_time', e.target.value)} style={inputStyle(!!errors[`day_end_${i}`])}>
+                        <label className="mb-1 block text-xs font-semibold text-ink">End Time{requiredStar}</label>
+                        <select value={day.end_time} onChange={e => handleMultiDayChange(i, 'end_time', e.target.value)} className={fieldClass(!!errors[`day_end_${i}`])}>
                           <option value="">End...</option>
                           {TIME_SLOTS.map(t => <option key={t} value={t}>{fmt(t)}</option>)}
                         </select>
                       </div>
                     </div>
                     {day.conflict !== null && (
-                      <div style={{ marginTop: '8px', padding: '6px 10px', borderRadius: '6px', backgroundColor: day.conflict ? '#fef2f2' : '#f0fdf4', border: `1px solid ${day.conflict ? '#fca5a5' : '#86efac'}`, color: day.conflict ? '#dc2626' : '#16a34a', fontSize: '12px', fontWeight: '600' }}>
-                        {day.conflict ? '⚠ Conflict' : '✓ Available'}
+                      <div className={`mt-2 rounded-md border px-2.5 py-1.5 text-xs font-semibold ${day.conflict ? 'border-rejected/40 bg-rejected/10 text-rejected' : 'border-approved/40 bg-approved/10 text-approved'}`}>
+                        {day.conflict ? (
+                          <span className="inline-flex items-center gap-1">
+                            <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                            Conflict
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1">
+                            <Check className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                            Available
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>
                 ))}
               </div>
-              <div style={{ marginBottom: '16px' }}>
-                <p style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px' }}>Repeat pattern for how many weeks?</p>
-                <div style={{ display: 'flex', gap: '8px' }}>
+              <div className="mb-4">
+                <p className="mb-2 text-[13px] font-semibold text-ink">Repeat pattern for how many weeks?</p>
+                <div className="flex gap-2">
                   {[1, 2, 3, 4].map(w => (
-                    <button key={w} onClick={() => setMultiRepeat(w)} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #d1d5db', backgroundColor: multiRepeat === w ? '#111' : 'white', color: multiRepeat === w ? 'white' : '#374151', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>{w === 1 ? 'This week' : `${w} weeks`}</button>
+                    <button key={w} onClick={() => setMultiRepeat(w)} className={`min-h-[44px] flex-1 cursor-pointer rounded-lg border border-gray-200 text-[13px] font-semibold ${multiRepeat === w ? 'bg-ink text-white' : 'bg-white text-ink'}`}>{w === 1 ? 'This week' : `${w} weeks`}</button>
                   ))}
                 </div>
               </div>
             </div>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+          <div className="mb-4 grid grid-cols-2 gap-3">
             <div>
-              <label style={labelStyle}>Purpose{requiredStar}</label>
-              <select value={purpose} onChange={e => setPurpose(e.target.value)} style={inputStyle(false)}>
+              <label className={labelClass}>Purpose{requiredStar}</label>
+              <select value={purpose} onChange={e => setPurpose(e.target.value)} className={fieldClass(false)}>
                 <option value="">Select purpose...</option>
                 <option value="Training">Training</option>
                 <option value="Match / Fixture">Match / Fixture</option>
@@ -457,8 +503,8 @@ if (!data && data !== false) return null
               </select>
             </div>
             <div>
-              <label style={labelStyle}>Dressing Rooms</label>
-              <select value={dressingRoom} onChange={e => setDressingRoom(e.target.value)} style={inputStyle(false)}>
+              <label className={labelClass}>Dressing Rooms</label>
+              <select value={dressingRoom} onChange={e => setDressingRoom(e.target.value)} className={fieldClass(false)}>
                 <option value="none">No dressing room required</option>
                 <option value="rooms_1_2">Rooms 1 & 2</option>
                 <option value="rooms_3_4">Rooms 3 & 4</option>
@@ -466,47 +512,69 @@ if (!data && data !== false) return null
               </select>
             </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+          <div className="mb-4 grid grid-cols-2 gap-3">
             <div>
-              <label style={labelStyle}>Showers Required?</label>
-              <select value={showers} onChange={e => setShowers(e.target.value)} style={inputStyle(false)}>
+              <label className={labelClass}>Showers Required?</label>
+              <select value={showers} onChange={e => setShowers(e.target.value)} className={fieldClass(false)}>
                 <option value="no">No</option>
                 <option value="yes">Yes</option>
               </select>
             </div>
             <div>
-              <label style={labelStyle}>No. of People</label>
-              <input type="number" value={approxNumbers} onChange={e => setApproxNumbers(e.target.value)} placeholder="e.g. 25" style={inputStyle(false)} />
+              <label className={labelClass}>No. of People</label>
+              <input type="number" value={approxNumbers} onChange={e => setApproxNumbers(e.target.value)} placeholder="e.g. 25" className={fieldClass(false)} />
             </div>
           </div>
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Additional Notes (optional)</label>
-            <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Any special requirements..." rows={3} style={{ ...inputStyle(false), resize: 'vertical' }} />
+          <div className={fieldWrapClass}>
+            <label className={labelClass}>Additional Notes (optional)</label>
+            <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Any special requirements..." rows={3} className={`${fieldClass(false)} resize-y py-2.5`} />
           </div>
 
           {sport && ageGroup && pitchId && (
-            <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #86efac', borderRadius: '8px', padding: '12px 16px', marginBottom: '16px' }}>
-              <p style={{ fontSize: '13px', fontWeight: '700', color: '#15803d', marginBottom: '6px' }}>&#x1f4cb; Booking Summary</p>
-              <div style={{ fontSize: '13px', color: '#166534', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                <span>&#x26bd; {sport} {ageGroup}</span>
-                <span>&#x1f3df; {pitches.find(p => String(p.id) === pitchId)?.name || ''}</span>
-                {bookingMode === 'single' && date && <span>&#x1f4c5; {formatDateDisplay(date)}{startTime ? ` · ${fmt(startTime)}${endTime ? ` – ${fmt(endTime)}` : ''}` : ''}</span>}
-                {purpose && <span>&#x1f3af; {purpose}</span>}
-                <span>&#x1f4dd; {totalBookings} booking{totalBookings !== 1 ? 's' : ''} will be submitted for approval</span>
+            <div className="mb-4 rounded-lg border border-approved/40 bg-approved/10 px-4 py-3">
+              <p className="mb-1.5 flex items-center gap-1.5 text-[13px] font-bold text-approved">
+                <CalendarCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                Booking Summary
+              </p>
+              <div className="flex flex-col gap-[3px] text-[13px] text-approved">
+                <span className="inline-flex items-center gap-1.5">
+                  <Goal className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  {sport} {ageGroup}
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  {pitches.find(p => String(p.id) === pitchId)?.name || ''}
+                </span>
+                {bookingMode === 'single' && date && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    {formatDateDisplay(date)}{startTime ? ` · ${fmt(startTime)}${endTime ? ` – ${fmt(endTime)}` : ''}` : ''}
+                  </span>
+                )}
+                {purpose && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Target className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    {purpose}
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-1.5">
+                  <ListChecks className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  {totalBookings} booking{totalBookings !== 1 ? 's' : ''} will be submitted for approval
+                </span>
               </div>
             </div>
           )}
           {submitError && (
-            <div style={{ padding: '10px 14px', borderRadius: '8px', marginBottom: '16px', backgroundColor: '#fef2f2', border: '1px solid #fca5a5', color: '#dc2626', fontSize: '14px' }}>
+            <div className="mb-4 rounded-lg border border-rejected/40 bg-rejected/10 px-3.5 py-2.5 text-sm text-rejected">
               {submitError}
             </div>
           )}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
-            <a href="/dashboard" style={{ padding: '10px 20px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '14px', fontWeight: '600', color: '#374151', textDecoration: 'none', display: 'flex', alignItems: 'center' }}>Cancel</a>
-            <button onClick={handleSubmit} disabled={submitting} style={{ padding: '10px 24px', borderRadius: '8px', backgroundColor: '#111', color: 'white', fontSize: '14px', fontWeight: '600', border: 'none', cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1 }}>
+          <div className="mt-2 flex justify-end gap-3">
+            <Button variant="outline" onClick={() => { window.location.href = '/dashboard' }}>Cancel</Button>
+            <Button variant="primary" onClick={handleSubmit} disabled={submitting}>
               {submitting ? 'Submitting...' : `Submit ${totalBookings} Booking${totalBookings !== 1 ? 's' : ''}`}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
