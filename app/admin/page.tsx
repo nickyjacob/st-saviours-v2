@@ -1,6 +1,20 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import {
+  Calendar,
+  Check,
+  CheckCircle,
+  Clock,
+  History,
+  Lock,
+  Megaphone,
+  Settings,
+  Stethoscope,
+  Trophy,
+  User,
+  X,
+} from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
 
@@ -311,47 +325,50 @@ export default function AdminPage() {
   const inputStyle = { width: '100%', border: '1px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', fontSize: '13px', backgroundColor: 'white' }
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f4f4f4' }}>
+    <div className="min-h-screen bg-gray-100">
       <Navbar activePage="Admin" userRole="admin" />
-      <div style={{ textAlign: 'center', padding: '48px', color: '#888' }}>Loading...</div>
+      <div className="p-12 text-center text-neutral">Loading...</div>
     </div>
   )
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f4f4f4' }}>
+    <div className="min-h-screen bg-gray-100">
       <Navbar activePage="Admin" userRole="admin" />
-      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '24px 16px' }}>
+      <div className="mx-auto max-w-[1100px] px-4 py-6">
 
-        <h1 style={{ fontSize: '22px', fontWeight: 'bold', color: '#111', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>&#9881; Admin Panel</h1>
+        <h1 className="mb-5 flex items-center gap-2 text-[22px] font-bold text-ink">
+          <Settings className="h-5 w-5 shrink-0" aria-hidden="true" />
+          Admin Panel
+        </h1>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '20px' }}>
+        <div className="mb-5 grid grid-cols-4 gap-2">
           {[
-            { label: 'Pending', value: pending.length, colour: '#f59e0b', border: '#f59e0b' },
-            { label: 'Approved', value: approved.length, colour: '#16a34a', border: '#16a34a' },
-            { label: 'Rejected', value: rejected.length, colour: '#dc2626', border: '#dc2626' },
-            { label: 'Awaiting', value: awaitingUsers.length, colour: '#7c3aed', border: '#7c3aed' },
+            { label: 'Pending', value: pending.length, valueClass: 'text-pending', borderClass: 'border-pending/20' },
+            { label: 'Approved', value: approved.length, valueClass: 'text-approved', borderClass: 'border-approved/20' },
+            { label: 'Rejected', value: rejected.length, valueClass: 'text-rejected', borderClass: 'border-rejected/20' },
+            { label: 'Awaiting', value: awaitingUsers.length, valueClass: 'text-accent', borderClass: 'border-accent/20' },
           ].map(card => (
-            <div key={card.label} style={{ backgroundColor: 'white', borderRadius: '8px', padding: '10px 6px', textAlign: 'center', border: `1px solid ${card.border}22`, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-              <div style={{ fontSize: '22px', fontWeight: 'bold', color: card.colour }}>{card.value}</div>
-              <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>{card.label}</div>
+            <div key={card.label} className={`rounded-lg border bg-white px-1.5 py-2.5 text-center shadow-sm ${card.borderClass}`}>
+              <div className={`text-[22px] font-bold ${card.valueClass}`}>{card.value}</div>
+              <div className="mt-0.5 text-[11px] text-neutral">{card.label}</div>
             </div>
           ))}
         </div>
 
-        <div style={{ display: 'flex', gap: '6px', marginBottom: '20px', flexWrap: 'wrap' }}>
+        <div className="mb-5 flex flex-wrap gap-1.5">
           {[
-            { key: 'pending', label: `Pending (${pending.length})`, dot: '#f59e0b' },
-            { key: 'approved', label: `Approved (${approved.length})`, dot: '#16a34a' },
-            { key: 'rejected', label: `Rejected (${rejected.length})`, dot: '#dc2626' },
-            { key: 'users', label: `Users (${profiles.length})`, dot: '#6b7280' },
-            { key: 'closures', label: 'Closures', dot: '#111' },
-            { key: 'notices', label: 'Notices', dot: '#2563eb' },
-            { key: 'results', label: 'Results', dot: '#16a34a' },
-            { key: 'physio', label: 'Physio', dot: '#dc2626' },
-            { key: 'history', label: 'History', dot: '#111' },
+            { key: 'pending', label: `Pending (${pending.length})`, dot: 'bg-pending' },
+            { key: 'approved', label: `Approved (${approved.length})`, dot: 'bg-approved' },
+            { key: 'rejected', label: `Rejected (${rejected.length})`, dot: 'bg-rejected' },
+            { key: 'users', label: `Users (${profiles.length})`, dot: 'bg-neutral' },
+            { key: 'closures', label: 'Closures', dot: 'bg-ink' },
+            { key: 'notices', label: 'Notices', dot: 'bg-info' },
+            { key: 'results', label: 'Results', dot: 'bg-approved' },
+            { key: 'physio', label: 'Physio', dot: 'bg-rejected' },
+            { key: 'history', label: 'History', dot: 'bg-ink' },
           ].map(t => (
-            <button key={t.key} onClick={() => { setTab(t.key); if (t.key === 'history' && !historyLoaded) loadHistory(); if (t.key === 'results') fetchAdminResults(); if (t.key === 'physio') fetchPhysioRequests() }} style={{ padding: '4px 10px', borderRadius: '20px', border: '1px solid #d1d5db', fontSize: '11px', fontWeight: '500', backgroundColor: tab === t.key ? '#111' : 'white', color: tab === t.key ? 'white' : '#374151', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: t.dot, display: 'inline-block' }}></span>
+            <button key={t.key} onClick={() => { setTab(t.key); if (t.key === 'history' && !historyLoaded) loadHistory(); if (t.key === 'results') fetchAdminResults(); if (t.key === 'physio') fetchPhysioRequests() }} className={`flex cursor-pointer items-center gap-1 rounded-full border border-gray-200 px-2.5 py-1 text-[11px] font-medium ${tab === t.key ? 'bg-ink text-white' : 'bg-white text-ink'}`}>
+              <span className={`inline-block h-2 w-2 rounded-full ${t.dot}`}></span>
               {t.label}
             </button>
           ))}
@@ -360,29 +377,29 @@ export default function AdminPage() {
         {['pending','approved','rejected'].includes(tab) && (
           <div>
             {tabBookings.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px', color: '#888', backgroundColor: 'white', borderRadius: '10px' }}>No {tab} bookings</div>
+              <div className="rounded-[10px] bg-white px-4 py-10 text-center text-neutral">No {tab} bookings</div>
             ) : tabBookings.map(b => (
-              <div key={b.id} style={{ backgroundColor: 'white', borderRadius: '8px', borderLeft: `4px solid ${b.status === 'pending' ? '#f59e0b' : b.status === 'approved' ? '#16a34a' : '#dc2626'}`, padding: '12px 16px', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+              <div key={b.id} className={`mb-2 flex items-center justify-between rounded-lg border-l-4 bg-white px-4 py-3 shadow-sm ${b.status === 'pending' ? 'border-l-pending' : b.status === 'approved' ? 'border-l-approved' : 'border-l-rejected'}`}>
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                    <span style={{ fontWeight: '600', fontSize: '14px', color: '#111' }}>{b.full_name}</span>
-                    <span style={{ fontSize: '13px', color: '#374151' }}>{formatDate(b.booking_date)}</span>
-                    <span style={{ fontSize: '13px', color: '#374151' }}>{fmt(b.start_time)} – {fmt(b.end_time)}</span>
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <span className="text-sm font-semibold text-ink">{b.full_name}</span>
+                    <span className="text-[13px] text-ink">{formatDate(b.booking_date)}</span>
+                    <span className="text-[13px] text-ink">{fmt(b.start_time)} – {fmt(b.end_time)}</span>
                   </div>
                   <div style={{ fontSize: '13px', color: b.pitch_colour || '#2e7d32', fontWeight: '600', marginTop: '2px' }}>{b.pitch_name}</div>
-                  <div style={{ fontSize: '12px', color: '#6b7280' }}>{b.team_name} · {b.purpose}</div>
+                  <div className="text-xs text-neutral">{b.team_name} · {b.purpose}</div>
                 </div>
-                <div style={{ display: 'flex', gap: '6px', marginLeft: '12px' }}>
+                <div className="ml-3 flex gap-1.5">
                   {b.status === 'pending' && (
                     <>
-                      <button onClick={() => handleApprove(b.id)} style={{ padding: '6px 14px', borderRadius: '6px', backgroundColor: '#16a34a', color: 'white', border: 'none', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>Approve</button>
-                      <button onClick={() => { setRejectModal(b); setRejectReason('') }} style={{ padding: '6px 14px', borderRadius: '6px', backgroundColor: '#dc2626', color: 'white', border: 'none', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>Reject</button>
+                      <button onClick={() => handleApprove(b.id)} className="cursor-pointer rounded-md border-none bg-approved px-3.5 py-1.5 text-[13px] font-semibold text-white">Approve</button>
+                      <button onClick={() => { setRejectModal(b); setRejectReason('') }} className="cursor-pointer rounded-md border-none bg-rejected px-3.5 py-1.5 text-[13px] font-semibold text-white">Reject</button>
                     </>
                   )}
                   {b.status === 'approved' && (
-                    <button onClick={() => { setRejectModal(b); setRejectReason('') }} style={{ padding: '6px 14px', borderRadius: '6px', border: '1px solid #dc2626', color: '#dc2626', backgroundColor: 'white', fontSize: '13px', cursor: 'pointer' }}>Reject</button>
+                    <button onClick={() => { setRejectModal(b); setRejectReason('') }} className="cursor-pointer rounded-md border border-rejected bg-white px-3.5 py-1.5 text-[13px] text-rejected">Reject</button>
                   )}
-                  <a href={`/edit-booking/${b.id}`} style={{ padding: '6px 14px', borderRadius: '6px', border: '1px solid #d1d5db', color: '#374151', fontSize: '13px', textDecoration: 'none' }}>Edit</a>
+                  <a href={`/edit-booking/${b.id}`} className="rounded-md border border-gray-200 px-3.5 py-1.5 text-[13px] text-ink no-underline">Edit</a>
                 </div>
               </div>
             ))}
@@ -392,23 +409,29 @@ export default function AdminPage() {
         {tab === 'users' && (
           <div>
             {profiles.map(p => (
-              <div key={p.id} style={{ backgroundColor: 'white', borderRadius: '8px', padding: '12px 16px', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+              <div key={p.id} className="mb-2 flex items-center justify-between rounded-lg bg-white px-4 py-3 shadow-sm">
                 <div>
-                  <div style={{ fontWeight: '600', fontSize: '14px', color: '#111' }}>{p.full_name || p.email}</div>
-                  <div style={{ fontSize: '12px', color: '#6b7280' }}>{p.email}</div>
-                  <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
-                    <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '12px', backgroundColor: p.role === 'admin' ? '#f3e8ff' : '#f1f5f9', color: p.role === 'admin' ? '#7c3aed' : '#475569', fontWeight: '500' }}>{p.role === 'admin' ? '⚙ Admin' : '👤 Coach'}</span>
-                    <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '12px', backgroundColor: p.is_approved ? '#f0fdf4' : '#fef9c3', color: p.is_approved ? '#16a34a' : '#854d0e', fontWeight: '500' }}>{p.is_approved ? '✅ Approved' : '⏳ Pending'}</span>
+                  <div className="text-sm font-semibold text-ink">{p.full_name || p.email}</div>
+                  <div className="text-xs text-neutral">{p.email}</div>
+                  <div className="mt-1.5 flex gap-1.5">
+                    <span className={`inline-flex items-center gap-1 rounded-xl px-2 py-0.5 text-[11px] font-medium ${p.role === 'admin' ? 'bg-accent/10 text-accent' : 'bg-neutral/10 text-neutral'}`}>
+                      {p.role === 'admin' ? <Settings className="h-3 w-3" aria-hidden="true" /> : <User className="h-3 w-3" aria-hidden="true" />}
+                      {p.role === 'admin' ? 'Admin' : 'Coach'}
+                    </span>
+                    <span className={`inline-flex items-center gap-1 rounded-xl px-2 py-0.5 text-[11px] font-medium ${p.is_approved ? 'bg-approved/10 text-approved' : 'bg-pending/10 text-pending'}`}>
+                      {p.is_approved ? <CheckCircle className="h-3 w-3" aria-hidden="true" /> : <Clock className="h-3 w-3" aria-hidden="true" />}
+                      {p.is_approved ? 'Approved' : 'Pending'}
+                    </span>
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '6px' }}>
+                <div className="flex gap-1.5">
                   {p.id === currentUserId ? (
-                    <span style={{ fontSize: '12px', color: '#6b7280', padding: '6px 12px' }}>You</span>
+                    <span className="px-3 py-1.5 text-xs text-neutral">You</span>
                   ) : (
                     <>
-                      {!p.is_approved && <button onClick={() => handleApproveUser(p.id)} style={{ padding: '6px 12px', borderRadius: '6px', backgroundColor: '#16a34a', color: 'white', border: 'none', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>Approve</button>}
-                      {p.is_approved && <button onClick={() => handleSuspendUser(p.id)} style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #d1d5db', color: '#374151', backgroundColor: 'white', fontSize: '12px', cursor: 'pointer' }}>Suspend</button>}
-                      <button onClick={() => handleToggleAdmin(p.id, p.role)} style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #7c3aed', color: '#7c3aed', backgroundColor: 'white', fontSize: '12px', cursor: 'pointer' }}>{p.role === 'admin' ? 'Remove Admin' : 'Make Admin'}</button>
+                      {!p.is_approved && <button onClick={() => handleApproveUser(p.id)} className="cursor-pointer rounded-md border-none bg-approved px-3 py-1.5 text-xs font-semibold text-white">Approve</button>}
+                      {p.is_approved && <button onClick={() => handleSuspendUser(p.id)} className="cursor-pointer rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs text-ink">Suspend</button>}
+                      <button onClick={() => handleToggleAdmin(p.id, p.role)} className="cursor-pointer rounded-md border border-accent bg-white px-3 py-1.5 text-xs text-accent">{p.role === 'admin' ? 'Remove Admin' : 'Make Admin'}</button>
                     </>
                   )}
                 </div>
@@ -419,85 +442,111 @@ export default function AdminPage() {
 
         {tab === 'closures' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <div className="mb-4 flex items-center justify-between">
               <div>
-                <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#111' }}>&#x1f4ca; Pitch Closures</h2>
-                <p style={{ fontSize: '12px', color: '#6b7280' }}>Block pitches during maintenance, match days or events</p>
+                <h2 className="flex items-center gap-2 text-base font-semibold text-ink">
+                  <Lock className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  Pitch Closures
+                </h2>
+                <p className="text-xs text-neutral">Block pitches during maintenance, match days or events</p>
               </div>
-              <button onClick={() => setClosureModal(true)} style={{ backgroundColor: '#111', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>+ Add Closure</button>
+              <button onClick={() => setClosureModal(true)} className="cursor-pointer rounded-lg border-none bg-ink px-4 py-2 text-[13px] font-semibold text-white">+ Add Closure</button>
             </div>
             {upcomingClosures.length > 0 && (
-              <div style={{ marginBottom: '20px' }}>
-                <p style={{ fontSize: '11px', fontWeight: '700', color: '#6b7280', letterSpacing: '0.1em', marginBottom: '8px' }}>UPCOMING & ACTIVE ({upcomingClosures.length})</p>
+              <div className="mb-5">
+                <p className="mb-2 text-[11px] font-bold tracking-widest text-neutral">UPCOMING & ACTIVE ({upcomingClosures.length})</p>
                 {upcomingClosures.map(c => (
-                  <div key={c.id} style={{ backgroundColor: '#f9fafb', borderRadius: '8px', borderLeft: '4px solid #4b5563', padding: '10px 14px', marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div key={c.id} className="mb-1.5 flex items-center justify-between rounded-lg border-l-4 border-l-neutral bg-gray-50 px-3.5 py-2.5">
                     <div>
-                      <div style={{ fontWeight: '600', fontSize: '13px', color: '#111' }}>{c.pitch_name}</div>
-                      <div style={{ fontSize: '12px', color: '#111' }}>&#x1f512; {c.reason}</div>
-                      <div style={{ fontSize: '12px', color: '#374151' }}>{formatDate(c.start_date)} → {formatDate(c.end_date)}</div>
+                      <div className="text-[13px] font-semibold text-ink">{c.pitch_name}</div>
+                      <div className="flex items-center gap-1 text-xs text-ink">
+                        <Lock className="h-3 w-3 shrink-0" aria-hidden="true" />
+                        {c.reason}
+                      </div>
+                      <div className="text-xs text-ink">{formatDate(c.start_date)} → {formatDate(c.end_date)}</div>
                     </div>
-                    <button onClick={() => handleRemoveClosure(c.id)} style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid #fca5a5', color: '#dc2626', backgroundColor: 'white', fontSize: '12px', cursor: 'pointer' }}>Remove</button>
+                    <button onClick={() => handleRemoveClosure(c.id)} className="cursor-pointer rounded-md border border-rejected/40 bg-white px-2.5 py-1 text-xs text-rejected">Remove</button>
                   </div>
                 ))}
               </div>
             )}
             {pastClosures.length > 0 && (
               <div>
-                <p style={{ fontSize: '11px', fontWeight: '700', color: '#6b7280', letterSpacing: '0.1em', marginBottom: '8px' }}>PAST ({pastClosures.length})</p>
+                <p className="mb-2 text-[11px] font-bold tracking-widest text-neutral">PAST ({pastClosures.length})</p>
                 {pastClosures.map(c => (
-                  <div key={c.id} style={{ backgroundColor: 'white', borderRadius: '8px', borderLeft: '4px solid #d1d5db', padding: '10px 14px', marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: 0.6 }}>
+                  <div key={c.id} className="mb-1.5 flex items-center justify-between rounded-lg border-l-4 border-l-gray-200 bg-white px-3.5 py-2.5 opacity-60">
                     <div>
-                      <div style={{ fontWeight: '600', fontSize: '13px', color: '#111' }}>{c.pitch_name}</div>
-                      <div style={{ fontSize: '12px', color: '#374151' }}>{c.reason}</div>
-                      <div style={{ fontSize: '12px', color: '#6b7280' }}>{formatDate(c.start_date)} → {formatDate(c.end_date)}</div>
+                      <div className="text-[13px] font-semibold text-ink">{c.pitch_name}</div>
+                      <div className="text-xs text-ink">{c.reason}</div>
+                      <div className="text-xs text-neutral">{formatDate(c.start_date)} → {formatDate(c.end_date)}</div>
                     </div>
-                    <button onClick={() => handleRemoveClosure(c.id)} style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid #e5e7eb', color: '#6b7280', backgroundColor: 'white', fontSize: '12px', cursor: 'pointer' }}>Remove</button>
+                    <button onClick={() => handleRemoveClosure(c.id)} className="cursor-pointer rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs text-neutral">Remove</button>
                   </div>
                 ))}
               </div>
             )}
-            {closures.length === 0 && <div style={{ textAlign: 'center', padding: '40px', color: '#888', backgroundColor: 'white', borderRadius: '10px' }}>No closures added</div>}
+            {closures.length === 0 && <div className="rounded-[10px] bg-white px-4 py-10 text-center text-neutral">No closures added</div>}
           </div>
         )}
 
         {tab === 'physio' && (
           <div>
-            <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#111', marginBottom: '16px' }}>🏥 Physio Requests</h2>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+            <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-ink">
+              <Stethoscope className="h-4 w-4 shrink-0" aria-hidden="true" />
+              Physio Requests
+            </h2>
+            <div className="mb-4 flex flex-wrap gap-2">
               {['pending', 'approved', 'declined'].map(s => {
                 const count = physioRequests.filter(r => r.status === s).length
-                const colour = s === 'approved' ? '#16a34a' : s === 'declined' ? '#dc2626' : '#f9ab2b'
+                const selected = physioFilter === s
+                const toneClass = s === 'approved'
+                  ? (selected ? 'border-approved bg-approved text-white' : 'border-approved bg-white text-approved')
+                  : s === 'declined'
+                    ? (selected ? 'border-rejected bg-rejected text-white' : 'border-rejected bg-white text-rejected')
+                    : (selected ? 'border-pending bg-pending text-white' : 'border-pending bg-white text-pending')
                 return (
-                  <button key={s} onClick={() => setPhysioFilter(s)} style={{ padding: '6px 14px', borderRadius: '20px', border: `1px solid ${colour}`, fontSize: '12px', fontWeight: '600', backgroundColor: physioFilter === s ? colour : 'white', color: physioFilter === s ? 'white' : colour, cursor: 'pointer' }}>
+                  <button key={s} onClick={() => setPhysioFilter(s)} className={`cursor-pointer rounded-full border px-3.5 py-1.5 text-xs font-semibold ${toneClass}`}>
                     {s.charAt(0).toUpperCase() + s.slice(1)} ({count})
                   </button>
                 )
               })}
             </div>
             {physioRequests.filter(r => r.status === physioFilter).length === 0 && (
-              <div style={{ textAlign: 'center', padding: '40px', backgroundColor: 'white', borderRadius: '10px', color: '#888' }}>No {physioFilter} requests</div>
+              <div className="rounded-[10px] bg-white px-4 py-10 text-center text-neutral">No {physioFilter} requests</div>
             )}
             {physioRequests.filter(r => r.status === physioFilter).map(r => (
-              <div key={r.id} style={{ backgroundColor: r.status === 'approved' ? '#f0fdf4' : r.status === 'declined' ? '#fef2f2' : '#fff8e1', borderLeft: `4px solid ${r.status === 'approved' ? '#16a34a' : r.status === 'declined' ? '#dc2626' : '#f9ab2b'}`, borderRadius: '8px', padding: '12px 16px', marginBottom: '8px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '13px', fontWeight: '700', color: '#111', marginBottom: '2px' }}>{physioProfiles[r.player_id] || r.player_id}</div>
-                    <div style={{ fontSize: '13px', color: '#374151', marginBottom: '4px' }}><span style={{ fontWeight: '600' }}>{r.body_part}</span> — {r.injury_description}</div>
-                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '11px', color: '#6b7280' }}>📅 {new Date(r.date_of_injury + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                      <span style={{ fontSize: '11px', color: r.urgency === 'urgent' ? '#dc2626' : '#6b7280', fontWeight: r.urgency === 'urgent' ? '700' : '400' }}>{r.urgency === 'urgent' ? '🔴 Urgent' : '🟡 Routine'}</span>
-                      <span style={{ fontSize: '11px', color: '#6b7280' }}>Submitted: {new Date(r.requested_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+              <div key={r.id} className={`mb-2 rounded-lg border-l-4 px-4 py-3 ${r.status === 'approved' ? 'border-l-approved bg-approved/10' : r.status === 'declined' ? 'border-l-rejected bg-rejected/10' : 'border-l-pending bg-pending/10'}`}>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1">
+                    <div className="mb-0.5 text-[13px] font-bold text-ink">{physioProfiles[r.player_id] || r.player_id}</div>
+                    <div className="mb-1 text-[13px] text-ink"><span className="font-semibold">{r.body_part}</span> — {r.injury_description}</div>
+                    <div className="flex flex-wrap gap-3">
+                      <span className="inline-flex items-center gap-1 text-[11px] text-neutral">
+                        <Calendar className="h-3 w-3 shrink-0" aria-hidden="true" />
+                        {new Date(r.date_of_injury + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                      <span className={`inline-flex items-center gap-1 text-[11px] ${r.urgency === 'urgent' ? 'font-bold text-rejected' : 'text-neutral'}`}>
+                        <span className={`inline-block h-1.5 w-1.5 rounded-full ${r.urgency === 'urgent' ? 'bg-rejected' : 'bg-pending'}`} />
+                        {r.urgency === 'urgent' ? 'Urgent' : 'Routine'}
+                      </span>
+                      <span className="text-[11px] text-neutral">Submitted: {new Date(r.requested_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                     </div>
                     {r.status === 'pending' && (
-                      <div style={{ marginTop: '10px' }}>
-                        <input value={physioNote} onChange={e => setPhysioNote(e.target.value)} placeholder="Optional note to player..." style={{ width: '100%', border: '1px solid #d1d5db', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', color: '#111', marginBottom: '8px', outline: 'none' }} />
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button onClick={() => handlePhysioDecision(r.id, 'approved')} style={{ flex: 1, padding: '6px', borderRadius: '6px', backgroundColor: '#16a34a', color: 'white', border: 'none', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>✅ Approve</button>
-                          <button onClick={() => handlePhysioDecision(r.id, 'declined')} style={{ flex: 1, padding: '6px', borderRadius: '6px', backgroundColor: '#dc2626', color: 'white', border: 'none', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>❌ Decline</button>
+                      <div className="mt-2.5">
+                        <input value={physioNote} onChange={e => setPhysioNote(e.target.value)} placeholder="Optional note to player..." className="mb-2 w-full rounded-md border border-gray-200 px-2.5 py-1.5 text-xs text-ink outline-none" />
+                        <div className="flex gap-2">
+                          <button onClick={() => handlePhysioDecision(r.id, 'approved')} className="flex flex-1 cursor-pointer items-center justify-center gap-1 rounded-md border-none bg-approved px-1.5 py-1.5 text-xs font-semibold text-white">
+                            <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                            Approve
+                          </button>
+                          <button onClick={() => handlePhysioDecision(r.id, 'declined')} className="flex flex-1 cursor-pointer items-center justify-center gap-1 rounded-md border-none bg-rejected px-1.5 py-1.5 text-xs font-semibold text-white">
+                            <X className="h-3.5 w-3.5" aria-hidden="true" />
+                            Decline
+                          </button>
                         </div>
                       </div>
                     )}
-                    {r.admin_note && <div style={{ marginTop: '8px', fontSize: '12px', color: '#374151', fontStyle: 'italic' }}>Note: {r.admin_note}</div>}
+                    {r.admin_note && <div className="mt-2 text-xs italic text-ink">Note: {r.admin_note}</div>}
                   </div>
                 </div>
               </div>
@@ -506,28 +555,39 @@ export default function AdminPage() {
         )}
         {tab === 'results' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#111' }}>🏆 Match Results</h2>
-              <a href="/results" style={{ backgroundColor: '#111', color: 'white', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', textDecoration: 'none' }}>+ Post Result</a>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 text-base font-semibold text-ink">
+                <Trophy className="h-4 w-4 shrink-0" aria-hidden="true" />
+                Match Results
+              </h2>
+              <a href="/results" className="rounded-lg bg-ink px-4 py-2 text-[13px] font-semibold text-white no-underline">+ Post Result</a>
             </div>
             {adminResults.length === 0 && (
-              <div style={{ textAlign: 'center', padding: '40px', color: '#888', backgroundColor: 'white', borderRadius: '10px' }}>No results yet</div>
+              <div className="rounded-[10px] bg-white px-4 py-10 text-center text-neutral">No results yet</div>
             )}
             {adminResults.map(r => {
               const isAdultFootball = r.sport === "Men's/Boys Gaelic"
               const ourScore = isAdultFootball && r.our_two_pointers > 0 ? `${r.our_goals}-${r.our_points + (r.our_two_pointers * 2)} (${r.our_two_pointers}×2pt)` : `${r.our_goals}-${r.our_points}`
               const theirScore = isAdultFootball && r.their_two_pointers > 0 ? `${r.their_goals}-${r.their_points + (r.their_two_pointers * 2)} (${r.their_two_pointers}×2pt)` : `${r.their_goals}-${r.their_points}`
-              const border = r.result === 'win' ? '#2e7d32' : r.result === 'loss' ? '#dc2626' : '#f9ab2b'
-              const bg = r.result === 'win' ? '#f0fdf4' : r.result === 'loss' ? '#fef2f2' : '#fefce8'
-              const label = r.result === 'win' ? '🟢 WIN' : r.result === 'loss' ? '🔴 LOSS' : '🟡 DRAW'
+              const tone = r.result === 'win' ? 'approved' : r.result === 'loss' ? 'rejected' : 'pending'
+              const label = r.result === 'win' ? 'WIN' : r.result === 'loss' ? 'LOSS' : 'DRAW'
+              const cardClass = tone === 'approved'
+                ? 'border-l-approved bg-approved/10 text-approved'
+                : tone === 'rejected'
+                  ? 'border-l-rejected bg-rejected/10 text-rejected'
+                  : 'border-l-pending bg-pending/10 text-pending'
+              const dotClass = tone === 'approved' ? 'bg-approved' : tone === 'rejected' ? 'bg-rejected' : 'bg-pending'
               return (
-                <div key={r.id} style={{ backgroundColor: bg, borderLeft: `4px solid ${border}`, borderRadius: '8px', padding: '10px 14px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div key={r.id} className={`mb-2 flex items-center justify-between rounded-lg border-l-4 px-3.5 py-2.5 ${cardClass}`}>
                   <div>
-                    <div style={{ fontSize: '12px', fontWeight: '700', color: border, marginBottom: '2px' }}>{label} · {r.team_name}</div>
-                    <div style={{ fontSize: '13px', color: '#111' }}><span style={{ fontWeight: '600' }}>St Saviours {ourScore}</span> v {r.opposition} {theirScore}</div>
-                    <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>{r.competition} · {new Date(r.match_date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                    <div className="mb-0.5 flex items-center gap-1.5 text-xs font-bold">
+                      <span className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${dotClass}`} />
+                      {label} · {r.team_name}
+                    </div>
+                    <div className="text-[13px] text-ink"><span className="font-semibold">St Saviours {ourScore}</span> v {r.opposition} {theirScore}</div>
+                    <div className="mt-0.5 text-[11px] text-neutral">{r.competition} · {new Date(r.match_date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
                   </div>
-                  <button onClick={async () => { if (!confirm('Delete this result?')) return; await supabase.from('results').delete().eq('id', r.id); fetchAdminResults() }} style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid #fca5a5', color: '#dc2626', backgroundColor: 'white', fontSize: '12px', cursor: 'pointer' }}>Delete</button>
+                  <button onClick={async () => { if (!confirm('Delete this result?')) return; await supabase.from('results').delete().eq('id', r.id); fetchAdminResults() }} className="cursor-pointer rounded-md border border-rejected/40 bg-white px-2.5 py-1 text-xs text-rejected">Delete</button>
                 </div>
               )
             })}
@@ -535,24 +595,27 @@ export default function AdminPage() {
         )}
         {tab === 'notices' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#111' }}>📢 Notices & Announcements</h2>
-              <button onClick={() => setNoticeModal(true)} style={{ backgroundColor: '#111', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>+ Add Notice</button>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 text-base font-semibold text-ink">
+                <Megaphone className="h-4 w-4 shrink-0" aria-hidden="true" />
+                Notices & Announcements
+              </h2>
+              <button onClick={() => setNoticeModal(true)} className="cursor-pointer rounded-lg border-none bg-ink px-4 py-2 text-[13px] font-semibold text-white">+ Add Notice</button>
             </div>
             {notices.length === 0 && (
-              <div style={{ textAlign: 'center', padding: '40px', color: '#888', backgroundColor: 'white', borderRadius: '10px' }}>No notices yet</div>
+              <div className="rounded-[10px] bg-white px-4 py-10 text-center text-neutral">No notices yet</div>
             )}
             {notices.map(n => (
-              <div key={n.id} style={{ backgroundColor: 'white', borderRadius: '8px', borderLeft: '4px solid #2563eb', padding: '12px 16px', marginBottom: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: '600', fontSize: '14px', color: '#111' }}>{n.title}</div>
-                    <div style={{ fontSize: '13px', color: '#374151', marginTop: '4px' }}>{n.body}</div>
-                    <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '6px' }}>{new Date(n.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+              <div key={n.id} className="mb-2 rounded-lg border-l-4 border-l-info bg-white px-4 py-3 shadow-sm">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="text-sm font-semibold text-ink">{n.title}</div>
+                    <div className="mt-1 text-[13px] text-ink">{n.body}</div>
+                    <div className="mt-1.5 text-[11px] text-neutral">{new Date(n.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
                   </div>
-                  <div style={{ display: 'flex', gap: '6px', marginLeft: '12px' }}>
-                    <button onClick={() => { setEditingNotice({ id: n.id }); setNoticeTitle(n.title); setNoticeBody(n.body); setNoticePinned(n.is_pinned || false); setNoticeExpiry(n.expires_at ? n.expires_at.split('T')[0] : ''); setNoticeModal(true) }} style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid #d1d5db', color: '#374151', backgroundColor: 'white', fontSize: '12px', cursor: 'pointer' }}>Edit</button>
-                    <button onClick={async () => { await supabase.from('notices').delete().eq('id', n.id); fetchNotices() }} style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid #fca5a5', color: '#dc2626', backgroundColor: 'white', fontSize: '12px', cursor: 'pointer' }}>Remove</button>
+                  <div className="ml-3 flex gap-1.5">
+                    <button onClick={() => { setEditingNotice({ id: n.id }); setNoticeTitle(n.title); setNoticeBody(n.body); setNoticePinned(n.is_pinned || false); setNoticeExpiry(n.expires_at ? n.expires_at.split('T')[0] : ''); setNoticeModal(true) }} className="cursor-pointer rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs text-ink">Edit</button>
+                    <button onClick={async () => { await supabase.from('notices').delete().eq('id', n.id); fetchNotices() }} className="cursor-pointer rounded-md border border-rejected/40 bg-white px-2.5 py-1 text-xs text-rejected">Remove</button>
                   </div>
                 </div>
               </div>
@@ -590,14 +653,17 @@ export default function AdminPage() {
         )}
         {tab === 'history' && (
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#111' }}>&#x1f4ca; Usage & Login History</h2>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="flex items-center gap-2 text-base font-semibold text-ink">
+                <History className="h-4 w-4 shrink-0" aria-hidden="true" />
+                Usage & Login History
+              </h2>
               {historyLoaded && (
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <div className="flex flex-wrap gap-2">
                   <select
                     value={historyUserFilter}
                     onChange={e => setHistoryUserFilter(e.target.value)}
-                    style={{ border: '1px solid #d1d5db', borderRadius: '6px', padding: '5px 10px', fontSize: '12px', color: '#111', backgroundColor: 'white' }}
+                    className="rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs text-ink"
                   >
                     <option value="">All Users</option>
                     {profiles.map(p => (
@@ -608,30 +674,30 @@ export default function AdminPage() {
                     type="date"
                     value={historyDateFilter}
                     onChange={e => setHistoryDateFilter(e.target.value)}
-                    style={{ border: '1px solid #d1d5db', borderRadius: '6px', padding: '5px 10px', fontSize: '12px', color: '#111', backgroundColor: 'white' }}
+                    className="rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs text-ink"
                   />
                   {(historyUserFilter || historyDateFilter) && (
-                    <button onClick={() => { setHistoryUserFilter(''); setHistoryDateFilter('') }} style={{ border: '1px solid #d1d5db', borderRadius: '6px', padding: '5px 10px', fontSize: '12px', cursor: 'pointer', backgroundColor: 'white' }}>Clear</button>
+                    <button onClick={() => { setHistoryUserFilter(''); setHistoryDateFilter('') }} className="cursor-pointer rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs text-ink">Clear</button>
                   )}
                 </div>
               )}
             </div>
             {!historyLoaded ? (
-              <div style={{ textAlign: 'center', padding: '40px', backgroundColor: 'white', borderRadius: '10px' }}>
-                <p style={{ color: '#6b7280', marginBottom: '12px', fontSize: '13px' }}>Login history is not loaded by default to keep things fast.</p>
-                <button onClick={loadHistory} style={{ backgroundColor: '#111', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: 'pointer' }}>Load Last 15 Logins</button>
+              <div className="rounded-[10px] bg-white px-4 py-10 text-center">
+                <p className="mb-3 text-[13px] text-neutral">Login history is not loaded by default to keep things fast.</p>
+                <button onClick={loadHistory} className="cursor-pointer rounded-lg border-none bg-ink px-4 py-2 text-[13px] text-white">Load Last 15 Logins</button>
               </div>
             ) : historyLoading ? (
-              <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>Loading...</div>
+              <div className="px-4 py-10 text-center text-neutral">Loading...</div>
             ) : (
               <div>
-                <div style={{ backgroundColor: 'white', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <div className="overflow-hidden rounded-lg bg-white shadow-sm">
+                  <table className="w-full border-collapse">
                     <thead>
-                    <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
-                      <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#6b7280' }}>User</th>
-                      <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#6b7280' }}>Email</th>
-                      <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#6b7280' }}>Logged In</th>
+                    <tr className="border-b border-gray-200 bg-gray-50">
+                      <th className="px-3.5 py-2.5 text-left text-xs font-semibold text-neutral">User</th>
+                      <th className="px-3.5 py-2.5 text-left text-xs font-semibold text-neutral">Email</th>
+                      <th className="px-3.5 py-2.5 text-left text-xs font-semibold text-neutral">Logged In</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -642,16 +708,16 @@ export default function AdminPage() {
                         return true
                       })
                       .map((h, i, arr) => (
-                      <tr key={h.id} style={{ borderBottom: i < arr.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
-                        <td style={{ padding: '10px 14px', fontSize: '13px', color: '#111', fontWeight: '500' }}>{h.full_name || '—'}</td>
-                        <td style={{ padding: '10px 14px', fontSize: '13px', color: '#6b7280' }}>{h.email}</td>
-                        <td style={{ padding: '10px 14px', fontSize: '13px', color: '#111' }}>{formatDateTime(h.logged_in_at)}</td>
+                      <tr key={h.id} className={i < arr.length - 1 ? 'border-b border-gray-100' : ''}>
+                        <td className="px-3.5 py-2.5 text-[13px] font-medium text-ink">{h.full_name || '—'}</td>
+                        <td className="px-3.5 py-2.5 text-[13px] text-neutral">{h.email}</td>
+                        <td className="px-3.5 py-2.5 text-[13px] text-ink">{formatDateTime(h.logged_in_at)}</td>
                       </tr>
                     ))}
                     </tbody>
                   </table>
                 </div>
-                <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '8px', textAlign: 'center' }}>Showing last 20 logins</p>
+                <p className="mt-2 text-center text-xs text-neutral">Showing last 20 logins</p>
               </div>
             )}
           </div>
