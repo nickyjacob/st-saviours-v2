@@ -75,7 +75,7 @@ Rule of thumb: swap emoji used **as functional icons** (nav, buttons, status, se
 |---|---|---|
 | Calendar (nav/dashboard) | 📅 | `Calendar` |
 | My Bookings / New Booking | 📋 / 📁 | `CalendarCheck` |
-| Fixtures | 🏟 | `Swords` *(head-to-head fits "fixtures" better than a building)* |
+| Fixtures | 🏟 | `Goal` *(a literal goal-net reads as "sport" more clearly than a building — ties into your own goals/points scoring language)* |
 | Results | 🏆 | `Trophy` |
 | Admin | ⚙️ | `Settings` |
 | Stats | 📊 | `BarChart3` |
@@ -119,7 +119,7 @@ Building these first means every page after gets faster and more consistent — 
 Home | Calendar | Club | Book | More
 ```
 
-- **Club** consolidates Fixtures + Results into one tab now, so Sprint 10's RSVP work lands inside an existing tab rather than needing a new one later (likely a sub-tab/segmented toggle between Fixtures and Results inside the Club page).
+- **Club** consolidates Fixtures + Results into one tab now, so Sprint 10's RSVP work lands inside an existing tab rather than needing a new one later (likely a sub-tab/segmented toggle between Fixtures and Results inside the Club page). Icon: `Shield` — deliberately distinct from the dashboard's `Goal`-icon Fixtures tile, since today "Club" just placeholder-links to the same Fixtures page and needs to visually read as a different, broader thing rather than a duplicate.
 - **Book** = New Booking. For `viewer` (read-only role), swap this slot for **Physio** or drop to 4 tabs (Home · Calendar · Club · More) rather than showing a booking action they can't use.
 - **More** opens the existing hamburger drawer — don't rebuild that list, just trigger it from a second place. This is also where **Physio, Admin, Stats, and the new Settings page** (below) live going forward.
 
@@ -178,6 +178,11 @@ Steps 1–6 are the highest-visibility, do these first if Cursor credits run tig
 Each is one commit, build + mobile test before the next, per your existing rules.
 
 ---
+
+## Backlog — small fixes for later (not blocking current progress)
+- **Data entry, not code:** the U12 vs Gaultier fixture is tagged Away despite the venue being St. Saviours' own ground — looks like a mistake made when that fixture was entered, not a display bug. Fix directly in the app (edit the fixture to Home) whenever convenient.
+- **Unconfirmed:** whether "Home" renders in `approved` green on the Results page to match "Away" rendering in `info` blue — asked, not yet confirmed. Quick visual check next time you're on that page, not urgent.
+- **Unconfirmed:** Fixtures/Results at narrowed/phone width after the Step 6a icon changes — not yet checked. Worth a glance next time you're testing mobile generally, doesn't need a dedicated check on its own.
 
 ## Still open
 - Confirm whether the Admin Panel's "Awaiting" stat is a real, ongoing metric or can be dropped — see color section above.

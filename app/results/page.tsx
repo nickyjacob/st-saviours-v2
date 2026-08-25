@@ -1,6 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { Bus, Calendar, Home, Shuffle, Trophy } from 'lucide-react'
+import Badge from '@/components/ui/Badge'
+import type { StatusTone } from '@/components/ui/Badge'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
 
@@ -133,10 +135,10 @@ export default function ResultsPage() {
 
   const teams = Array.from(new Set(results.map(r => r.team_name)))
 
-  const resultColour = (r: string) => r === 'win' ? '#16a34a' : r === 'loss' ? '#dc2626' : '#d97706'
   const resultBg = (r: string) => r === 'win' ? '#f0fdf4' : r === 'loss' ? '#fef2f2' : '#fefce8'
   const resultBorder = (r: string) => r === 'win' ? '#2e7d32' : r === 'loss' ? '#dc2626' : '#f9ab2b'
-  const resultLabel = (r: string) => r === 'win' ? '🟢 WIN' : r === 'loss' ? '🔴 LOSS' : '🟡 DRAW'
+  const resultTone = (r: string): StatusTone => r === 'win' ? 'approved' : r === 'loss' ? 'rejected' : 'pending'
+  const resultLabel = (r: string) => r === 'win' ? 'WIN' : r === 'loss' ? 'LOSS' : 'DRAW'
 
   const inputClass = 'w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-ink outline-none'
   const labelClass = 'mb-1 block text-[13px] font-semibold text-ink'
@@ -190,7 +192,9 @@ export default function ResultsPage() {
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1">
                 <div className="mb-1 flex flex-wrap items-center gap-2">
-                  <span style={{ fontSize: '11px', fontWeight: '700', color: resultColour(r.result) }}>{resultLabel(r.result)}</span>
+                  <Badge tone={resultTone(r.result)} variant="solid" className="inline-flex shrink-0 align-middle mr-2">
+                    {resultLabel(r.result)}
+                  </Badge>
                   <HomeAwayMark homeAway={r.home_away} />
                   <span className="inline-flex items-center gap-1 text-[11px] text-neutral">
                     <Calendar className="h-3 w-3 shrink-0" aria-hidden="true" />
