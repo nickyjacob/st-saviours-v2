@@ -39,27 +39,27 @@ const fmt = (t: string) => { const parts = t.slice(0,5).split(':'); const hr = p
 
 function BookingModal({ booking, onClose, currentUserId, userRole }: { booking: Booking; onClose: () => void; currentUserId: string; userRole: string }) {
   const canEdit = booking.user_id === currentUserId || userRole === 'admin'
-  const statusColour = booking.status === 'approved' ? 'bg-green-100 text-green-800' : booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+  const statusColour = booking.status === 'approved' ? 'bg-approved/10 text-approved' : booking.status === 'pending' ? 'bg-pending/10 text-pending' : 'bg-rejected/10 text-rejected'
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">{booking.team_name}</h2>
-            <p className="text-gray-500 text-sm mt-1">{booking.purpose}</p>
+            <h2 className="text-xl font-bold text-ink">{booking.team_name}</h2>
+            <p className="text-neutral text-sm mt-1">{booking.purpose}</p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+          <button onClick={onClose} className="text-neutral/60 hover:text-neutral text-2xl leading-none">&times;</button>
         </div>
         <div className="space-y-3 text-sm">
-          <div className="flex justify-between"><span className="text-gray-500">Date</span><span className="font-semibold text-gray-900">{new Date(booking.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span></div>
-          <div className="flex justify-between"><span className="text-gray-500">Time</span><span className="font-semibold text-gray-900">{fmt(booking.start_time)} - {fmt(booking.end_time)}</span></div>
-          <div className="flex justify-between"><span className="text-gray-500">Pitch</span><span className="font-semibold text-gray-900">{booking.pitch_name}</span></div>
-          <div className="flex justify-between"><span className="text-gray-500">Booked by</span><span className="font-semibold text-gray-900">{booking.full_name}</span></div>
-          <div className="flex justify-between items-center"><span className="text-gray-500">Status</span><span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusColour}`}>{booking.status}</span></div>
+          <div className="flex justify-between"><span className="text-neutral">Date</span><span className="font-semibold text-ink">{new Date(booking.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span></div>
+          <div className="flex justify-between"><span className="text-neutral">Time</span><span className="font-semibold text-ink">{fmt(booking.start_time)} - {fmt(booking.end_time)}</span></div>
+          <div className="flex justify-between"><span className="text-neutral">Pitch</span><span className="font-semibold text-ink">{booking.pitch_name}</span></div>
+          <div className="flex justify-between"><span className="text-neutral">Booked by</span><span className="font-semibold text-ink">{booking.full_name}</span></div>
+          <div className="flex justify-between items-center"><span className="text-neutral">Status</span><span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusColour}`}>{booking.status}</span></div>
         </div>
         {canEdit && (
           <div className="mt-6">
-            <a href={`/edit-booking/${booking.id}`} className="block w-full bg-gray-900 text-white text-center py-3 rounded-lg font-semibold text-sm hover:bg-gray-700 transition-colors">Edit Booking</a>
+            <a href={`/edit-booking/${booking.id}`} className="block w-full bg-ink text-white text-center py-3 rounded-lg font-semibold text-sm hover:bg-ink/90 transition-colors">Edit Booking</a>
           </div>
         )}
       </div>
@@ -70,24 +70,26 @@ function BookingModal({ booking, onClose, currentUserId, userRole }: { booking: 
 function BookingCard({ booking, onClick, compact }: { booking: Booking; onClick: () => void; compact?: boolean }) {
   const isApproved = booking.status === 'approved'
   const isPending = booking.status === 'pending'
-  const bg = isApproved ? '#f1f8f1' : isPending ? '#fff8e1' : '#f5f5f5'
-  const borderColour = isApproved ? '#2e7d32' : isPending ? '#f9ab2b' : '#9e9e9e'
-  const borderStyle = isPending ? 'dashed' : 'solid'
-  const timeColour = isApproved ? '#2e7d32' : isPending ? '#f9ab2b' : '#9e9e9e'
+  const statusClasses = isApproved
+    ? 'bg-approved/10 border-l-approved border-solid'
+    : isPending
+      ? 'bg-pending/10 border-l-pending border-dashed'
+      : 'bg-rejected/10 border-l-rejected border-solid'
+  const timeClasses = isApproved ? 'text-approved' : isPending ? 'text-pending' : 'text-rejected'
   if (compact) {
     return (
-      <div onClick={onClick} style={{ backgroundColor: bg, borderLeft: `3px ${borderStyle} ${borderColour}`, borderRadius: '4px', padding: '3px 5px', cursor: 'pointer' }}>
-        <div style={{ color: timeColour, fontWeight: 'bold', fontSize: '10px' }}>{fmt(booking.start_time)}-{fmt(booking.end_time)}</div>
-        <div style={{ color: '#111', fontWeight: 'bold', fontSize: '11px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{booking.team_name}</div>
-        <div style={{ color: '#888', fontSize: '10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{booking.full_name} - {booking.pitch_name}</div>
+      <div onClick={onClick} className={`cursor-pointer rounded border-l-[3px] px-[5px] py-[3px] ${statusClasses}`}>
+        <div className={`${timeClasses} text-[10px] font-bold`}>{fmt(booking.start_time)}-{fmt(booking.end_time)}</div>
+        <div className="text-[11px] font-bold text-ink truncate">{booking.team_name}</div>
+        <div className="text-[10px] text-neutral truncate">{booking.full_name} - {booking.pitch_name}</div>
       </div>
     )
   }
   return (
-    <div onClick={onClick} style={{ backgroundColor: bg, borderLeft: `4px ${borderStyle} ${borderColour}`, borderRadius: '6px', padding: '5px 7px', cursor: 'pointer' }}>
-      <div style={{ color: timeColour, fontWeight: 'bold', fontSize: '11px' }}>{fmt(booking.start_time)}-{fmt(booking.end_time)}</div>
-      <div style={{ color: '#111', fontWeight: 'bold', fontSize: '12px', marginTop: '1px' }}>{booking.team_name}</div>
-      <div style={{ color: '#888', fontSize: '11px', marginTop: '1px', lineHeight: '1.3' }}>{booking.full_name} - {booking.pitch_name}</div>
+    <div onClick={onClick} className={`cursor-pointer rounded-md border-l-4 px-[7px] py-[5px] ${statusClasses}`}>
+      <div className={`${timeClasses} text-[11px] font-bold`}>{fmt(booking.start_time)}-{fmt(booking.end_time)}</div>
+      <div className="text-[12px] font-bold text-ink mt-px">{booking.team_name}</div>
+      <div className="text-[11px] text-neutral mt-px leading-snug">{booking.full_name} - {booking.pitch_name}</div>
     </div>
   )
 }
@@ -95,18 +97,25 @@ function BookingCard({ booking, onClick, compact }: { booking: Booking; onClick:
 function MobileBookingRow({ b, onClick }: { b: Booking; onClick: () => void }) {
   const isApproved = b.status === 'approved'
   const isPending = b.status === 'pending'
-  const bg = isApproved ? '#f1f8f1' : isPending ? '#fff8e1' : '#f5f5f5'
-  const borderColour = isApproved ? '#2e7d32' : isPending ? '#f9ab2b' : '#9e9e9e'
-  const borderStyle = isPending ? 'dashed' : 'solid'
-  const timeColour = isApproved ? '#2e7d32' : isPending ? '#f9ab2b' : '#9e9e9e'
+  const statusClasses = isApproved
+    ? 'bg-approved/10 border-l-approved border-solid'
+    : isPending
+      ? 'bg-pending/10 border-l-pending border-dashed'
+      : 'bg-rejected/10 border-l-rejected border-solid'
+  const timeClasses = isApproved ? 'text-approved' : isPending ? 'text-pending' : 'text-rejected'
+  const badgeClasses = isApproved
+    ? 'bg-approved/10 text-approved'
+    : isPending
+      ? 'bg-pending/10 text-pending'
+      : 'bg-rejected/10 text-rejected'
   return (
-    <div onClick={onClick} style={{ backgroundColor: bg, borderRadius: '6px', borderLeft: `4px ${borderStyle} ${borderColour}`, padding: '6px 10px', marginBottom: '5px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', gap: '8px' }}>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: '10px', color: timeColour, fontWeight: 'bold' }}>{fmt(b.start_time)}-{fmt(b.end_time)} · {b.pitch_name}</div>
-        <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#111', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.team_name}</div>
-        <div style={{ fontSize: '11px', color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.full_name} · {b.purpose}</div>
+    <div onClick={onClick} className={`mb-[5px] flex cursor-pointer items-center justify-between gap-2 rounded-md border-l-4 px-2.5 py-1.5 ${statusClasses}`}>
+      <div className="min-w-0 flex-1">
+        <div className={`text-[10px] font-bold ${timeClasses}`}>{fmt(b.start_time)}-{fmt(b.end_time)} · {b.pitch_name}</div>
+        <div className="truncate text-[13px] font-bold text-ink">{b.team_name}</div>
+        <div className="truncate text-[11px] text-neutral">{b.full_name} · {b.purpose}</div>
       </div>
-      <span style={{ fontSize: '10px', fontWeight: '600', padding: '2px 7px', borderRadius: '10px', backgroundColor: isApproved ? '#dcfce7' : isPending ? '#fefce8' : '#f3f4f6', color: isApproved ? '#16a34a' : isPending ? '#d97706' : '#6b7280', whiteSpace: 'nowrap', flexShrink: 0 }}>
+      <span className={`shrink-0 whitespace-nowrap rounded-full px-[7px] py-0.5 text-[10px] font-semibold ${badgeClasses}`}>
         {isApproved ? 'Booked' : isPending ? 'Pending' : 'Declined'}
       </span>
     </div>
@@ -229,8 +238,8 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
     if (isToday(selectedDay)) {
       return (
         <>
-          <span style={{ flexShrink: 0 }}>Today</span>
-          <span style={{ fontSize: '11px', fontWeight: '500', color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
+          <span className="shrink-0">Today</span>
+          <span className="shrink-0 text-[11px] font-medium text-neutral overflow-hidden text-ellipsis whitespace-nowrap min-w-0">
             · {format(selectedDay, 'EEE, d MMM yyyy')}
           </span>
         </>
@@ -249,22 +258,22 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
     return (
       <div>
         {dayClosures.map(c => (
-          <div key={c.id} style={{ backgroundColor: '#f3f4f6', borderLeft: '4px solid #6b7280', borderRadius: '8px', padding: '10px 14px', marginBottom: '8px' }}>
-            <div style={{ fontWeight: '600', fontSize: '13px', color: '#111' }}>&#x1f512; Pitch Closed — {c.pitch_name}</div>
-            <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '2px' }}>{c.reason}</div>
+          <div key={c.id} className="mb-2 rounded-lg border-l-4 border-l-neutral bg-neutral/10 px-3.5 py-2.5">
+            <div className="text-[13px] font-semibold text-ink">&#x1f512; Pitch Closed — {c.pitch_name}</div>
+            <div className="mt-0.5 text-[11px] text-neutral">{c.reason}</div>
           </div>
         ))}
         {dayFixtures.map(f => (
-          <div key={f.id} onClick={() => setSelectedFixture(f)} style={{ backgroundColor: '#eff6ff', borderLeft: '4px solid #2563eb', borderRadius: '6px', padding: '6px 10px', marginBottom: '5px', cursor: 'pointer' }}>
-            <div style={{ fontSize: '10px', color: '#2563eb', fontWeight: 'bold' }}>{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · {f.home_away === 'home' ? '🏠 Home' : '🚌 Away'}</div>
-            <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#111' }}>{f.team_name} vs {f.opposition}</div>
-            <div style={{ fontSize: '11px', color: '#6b7280' }}>📍 {f.venue_name} · {f.competition}</div>
+          <div key={f.id} onClick={() => setSelectedFixture(f)} className="mb-[5px] cursor-pointer rounded-md border-l-4 border-l-info bg-info/10 px-2.5 py-1.5">
+            <div className="text-[10px] font-bold text-info">{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · {f.home_away === 'home' ? '🏠 Home' : '🚌 Away'}</div>
+            <div className="text-[13px] font-bold text-ink">{f.team_name} vs {f.opposition}</div>
+            <div className="text-[11px] text-neutral">📍 {f.venue_name} · {f.competition}</div>
           </div>
         ))}
         {dayBookings.length === 0 && dayClosures.length === 0 && dayFixtures.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '40px', backgroundColor: 'white', borderRadius: '10px' }}>
-            <div style={{ fontSize: '28px', marginBottom: '8px' }}>&#x1f4c5;</div>
-            <div style={{ fontSize: '13px', color: '#111' }}>Nothing scheduled</div>
+          <div className="rounded-[10px] bg-white py-10 text-center">
+            <div className="mb-2 text-[28px]">&#x1f4c5;</div>
+            <div className="text-[13px] text-ink">Nothing scheduled</div>
           </div>
         )}
         {dayBookings.map(b => <MobileBookingRow key={b.id} b={b} onClick={() => setSelectedBooking(b)} />)}
@@ -276,9 +285,9 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
     const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
     const daysWithContent = days.filter(d => getBookingsForDay(d).length > 0 || getClosuresForDay(d).length > 0)
     if (daysWithContent.length === 0) return (
-      <div style={{ textAlign: 'center', padding: '40px', backgroundColor: 'white', borderRadius: '10px' }}>
-        <div style={{ fontSize: '28px', marginBottom: '8px' }}>&#x1f4c5;</div>
-        <div style={{ fontSize: '13px', color: '#111' }}>No bookings this week</div>
+      <div className="rounded-[10px] bg-white py-10 text-center">
+        <div className="mb-2 text-[28px]">&#x1f4c5;</div>
+        <div className="text-[13px] text-ink">No bookings this week</div>
       </div>
     )
     return (
@@ -289,22 +298,22 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
           const dayFixtures = calendarView !== 'bookings' ? getDayFixtures(d) : []
           if (dayBookings.length === 0 && dayClosures.length === 0 && dayFixtures.length === 0) return null
           return (
-            <div key={d.toISOString()} style={{ marginBottom: '16px' }}>
-              <div style={{ fontSize: '12px', fontWeight: '700', color: isToday(d) ? '#111' : '#374151', padding: '5px 0', borderBottom: `2px solid ${isToday(d) ? '#111' : '#e5e7eb'}`, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                {isToday(d) && <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#111', display: 'inline-block' }}></span>}
+            <div key={d.toISOString()} className="mb-4">
+              <div className={`mb-1.5 flex items-center gap-1.5 border-b-2 pb-1.5 text-xs font-bold ${isToday(d) ? 'border-ink text-ink' : 'border-gray-200 text-neutral'}`}>
+                {isToday(d) && <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-ink" />}
                 {format(d, 'EEEE, d MMMM')}
               </div>
               {dayClosures.map(c => (
-                <div key={c.id} style={{ backgroundColor: '#f3f4f6', borderLeft: '4px solid #6b7280', borderRadius: '6px', padding: '8px 12px', marginBottom: '5px' }}>
-                  <div style={{ fontWeight: '600', fontSize: '12px', color: '#6b7280' }}>&#x1f512; {c.pitch_name} — Closed</div>
-                  <div style={{ fontSize: '11px', color: '#9ca3af' }}>{c.reason}</div>
+                <div key={c.id} className="mb-[5px] rounded-md border-l-4 border-l-neutral bg-neutral/10 px-3 py-2">
+                  <div className="text-[12px] font-semibold text-neutral">&#x1f512; {c.pitch_name} — Closed</div>
+                  <div className="text-[11px] text-neutral/80">{c.reason}</div>
                 </div>
               ))}
               {dayFixtures.map(f => (
-                <div key={f.id} onClick={() => setSelectedFixture(f)} style={{ backgroundColor: '#eff6ff', borderLeft: '4px solid #2563eb', borderRadius: '6px', padding: '6px 10px', marginBottom: '5px', cursor: 'pointer' }}>
-                  <div style={{ fontSize: '10px', color: '#2563eb', fontWeight: 'bold' }}>{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · {f.home_away === 'home' ? '🏠 Home' : '🚌 Away'}</div>
-                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#111' }}>{f.team_name} {f.sport !== 'Other' ? `· ${f.sport}` : ''} vs {f.opposition}</div>
-                  <div style={{ fontSize: '11px', color: '#6b7280' }}>📍 {f.venue_name} · {f.competition}</div>
+                <div key={f.id} onClick={() => setSelectedFixture(f)} className="mb-[5px] cursor-pointer rounded-md border-l-4 border-l-info bg-info/10 px-2.5 py-1.5">
+                  <div className="text-[10px] font-bold text-info">{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · {f.home_away === 'home' ? '🏠 Home' : '🚌 Away'}</div>
+                  <div className="text-[13px] font-bold text-ink">{f.team_name} {f.sport !== 'Other' ? `· ${f.sport}` : ''} vs {f.opposition}</div>
+                  <div className="text-[11px] text-neutral">📍 {f.venue_name} · {f.competition}</div>
                 </div>
               ))}
               {dayBookings.map(b => <MobileBookingRow key={b.id} b={b} onClick={() => setSelectedBooking(b)} />)}
@@ -323,9 +332,9 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
     while (day <= monthEnd) { days.push(new Date(day)); day = addDays(day, 1) }
     const daysWithBookings = days.filter(d => getBookingsForDay(d).length > 0 || getClosuresForDay(d).length > 0 || getDayFixtures(d).length > 0)
     if (daysWithBookings.length === 0) return (
-      <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af', backgroundColor: 'white', borderRadius: '10px' }}>
-        <div style={{ fontSize: '28px', marginBottom: '8px' }}>&#x1f4c5;</div>
-        <div style={{ fontSize: '13px' }}>Nothing this month</div>
+      <div className="rounded-[10px] bg-white py-10 text-center text-neutral">
+        <div className="mb-2 text-[28px]">&#x1f4c5;</div>
+        <div className="text-[13px]">Nothing this month</div>
       </div>
     )
     return (
@@ -335,21 +344,21 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
           const dayClosures = getClosuresForDay(d)
           const dayFixtures = calendarView !== 'bookings' ? getDayFixtures(d) : []
           return (
-            <div key={d.toISOString()} style={{ marginBottom: '16px' }}>
-              <div style={{ fontSize: '12px', fontWeight: '700', color: '#374151', padding: '5px 0', borderBottom: '1px solid #e5e7eb', marginBottom: '6px' }}>
+            <div key={d.toISOString()} className="mb-4">
+              <div className="mb-1.5 border-b border-gray-200 pb-1.5 text-xs font-bold text-neutral">
                 {format(d, 'EEEE, d MMMM')}
               </div>
               {dayClosures.map(c => (
-                <div key={c.id} style={{ backgroundColor: '#f3f4f6', borderLeft: '4px solid #6b7280', borderRadius: '6px', padding: '8px 12px', marginBottom: '5px' }}>
-                  <div style={{ fontWeight: '600', fontSize: '12px', color: '#6b7280' }}>&#x1f512; {c.pitch_name} — Closed</div>
-                  <div style={{ fontSize: '11px', color: '#9ca3af' }}>{c.reason}</div>
+                <div key={c.id} className="mb-[5px] rounded-md border-l-4 border-l-neutral bg-neutral/10 px-3 py-2">
+                  <div className="text-[12px] font-semibold text-neutral">&#x1f512; {c.pitch_name} — Closed</div>
+                  <div className="text-[11px] text-neutral/80">{c.reason}</div>
                 </div>
               ))}
               {dayFixtures.map(f => (
-                <div key={f.id} onClick={() => setSelectedFixture(f)} style={{ backgroundColor: '#eff6ff', borderLeft: '4px solid #2563eb', borderRadius: '6px', padding: '6px 10px', marginBottom: '5px', cursor: 'pointer' }}>
-                  <div style={{ fontSize: '10px', color: '#2563eb', fontWeight: 'bold' }}>{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · {f.home_away === 'home' ? '🏠 Home' : '🚌 Away'}</div>
-                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#111' }}>{f.team_name} {f.sport !== 'Other' ? `· ${f.sport}` : ''} vs {f.opposition}</div>
-                  <div style={{ fontSize: '11px', color: '#6b7280' }}>📍 {f.venue_name} · {f.competition}</div>
+                <div key={f.id} onClick={() => setSelectedFixture(f)} className="mb-[5px] cursor-pointer rounded-md border-l-4 border-l-info bg-info/10 px-2.5 py-1.5">
+                  <div className="text-[10px] font-bold text-info">{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · {f.home_away === 'home' ? '🏠 Home' : '🚌 Away'}</div>
+                  <div className="text-[13px] font-bold text-ink">{f.team_name} {f.sport !== 'Other' ? `· ${f.sport}` : ''} vs {f.opposition}</div>
+                  <div className="text-[11px] text-neutral">📍 {f.venue_name} · {f.competition}</div>
                 </div>
               ))}
               {dayBookings.map(b => <MobileBookingRow key={b.id} b={b} onClick={() => setSelectedBooking(b)} />)}
@@ -363,10 +372,10 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
   function renderWeekDayHeader(day: Date, i: number) {
     const today = isToday(day)
     return (
-      <div key={i} style={{ textAlign: 'center', padding: '6px 2px', backgroundColor: today ? '#111' : '#1f2937', borderLeft: i > 0 ? '1px solid #374151' : 'none' }}>
-        <div style={{ fontSize: '10px', fontWeight: '600', color: today ? '#d1d5db' : '#6b7280', letterSpacing: '0.05em' }}>{format(day, 'EEE').toUpperCase()}</div>
-        <div style={{ fontSize: '16px', fontWeight: 'bold', color: today ? '#111' : 'white', backgroundColor: today ? 'white' : 'transparent', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '2px auto' }}>{format(day, 'd')}</div>
-        <div style={{ fontSize: '10px', color: today ? '#d1d5db' : '#6b7280' }}>{format(day, 'MMM')}</div>
+      <div key={i} className={`px-0.5 py-1.5 text-center ${today ? 'bg-ink' : 'bg-ink/90'} ${i > 0 ? 'border-l border-ink/70' : ''}`}>
+        <div className={`text-[10px] font-semibold tracking-wide ${today ? 'text-neutral/70' : 'text-neutral'}`}>{format(day, 'EEE').toUpperCase()}</div>
+        <div className={`mx-auto my-0.5 flex h-7 w-7 items-center justify-center rounded-full text-base font-bold ${today ? 'bg-white text-ink' : 'bg-transparent text-white'}`}>{format(day, 'd')}</div>
+        <div className={`text-[10px] ${today ? 'text-neutral/70' : 'text-neutral'}`}>{format(day, 'MMM')}</div>
       </div>
     )
   }
@@ -382,36 +391,36 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
     const weeks: Date[][] = []
     for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i + 7))
     return (
-      <div className="month-grid-wrapper" style={{ border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', backgroundColor: '#111', minWidth: '560px' }}>
+      <div className="month-grid-wrapper overflow-auto rounded-lg border border-gray-200">
+        <div className="grid min-w-[560px] grid-cols-7 bg-ink">
           {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => (
-            <div key={d} style={{ textAlign: 'center', padding: '8px 0', fontSize: '11px', fontWeight: '600', color: 'white' }}>{d}</div>
+            <div key={d} className="py-2 text-center text-[11px] font-semibold text-white">{d}</div>
           ))}
         </div>
         {weeks.map((week, wi) => (
-          <div key={wi} style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', borderTop: '1px solid #e5e7eb', minWidth: '560px' }}>
+          <div key={wi} className="grid min-w-[560px] grid-cols-7 border-t border-gray-200">
             {week.map((day, di) => {
               const dayBookings = getBookingsForDay(day)
               const inMonth = isSameMonth(day, currentDate)
               const today = isToday(day)
               return (
-                <div key={di} style={{ minHeight: '90px', padding: '4px', backgroundColor: inMonth ? 'white' : '#f9fafb', borderLeft: di > 0 ? '1px solid #e5e7eb' : 'none', overflow: 'hidden' }}>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: '500', width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: today ? '#111' : 'transparent', color: today ? 'white' : inMonth ? '#374151' : '#9ca3af', flexShrink: 0 }}>{format(day, 'd')}</span>
+                <div key={di} className={`min-h-[90px] overflow-hidden p-1 ${inMonth ? 'bg-white' : 'bg-neutral/5'} ${di > 0 ? 'border-l border-gray-200' : ''}`}>
+                  <div className="mb-0.5 flex justify-end">
+                    <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-medium ${today ? 'bg-ink text-white' : inMonth ? 'text-neutral' : 'text-neutral/60'}`}>{format(day, 'd')}</span>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  <div className="flex flex-col gap-0.5">
                     {getClosuresForDay(day).map(c => (
-                      <div key={c.id} style={{ backgroundColor: '#f3f4f6', borderLeft: '3px solid #6b7280', borderRadius: '4px', padding: '2px 4px' }}>
-                        <div style={{ color: '#6b7280', fontWeight: 'bold', fontSize: '9px' }}>&#x1f512; Closed</div>
-                        <div style={{ color: '#6b7280', fontSize: '9px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.pitch_name}</div>
+                      <div key={c.id} className="rounded border-l-[3px] border-l-neutral bg-neutral/10 px-1 py-0.5">
+                        <div className="text-[9px] font-bold text-neutral">&#x1f512; Closed</div>
+                        <div className="truncate text-[9px] text-neutral">{c.pitch_name}</div>
                       </div>
                     ))}
                     {calendarView !== 'fixtures' && dayBookings.slice(0,3).map(b => <BookingCard key={b.id} booking={b} onClick={() => setSelectedBooking(b)} compact />)}
-                    {calendarView !== 'fixtures' && dayBookings.length > 3 && <div style={{ fontSize: '9px', color: '#9ca3af', paddingLeft: '2px' }}>+{dayBookings.length - 3} more</div>}
+                    {calendarView !== 'fixtures' && dayBookings.length > 3 && <div className="pl-0.5 text-[9px] text-neutral">+{dayBookings.length - 3} more</div>}
                     {calendarView !== 'bookings' && getDayFixtures(day).map(f => (
-                      <div key={f.id} onClick={() => setSelectedFixture(f)} style={{ backgroundColor: '#eff6ff', borderLeft: '3px solid #2563eb', borderRadius: '4px', padding: '2px 4px', cursor: 'pointer' }}>
-                        <div style={{ color: '#2563eb', fontWeight: 'bold', fontSize: '9px' }}>📅 {f.home_away === 'home' ? '🏠' : '🚌'} {f.fixture_time ? f.fixture_time.slice(0,5) : ''}</div>
-                        <div style={{ color: '#111', fontSize: '9px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.team_name} vs {f.opposition}</div>
+                      <div key={f.id} onClick={() => setSelectedFixture(f)} className="cursor-pointer rounded border-l-[3px] border-l-info bg-info/10 px-1 py-0.5">
+                        <div className="text-[9px] font-bold text-info">📅 {f.home_away === 'home' ? '🏠' : '🚌'} {f.fixture_time ? f.fixture_time.slice(0,5) : ''}</div>
+                        <div className="truncate text-[9px] text-ink">{f.team_name} vs {f.opposition}</div>
                       </div>
                     ))}
                   </div>
@@ -428,28 +437,28 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 })
     const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
     return (
-      <div className="week-grid-wrapper" style={{ border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(120px, 1fr))', minWidth: '700px' }}>
+      <div className="week-grid-wrapper overflow-auto rounded-lg border border-gray-200">
+        <div className="grid min-w-[700px] grid-cols-7">
           {days.map((day, i) => renderWeekDayHeader(day, i))}
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(120px, 1fr))', minWidth: '700px', borderTop: '1px solid #e5e7eb' }}>
+        <div className="grid min-w-[700px] grid-cols-7 border-t border-gray-200">
           {days.map((day, di) => {
             const dayBookings = calendarView !== 'fixtures' ? getBookingsForDay(day) : []
             const dayFixtures = calendarView !== 'bookings' ? getDayFixtures(day) : []
             return (
-              <div key={di} style={{ minHeight: '180px', padding: '6px', display: 'flex', flexDirection: 'column', gap: '4px', backgroundColor: isToday(day) ? '#f0fdf4' : 'white', borderLeft: di > 0 ? '1px solid #e5e7eb' : 'none' }}>
+              <div key={di} className={`flex min-h-[180px] flex-col gap-1 p-1.5 ${isToday(day) ? 'bg-approved/10' : 'bg-white'} ${di > 0 ? 'border-l border-gray-200' : ''}`}>
                 {getClosuresForDay(day).map(c => (
-                  <div key={c.id} style={{ backgroundColor: '#f3f4f6', borderLeft: '4px solid #6b7280', borderRadius: '6px', padding: '5px 7px' }}>
-                    <div style={{ color: '#6b7280', fontWeight: 'bold', fontSize: '11px' }}>&#x1f512; Pitch Closed</div>
-                    <div style={{ color: '#6b7280', fontSize: '11px', marginTop: '1px' }}>{c.pitch_name}</div>
-                    <div style={{ color: '#9ca3af', fontSize: '10px', marginTop: '1px' }}>{c.reason}</div>
+                  <div key={c.id} className="rounded-md border-l-4 border-l-neutral bg-neutral/10 px-[7px] py-[5px]">
+                    <div className="text-[11px] font-bold text-neutral">&#x1f512; Pitch Closed</div>
+                    <div className="mt-px text-[11px] text-neutral">{c.pitch_name}</div>
+                    <div className="mt-px text-[10px] text-neutral/80">{c.reason}</div>
                   </div>
                 ))}
                 {dayFixtures.map(f => (
-                  <div key={f.id} onClick={() => setSelectedFixture(f)} style={{ backgroundColor: '#eff6ff', borderLeft: '4px solid #2563eb', borderRadius: '6px', padding: '5px 7px', cursor: 'pointer' }}>
-                    <div style={{ color: '#2563eb', fontWeight: 'bold', fontSize: '11px' }}>📅 {f.home_away === 'home' ? '🏠' : '🚌'} {f.fixture_time ? f.fixture_time.slice(0,5) : ''}</div>
-                    <div style={{ color: '#111', fontSize: '11px', marginTop: '1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.team_name} vs {f.opposition}</div>
-                    <div style={{ color: '#6b7280', fontSize: '10px', marginTop: '1px' }}>📍 {f.venue_name}</div>
+                  <div key={f.id} onClick={() => setSelectedFixture(f)} className="cursor-pointer rounded-md border-l-4 border-l-info bg-info/10 px-[7px] py-[5px]">
+                    <div className="text-[11px] font-bold text-info">📅 {f.home_away === 'home' ? '🏠' : '🚌'} {f.fixture_time ? f.fixture_time.slice(0,5) : ''}</div>
+                    <div className="mt-px truncate text-[11px] text-ink">{f.team_name} vs {f.opposition}</div>
+                    <div className="mt-px text-[10px] text-neutral">📍 {f.venue_name}</div>
                   </div>
                 ))}
                 {dayBookings.map(b => <BookingCard key={b.id} booking={b} onClick={() => setSelectedBooking(b)} />)}
@@ -463,64 +472,73 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+      <div className="mb-2.5 flex items-center justify-between">
         <div>
-          <h1 style={{ fontSize: isMobile ? '18px' : '24px', fontWeight: 'bold', color: '#111' }}>Calendar</h1>
-          <p style={{ color: '#6b7280', fontSize: '12px' }}>St. Saviours GAA & LGFA</p>
+          <h1 className={`font-bold text-ink ${isMobile ? 'text-lg' : 'text-2xl'}`}>Calendar</h1>
+          <p className="text-xs text-neutral">St. Saviours GAA & LGFA</p>
         </div>
-        <div style={{ display: 'flex', gap: '6px' }}>
-          {!isMobile && <button style={{ border: '1px solid #d1d5db', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', backgroundColor: 'white' }}>Print / Save</button>}
-          {userRole !== 'viewer' && <a href="/new-booking" style={{ backgroundColor: '#111', color: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', textDecoration: 'none', whiteSpace: 'nowrap' }}>+ New Booking</a>}
+        <div className="flex gap-1.5">
+          {!isMobile && <button className="cursor-pointer rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs text-ink">Print / Save</button>}
+          {userRole !== 'viewer' && <a href="/new-booking" className="whitespace-nowrap rounded-lg bg-ink px-3 py-1.5 text-xs font-semibold text-white no-underline">+ New Booking</a>}
         </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap', fontSize: '12px' }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#2e7d32', display: 'inline-block' }}></span>Booked</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '8px', height: '8px', borderRadius: '50%', border: '2px dashed #f9ab2b', display: 'inline-block' }}></span>Awaiting</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#9e9e9e', display: 'inline-block' }}></span>Closed</span>
+      <div className="mb-1.5 flex flex-wrap items-center gap-2 text-xs font-medium text-ink">
+        <span className="flex items-center gap-1">
+          <span className="inline-block h-2 w-2 rounded-full bg-approved" />
+          Booked
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="inline-block h-2 w-2 rounded-full border-2 border-dashed border-pending" />
+          Awaiting
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="inline-block h-2 w-2 rounded-full bg-neutral" />
+          Closed
+        </span>
       </div>
-      <div style={{ display: 'flex', gap: '6px', marginBottom: '6px', alignItems: 'center', maxWidth: isMobile ? '100%' : '500px' }}>
-        <select value={selectedPitch} onChange={e => setSelectedPitch(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '5px 8px', fontSize: '12px', flex: 1, minWidth: 0, color: '#111', backgroundColor: 'white' }}>
+      <div className={`mb-1.5 flex items-center gap-1.5 ${isMobile ? 'max-w-full' : 'max-w-[500px]'}`}>
+        <select value={selectedPitch} onChange={e => setSelectedPitch(e.target.value)} className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs text-ink">
           <option value="all">All Pitches</option>
           {pitches.map(p => <option key={p.id} value={String(p.id)}>{p.name}</option>)}
         </select>
-        <select value={selectedTeam} onChange={e => setSelectedTeam(e.target.value)} style={{ border: '1px solid #d1d5db', borderRadius: '8px', padding: '5px 8px', fontSize: '12px', flex: 1, minWidth: 0, color: '#111', backgroundColor: 'white' }}>
+        <select value={selectedTeam} onChange={e => setSelectedTeam(e.target.value)} className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs text-ink">
           <option value="all">All Teams</option>
           {uniqueTeams.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
       </div>
-      <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', border: '1px solid #d1d5db', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
+      <div className="mb-2 flex flex-wrap gap-1.5">
+        <div className="flex shrink-0 overflow-hidden rounded-lg border border-gray-300">
           {(['bookings', 'fixtures', 'all'] as const).map(v => (
-            <button key={v} onClick={() => setCalendarView(v)} style={{ padding: '5px 10px', fontSize: '11px', fontWeight: '500', backgroundColor: calendarView === v ? '#111' : 'white', color: calendarView === v ? 'white' : '#374151', border: 'none', cursor: 'pointer' }}>
+            <button key={v} onClick={() => setCalendarView(v)} className={`cursor-pointer border-none px-2.5 py-1.5 text-[11px] font-medium ${calendarView === v ? 'bg-ink text-white' : 'bg-white text-neutral'}`}>
               {v === 'bookings' ? '📋 Bookings' : v === 'fixtures' ? '📅 Fixtures' : '🏟 All'}
             </button>
           ))}
         </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', gap: '4px' }}>
-        <div style={{ display: 'flex', border: '1px solid #d1d5db', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
-          {isMobile && <button onClick={() => { setView('day'); setSelectedDay(new Date()) }} style={{ padding: '6px 10px', fontSize: '12px', fontWeight: '500', backgroundColor: view === 'day' ? '#111' : 'white', color: view === 'day' ? 'white' : '#374151', border: 'none', cursor: 'pointer' }}>Day</button>}
-          <button onClick={() => setView('week')} style={{ padding: '6px 10px', fontSize: '12px', fontWeight: '500', backgroundColor: view === 'week' ? '#111' : 'white', color: view === 'week' ? 'white' : '#374151', border: 'none', cursor: 'pointer' }}>Week</button>
-          <button onClick={() => setView('month')} style={{ padding: '6px 10px', fontSize: '12px', fontWeight: '500', backgroundColor: view === 'month' ? '#111' : 'white', color: view === 'month' ? 'white' : '#374151', border: 'none', cursor: 'pointer' }}>Month</button>
+      <div className="mb-2 flex items-center justify-between gap-1">
+        <div className="flex shrink-0 overflow-hidden rounded-lg border border-gray-300">
+          {isMobile && <button onClick={() => { setView('day'); setSelectedDay(new Date()) }} className={`cursor-pointer border-none px-2.5 py-1.5 text-xs font-medium ${view === 'day' ? 'bg-ink text-white' : 'bg-white text-neutral'}`}>Day</button>}
+          <button onClick={() => setView('week')} className={`cursor-pointer border-none px-2.5 py-1.5 text-xs font-medium ${view === 'week' ? 'bg-ink text-white' : 'bg-white text-neutral'}`}>Week</button>
+          <button onClick={() => setView('month')} className={`cursor-pointer border-none px-2.5 py-1.5 text-xs font-medium ${view === 'month' ? 'bg-ink text-white' : 'bg-white text-neutral'}`}>Month</button>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0, justifyContent: 'flex-end' }}>
+        <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
           <button onClick={() => {
             if (view === 'day') { const d = new Date(selectedDay); d.setDate(d.getDate() - 1); setSelectedDay(d) }
             else if (view === 'month') setCurrentDate(subMonths(currentDate, 1))
             else setCurrentDate(subWeeks(currentDate, 1))
-          }} style={{ border: '1px solid #d1d5db', padding: '5px 8px', borderRadius: '8px', fontSize: '16px', cursor: 'pointer', backgroundColor: 'white', flexShrink: 0, width: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#111' }}>‹</button>
-          <h2 style={{ fontSize: '13px', fontWeight: '600', color: '#111', textAlign: 'center', flex: 1, minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap', display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '4px' }}>
+          }} className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-gray-300 bg-white text-base text-ink">‹</button>
+          <h2 className="flex min-w-0 flex-1 items-baseline justify-center gap-1 overflow-hidden whitespace-nowrap text-[13px] font-semibold text-ink">
             {view === 'month' ? format(currentDate, 'MMMM yyyy') : view === 'day' ? getDayLabel() : getWeekLabel()}
           </h2>
           <button onClick={() => {
             if (view === 'day') { const d = new Date(selectedDay); d.setDate(d.getDate() + 1); setSelectedDay(d) }
             else if (view === 'month') setCurrentDate(addMonths(currentDate, 1))
             else setCurrentDate(addWeeks(currentDate, 1))
-          }} style={{ border: '1px solid #d1d5db', padding: '5px 8px', borderRadius: '8px', fontSize: '16px', cursor: 'pointer', backgroundColor: 'white', flexShrink: 0, width: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#111' }}>›</button>
+          }} className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-gray-300 bg-white text-base text-ink">›</button>
         </div>
       </div>
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '48px', color: '#888' }}>Loading bookings...</div>
+        <div className="py-12 text-center text-neutral">Loading bookings...</div>
       ) : view === 'day' ? renderDayView()
         : view === 'week' && isMobile ? renderMobileWeekView()
         : view === 'month' && isMobile ? renderMobileMonthView()
@@ -532,21 +550,21 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">{selectedFixture.team_name} vs {selectedFixture.opposition}</h2>
-                <p className="text-gray-500 text-sm mt-1">{selectedFixture.sport}</p>
+                <h2 className="text-xl font-bold text-ink">{selectedFixture.team_name} vs {selectedFixture.opposition}</h2>
+                <p className="text-neutral text-sm mt-1">{selectedFixture.sport}</p>
               </div>
-              <button onClick={() => setSelectedFixture(null)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+              <button onClick={() => setSelectedFixture(null)} className="text-neutral/60 hover:text-neutral text-2xl leading-none">&times;</button>
             </div>
             <div className="space-y-3 text-sm">
-              <div className="flex justify-between"><span className="text-gray-500">Date</span><span className="font-semibold text-gray-900">{new Date(selectedFixture.fixture_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Time</span><span className="font-semibold text-gray-900">{selectedFixture.fixture_time ? selectedFixture.fixture_time.slice(0,5) : 'TBC'}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Venue</span><span className="font-semibold text-gray-900">{selectedFixture.venue_name}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Home/Away</span><span className="font-semibold text-gray-900">{selectedFixture.home_away === 'home' ? '🏠 Home' : '🚌 Away'}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Competition</span><span className="font-semibold text-gray-900">{selectedFixture.competition}</span></div>
-              {selectedFixture.notes && <div className="flex justify-between"><span className="text-gray-500">Notes</span><span className="font-semibold text-gray-900">{selectedFixture.notes}</span></div>}
+              <div className="flex justify-between"><span className="text-neutral">Date</span><span className="font-semibold text-ink">{new Date(selectedFixture.fixture_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span></div>
+              <div className="flex justify-between"><span className="text-neutral">Time</span><span className="font-semibold text-ink">{selectedFixture.fixture_time ? selectedFixture.fixture_time.slice(0,5) : 'TBC'}</span></div>
+              <div className="flex justify-between"><span className="text-neutral">Venue</span><span className="font-semibold text-ink">{selectedFixture.venue_name}</span></div>
+              <div className="flex justify-between"><span className="text-neutral">Home/Away</span><span className="font-semibold text-ink">{selectedFixture.home_away === 'home' ? '🏠 Home' : '🚌 Away'}</span></div>
+              <div className="flex justify-between"><span className="text-neutral">Competition</span><span className="font-semibold text-ink">{selectedFixture.competition}</span></div>
+              {selectedFixture.notes && <div className="flex justify-between"><span className="text-neutral">Notes</span><span className="font-semibold text-ink">{selectedFixture.notes}</span></div>}
             </div>
             <div className="mt-6">
-              <a href={`https://maps.google.com/?q=${selectedFixture.venue_name}`} target="_blank" rel="noopener noreferrer" className="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-semibold text-sm">📍 Get Directions</a>
+              <a href={`https://maps.google.com/?q=${selectedFixture.venue_name}`} target="_blank" rel="noopener noreferrer" className="block w-full bg-info text-white text-center py-3 rounded-lg font-semibold text-sm">📍 Get Directions</a>
             </div>
           </div>
         </div>
