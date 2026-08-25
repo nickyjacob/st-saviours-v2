@@ -37,6 +37,14 @@ interface Pitch {
 
 const fmt = (t: string) => { const parts = t.slice(0,5).split(':'); const hr = parseInt(parts[0]); const mn = parts[1]; return `${hr > 12 ? hr-12 : hr === 0 ? 12 : hr}:${mn}${hr >= 12 ? 'pm' : 'am'}` }
 
+function sportPrefix(sport: string) {
+  return sport && sport !== 'Other' ? `${sport} · ` : ''
+}
+
+function formatFixtureLine(f: { sport: string; team_name: string; opposition: string }) {
+  return `${sportPrefix(f.sport)}${f.team_name} vs ${f.opposition}`
+}
+
 function BookingModal({ booking, onClose, currentUserId, userRole }: { booking: Booking; onClose: () => void; currentUserId: string; userRole: string }) {
   const canEdit = booking.user_id === currentUserId || userRole === 'admin'
   const statusColour = booking.status === 'approved' ? 'bg-approved/10 text-approved' : booking.status === 'pending' ? 'bg-pending/10 text-pending' : 'bg-rejected/10 text-rejected'
@@ -266,7 +274,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
         {dayFixtures.map(f => (
           <div key={f.id} onClick={() => setSelectedFixture(f)} className="mb-[5px] cursor-pointer rounded-md border-l-4 border-l-info bg-info/10 px-2.5 py-1.5">
             <div className="text-[10px] font-bold text-info">{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · {f.home_away === 'home' ? '🏠 Home' : '🚌 Away'}</div>
-            <div className="text-[13px] font-bold text-ink">{f.team_name} vs {f.opposition}</div>
+            <div className="text-[13px] font-bold text-ink">{formatFixtureLine(f)}</div>
             <div className="text-[11px] text-neutral">📍 {f.venue_name} · {f.competition}</div>
           </div>
         ))}
@@ -312,7 +320,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
               {dayFixtures.map(f => (
                 <div key={f.id} onClick={() => setSelectedFixture(f)} className="mb-[5px] cursor-pointer rounded-md border-l-4 border-l-info bg-info/10 px-2.5 py-1.5">
                   <div className="text-[10px] font-bold text-info">{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · {f.home_away === 'home' ? '🏠 Home' : '🚌 Away'}</div>
-                  <div className="text-[13px] font-bold text-ink">{f.team_name} {f.sport !== 'Other' ? `· ${f.sport}` : ''} vs {f.opposition}</div>
+                  <div className="text-[13px] font-bold text-ink">{formatFixtureLine(f)}</div>
                   <div className="text-[11px] text-neutral">📍 {f.venue_name} · {f.competition}</div>
                 </div>
               ))}
@@ -357,7 +365,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
               {dayFixtures.map(f => (
                 <div key={f.id} onClick={() => setSelectedFixture(f)} className="mb-[5px] cursor-pointer rounded-md border-l-4 border-l-info bg-info/10 px-2.5 py-1.5">
                   <div className="text-[10px] font-bold text-info">{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · {f.home_away === 'home' ? '🏠 Home' : '🚌 Away'}</div>
-                  <div className="text-[13px] font-bold text-ink">{f.team_name} {f.sport !== 'Other' ? `· ${f.sport}` : ''} vs {f.opposition}</div>
+                  <div className="text-[13px] font-bold text-ink">{formatFixtureLine(f)}</div>
                   <div className="text-[11px] text-neutral">📍 {f.venue_name} · {f.competition}</div>
                 </div>
               ))}
@@ -420,7 +428,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
                     {calendarView !== 'bookings' && getDayFixtures(day).map(f => (
                       <div key={f.id} onClick={() => setSelectedFixture(f)} className="cursor-pointer rounded border-l-[3px] border-l-info bg-info/10 px-1 py-0.5">
                         <div className="text-[9px] font-bold text-info">📅 {f.home_away === 'home' ? '🏠' : '🚌'} {f.fixture_time ? f.fixture_time.slice(0,5) : ''}</div>
-                        <div className="truncate text-[9px] text-ink">{f.team_name} vs {f.opposition}</div>
+                        <div className="truncate text-[9px] text-ink">{formatFixtureLine(f)}</div>
                       </div>
                     ))}
                   </div>
@@ -457,7 +465,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
                 {dayFixtures.map(f => (
                   <div key={f.id} onClick={() => setSelectedFixture(f)} className="cursor-pointer rounded-md border-l-4 border-l-info bg-info/10 px-[7px] py-[5px]">
                     <div className="text-[11px] font-bold text-info">📅 {f.home_away === 'home' ? '🏠' : '🚌'} {f.fixture_time ? f.fixture_time.slice(0,5) : ''}</div>
-                    <div className="mt-px truncate text-[11px] text-ink">{f.team_name} vs {f.opposition}</div>
+                    <div className="mt-px truncate text-[11px] text-ink">{formatFixtureLine(f)}</div>
                     <div className="mt-px text-[10px] text-neutral">📍 {f.venue_name}</div>
                   </div>
                 ))}

@@ -157,6 +157,14 @@ export default function DashboardPage() {
     return `${goals}-${points}`
   }
 
+  function sportPrefix(sport: string) {
+    return sport && sport !== 'Other' ? `${sport} · ` : ''
+  }
+
+  function formatFixtureLine(f: { sport: string; team_name: string; opposition: string }) {
+    return `${sportPrefix(f.sport)}${f.team_name} vs ${f.opposition}`
+  }
+
   function resultTone(result: string): StatusTone {
     if (result === 'win') return 'approved'
     if (result === 'loss') return 'rejected'
@@ -295,7 +303,7 @@ export default function DashboardPage() {
                       </span>
                     </div>
                     <div className="text-[13px] font-bold text-ink">
-                      {f.team_name}{f.sport && f.sport !== 'Other' ? ` · ${f.sport}` : ''} vs {f.opposition}
+                      {formatFixtureLine(f)}
                     </div>
                     <div className="mt-0.5 flex items-center gap-1 text-[11px] text-neutral">
                       <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
@@ -322,9 +330,13 @@ export default function DashboardPage() {
                 const tone = resultTone(r.result)
                 return (
                   <Card key={r.id} statusColor={tone} className="p-3 shadow-sm">
-                    <div className="mb-0.5 flex items-center gap-2">
-                      <Badge tone={tone} variant="solid">{resultLabel(r.result)}</Badge>
-                      <span className="text-[11px] font-bold text-ink">{r.team_name}</span>
+                    <div className="mb-0.5">
+                      <Badge tone={tone} variant="solid" className="mr-2 inline-flex shrink-0 align-middle">
+                        {resultLabel(r.result)}
+                      </Badge>
+                      <span className="text-[13px] font-bold text-ink align-middle">
+                        {sportPrefix(r.sport)}{r.team_name}
+                      </span>
                     </div>
                     <div className="text-[13px] text-ink">
                       <span className="font-bold tabular-nums tracking-tight">
