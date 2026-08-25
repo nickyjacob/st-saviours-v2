@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Navbar from '@/components/Navbar'
+import Badge from '@/components/ui/Badge'
+import Button from '@/components/ui/Button'
 
 interface Booking {
   id: string
@@ -85,12 +87,18 @@ export default function MyBookingsPage() {
             <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '1px' }}>{b.team_name} · {b.purpose}</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px', flexShrink: 0 }}>
-            <span style={{ fontSize: '11px', fontWeight: '600', color: isApproved ? '#16a34a' : '#d97706' }}>{isApproved ? '● Booked' : '● Awaiting'}</span>
+            <Badge
+              tone={isApproved ? 'approved' : isPending ? 'pending' : 'rejected'}
+              variant="solid"
+              className="shrink-0"
+            >
+              {isApproved ? 'Booked' : isPending ? 'Awaiting' : 'Cancelled'}
+            </Badge>
             <div style={{ display: 'flex', gap: '4px' }}>
-              <a href={`/edit-booking/${b.id}`} style={{ padding: '3px 8px', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '11px', color: '#374151', textDecoration: 'none' }}>Edit</a>
-              <button onClick={() => handleCancel(b.id)} disabled={cancelling === b.id} style={{ padding: '3px 8px', borderRadius: '6px', border: '1px solid #fca5a5', fontSize: '11px', color: '#dc2626', backgroundColor: 'white', cursor: 'pointer' }}>
+              <Button variant="outline" onClick={() => { window.location.href = `/edit-booking/${b.id}` }}>Edit</Button>
+              <Button variant="rejected" onClick={() => handleCancel(b.id)} disabled={cancelling === b.id}>
                 {cancelling === b.id ? '...' : 'Cancel'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
