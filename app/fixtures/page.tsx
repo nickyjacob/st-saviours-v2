@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { Bus, Calendar, Clock, Home, MapPin } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import Button from '@/components/ui/Button'
 import Navbar from '@/components/Navbar'
 
 interface Fixture {
@@ -150,7 +151,7 @@ export default function FixturesPage() {
     return true
   })
 
-  const inputClass = 'w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-ink outline-none'
+  const inputClass = 'w-full min-h-[44px] rounded-lg border border-gray-200 bg-white px-3 text-sm text-ink outline-none focus:outline-none focus:ring-2 focus:ring-approved'
   const labelClass = 'mb-1 block text-[13px] font-semibold text-ink'
   const fieldClass = 'mb-3'
 
@@ -249,8 +250,8 @@ export default function FixturesPage() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-xl bg-white p-6">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 p-4">
+          <div className="mx-auto my-8 w-full max-w-[500px] max-h-[90vh] min-h-0 overflow-y-auto rounded-xl bg-white p-6">
             <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-ink">
               <Calendar className="h-5 w-5 shrink-0" aria-hidden="true" />
               Add Fixture
@@ -362,14 +363,14 @@ export default function FixturesPage() {
 
             <div className={fieldClass}>
               <label className={labelClass}>Notes (optional)</label>
-              <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="e.g. County Final — bring full panel" rows={2} className={`${inputClass} resize-y`} />
+              <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="e.g. County Final — bring full panel" rows={2} className={`${inputClass} resize-y py-2.5`} />
             </div>
 
             <div className="flex justify-end gap-2.5">
-              <button onClick={() => { setShowModal(false); resetForm() }} className="cursor-pointer rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-[13px] font-semibold text-ink">Cancel</button>
-              <button onClick={handleSubmit} disabled={submitting} className={`cursor-pointer rounded-lg border-none bg-ink px-4 py-2.5 text-[13px] font-semibold text-white ${submitting ? 'opacity-70' : ''}`}>
+              <Button variant="outline" onClick={() => { setShowModal(false); resetForm() }}>Cancel</Button>
+              <Button variant="primary" onClick={handleSubmit} disabled={submitting}>
                 {submitting ? 'Adding...' : 'Add Fixture'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
