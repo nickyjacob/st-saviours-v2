@@ -68,6 +68,7 @@ export async function POST(req: Request) {
           'Pitch': booking.pitch_name,
           'Date': booking.date_display,
           'Time': booking.time_display,
+          'Booked by': userName,
           'Purpose': booking.purpose,
         })}
         <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://st-saviours-v2.vercel.app'}/admin" 

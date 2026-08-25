@@ -222,6 +222,7 @@ if (!data && data !== false) return null
       facility_type: 'pitch',
     }
     try {
+      let created: { booking_date: string; start_time: string; end_time: string }[] = []
       if (bookingMode === 'single') {
         const bookings = repeatDates.length > 0 ? repeatDates : [date]
         const recurrenceGroupId = bookings.length > 1 ? crypto.randomUUID() : null
@@ -234,6 +235,7 @@ if (!data && data !== false) return null
         }))
         const { error } = await supabase.from('bookings').insert(inserts)
         if (error) throw error
+        created = inserts
       } else {
         const patternGroupId = crypto.randomUUID()
         const inserts = []
@@ -253,28 +255,27 @@ if (!data && data !== false) return null
         }
         const { error } = await supabase.from('bookings').insert(inserts)
         if (error) throw error
+        created = inserts
       }
       try {
         const pitch = pitches.find(p => String(p.id) === pitchId)
-        const bookingDate = bookingMode === 'single' ? (repeatDates.length > 0 ? repeatDates[0] : date) : multiDays[0].date
-        const bookingStart = bookingMode === 'single' ? startTime : multiDays[0].start_time
-        const bookingEnd = bookingMode === 'single' ? endTime : multiDays[0].end_time
         const profileRes = await supabase.from('profiles').select('full_name').eq('id', userId).single()
-        await fetch('/api/send-email', {
+        const userName = profileRes.data?.full_name || 'A user'
+        await Promise.all(created.map(b => fetch('/api/send-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             type: 'new_booking',
-            userName: profileRes.data?.full_name || 'A user',
+            userName,
             booking: {
-              team_name: `${sport} ${ageGroup}`.trim(),
+              team_name: teamName,
               pitch_name: pitch?.name || '',
-              date_display: new Date(bookingDate + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
-              time_display: `${fmt(bookingStart)} – ${fmt(bookingEnd)}`,
+              date_display: new Date(b.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+              time_display: `${fmt(b.start_time)} – ${fmt(b.end_time)}`,
               purpose,
             }
           })
-        })
+        })))
       } catch (emailErr) {
         console.error('Email notification failed:', emailErr)
       }
