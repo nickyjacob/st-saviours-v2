@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Bus, Home, MapPin } from 'lucide-react'
+import Badge from '@/components/ui/Badge'
 import { supabase } from '@/lib/supabase'
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addWeeks, subWeeks, addMonths, subMonths, isSameMonth, isSameDay, isToday } from 'date-fns'
 
@@ -45,6 +47,17 @@ function formatFixtureLine(f: { sport: string; team_name: string; opposition: st
   return `${sportPrefix(f.sport)}${f.team_name} vs ${f.opposition}`
 }
 
+function HomeAwayMark({ homeAway, showLabel = true, iconClassName = 'h-3 w-3' }: { homeAway: string; showLabel?: boolean; iconClassName?: string }) {
+  const isHome = homeAway === 'home'
+  const Icon = isHome ? Home : Bus
+  return (
+    <>
+      <Icon className={`inline shrink-0 align-middle ${iconClassName}`} aria-hidden="true" />
+      {showLabel ? (isHome ? ' Home' : ' Away') : null}
+    </>
+  )
+}
+
 function BookingModal({ booking, onClose, currentUserId, userRole }: { booking: Booking; onClose: () => void; currentUserId: string; userRole: string }) {
   const canEdit = booking.user_id === currentUserId || userRole === 'admin'
   const statusColour = booking.status === 'approved' ? 'bg-approved/10 text-approved' : booking.status === 'pending' ? 'bg-pending/10 text-pending' : 'bg-rejected/10 text-rejected'
@@ -81,14 +94,16 @@ function BookingCard({ booking, onClick, compact }: { booking: Booking; onClick:
   const statusClasses = isApproved
     ? 'bg-approved/10 border-l-approved border-solid'
     : isPending
-      ? 'bg-pending/10 border-l-pending border-dashed'
+      ? 'bg-pending/10 border-l-pending border-solid'
       : 'bg-rejected/10 border-l-rejected border-solid'
   const timeClasses = isApproved ? 'text-approved' : isPending ? 'text-pending' : 'text-rejected'
+  const pendingBadge = isPending ? <Badge tone="pending" variant="solid">Pending</Badge> : null
   if (compact) {
     return (
       <div onClick={onClick} className={`cursor-pointer rounded border-l-[3px] px-[5px] py-[3px] ${statusClasses}`}>
         <div className={`${timeClasses} text-[10px] font-bold`}>{fmt(booking.start_time)}-{fmt(booking.end_time)}</div>
         <div className="text-[11px] font-bold text-ink truncate">{booking.team_name}</div>
+        {pendingBadge}
         <div className="text-[10px] text-neutral truncate">{booking.full_name} - {booking.pitch_name}</div>
       </div>
     )
@@ -97,6 +112,7 @@ function BookingCard({ booking, onClick, compact }: { booking: Booking; onClick:
     <div onClick={onClick} className={`cursor-pointer rounded-md border-l-4 px-[7px] py-[5px] ${statusClasses}`}>
       <div className={`${timeClasses} text-[11px] font-bold`}>{fmt(booking.start_time)}-{fmt(booking.end_time)}</div>
       <div className="text-[12px] font-bold text-ink mt-px">{booking.team_name}</div>
+      {pendingBadge}
       <div className="text-[11px] text-neutral mt-px leading-snug">{booking.full_name} - {booking.pitch_name}</div>
     </div>
   )
@@ -108,14 +124,12 @@ function MobileBookingRow({ b, onClick }: { b: Booking; onClick: () => void }) {
   const statusClasses = isApproved
     ? 'bg-approved/10 border-l-approved border-solid'
     : isPending
-      ? 'bg-pending/10 border-l-pending border-dashed'
+      ? 'bg-pending/10 border-l-pending border-solid'
       : 'bg-rejected/10 border-l-rejected border-solid'
   const timeClasses = isApproved ? 'text-approved' : isPending ? 'text-pending' : 'text-rejected'
   const badgeClasses = isApproved
     ? 'bg-approved/10 text-approved'
-    : isPending
-      ? 'bg-pending/10 text-pending'
-      : 'bg-rejected/10 text-rejected'
+    : 'bg-rejected/10 text-rejected'
   return (
     <div onClick={onClick} className={`mb-[5px] flex cursor-pointer items-center justify-between gap-2 rounded-md border-l-4 px-2.5 py-1.5 ${statusClasses}`}>
       <div className="min-w-0 flex-1">
@@ -123,9 +137,13 @@ function MobileBookingRow({ b, onClick }: { b: Booking; onClick: () => void }) {
         <div className="truncate text-[13px] font-bold text-ink">{b.team_name}</div>
         <div className="truncate text-[11px] text-neutral">{b.full_name} · {b.purpose}</div>
       </div>
-      <span className={`shrink-0 whitespace-nowrap rounded-full px-[7px] py-0.5 text-[10px] font-semibold ${badgeClasses}`}>
-        {isApproved ? 'Booked' : isPending ? 'Pending' : 'Declined'}
-      </span>
+      {isPending ? (
+        <Badge tone="pending" variant="solid" className="shrink-0">Pending</Badge>
+      ) : (
+        <span className={`shrink-0 whitespace-nowrap rounded-full px-[7px] py-0.5 text-[10px] font-semibold ${badgeClasses}`}>
+          {isApproved ? 'Booked' : 'Declined'}
+        </span>
+      )}
     </div>
   )
 }
@@ -273,9 +291,9 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
         ))}
         {dayFixtures.map(f => (
           <div key={f.id} onClick={() => setSelectedFixture(f)} className="mb-[5px] cursor-pointer rounded-md border-l-4 border-l-info bg-info/10 px-2.5 py-1.5">
-            <div className="text-[10px] font-bold text-info">{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · {f.home_away === 'home' ? '🏠 Home' : '🚌 Away'}</div>
+            <div className="text-[10px] font-bold text-info">{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · <HomeAwayMark homeAway={f.home_away} /></div>
             <div className="text-[13px] font-bold text-ink">{formatFixtureLine(f)}</div>
-            <div className="text-[11px] text-neutral">📍 {f.venue_name} · {f.competition}</div>
+            <div className="text-[11px] text-neutral"><MapPin className="inline h-3 w-3 shrink-0 align-middle" aria-hidden="true" /> {f.venue_name} · {f.competition}</div>
           </div>
         ))}
         {dayBookings.length === 0 && dayClosures.length === 0 && dayFixtures.length === 0 && (
@@ -319,9 +337,9 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
               ))}
               {dayFixtures.map(f => (
                 <div key={f.id} onClick={() => setSelectedFixture(f)} className="mb-[5px] cursor-pointer rounded-md border-l-4 border-l-info bg-info/10 px-2.5 py-1.5">
-                  <div className="text-[10px] font-bold text-info">{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · {f.home_away === 'home' ? '🏠 Home' : '🚌 Away'}</div>
+                  <div className="text-[10px] font-bold text-info">{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · <HomeAwayMark homeAway={f.home_away} /></div>
                   <div className="text-[13px] font-bold text-ink">{formatFixtureLine(f)}</div>
-                  <div className="text-[11px] text-neutral">📍 {f.venue_name} · {f.competition}</div>
+                  <div className="text-[11px] text-neutral"><MapPin className="inline h-3 w-3 shrink-0 align-middle" aria-hidden="true" /> {f.venue_name} · {f.competition}</div>
                 </div>
               ))}
               {dayBookings.map(b => <MobileBookingRow key={b.id} b={b} onClick={() => setSelectedBooking(b)} />)}
@@ -364,9 +382,9 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
               ))}
               {dayFixtures.map(f => (
                 <div key={f.id} onClick={() => setSelectedFixture(f)} className="mb-[5px] cursor-pointer rounded-md border-l-4 border-l-info bg-info/10 px-2.5 py-1.5">
-                  <div className="text-[10px] font-bold text-info">{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · {f.home_away === 'home' ? '🏠 Home' : '🚌 Away'}</div>
+                  <div className="text-[10px] font-bold text-info">{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · <HomeAwayMark homeAway={f.home_away} /></div>
                   <div className="text-[13px] font-bold text-ink">{formatFixtureLine(f)}</div>
-                  <div className="text-[11px] text-neutral">📍 {f.venue_name} · {f.competition}</div>
+                  <div className="text-[11px] text-neutral"><MapPin className="inline h-3 w-3 shrink-0 align-middle" aria-hidden="true" /> {f.venue_name} · {f.competition}</div>
                 </div>
               ))}
               {dayBookings.map(b => <MobileBookingRow key={b.id} b={b} onClick={() => setSelectedBooking(b)} />)}
@@ -427,7 +445,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
                     {calendarView !== 'fixtures' && dayBookings.length > 3 && <div className="pl-0.5 text-[9px] text-neutral">+{dayBookings.length - 3} more</div>}
                     {calendarView !== 'bookings' && getDayFixtures(day).map(f => (
                       <div key={f.id} onClick={() => setSelectedFixture(f)} className="cursor-pointer rounded border-l-[3px] border-l-info bg-info/10 px-1 py-0.5">
-                        <div className="text-[9px] font-bold text-info">📅 {f.home_away === 'home' ? '🏠' : '🚌'} {f.fixture_time ? f.fixture_time.slice(0,5) : ''}</div>
+                        <div className="text-[9px] font-bold text-info">📅 <HomeAwayMark homeAway={f.home_away} showLabel={false} /> {f.fixture_time ? f.fixture_time.slice(0,5) : ''}</div>
                         <div className="truncate text-[9px] text-ink">{formatFixtureLine(f)}</div>
                       </div>
                     ))}
@@ -464,9 +482,9 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
                 ))}
                 {dayFixtures.map(f => (
                   <div key={f.id} onClick={() => setSelectedFixture(f)} className="cursor-pointer rounded-md border-l-4 border-l-info bg-info/10 px-[7px] py-[5px]">
-                    <div className="text-[11px] font-bold text-info">📅 {f.home_away === 'home' ? '🏠' : '🚌'} {f.fixture_time ? f.fixture_time.slice(0,5) : ''}</div>
+                    <div className="text-[11px] font-bold text-info">📅 <HomeAwayMark homeAway={f.home_away} showLabel={false} /> {f.fixture_time ? f.fixture_time.slice(0,5) : ''}</div>
                     <div className="mt-px truncate text-[11px] text-ink">{formatFixtureLine(f)}</div>
-                    <div className="mt-px text-[10px] text-neutral">📍 {f.venue_name}</div>
+                    <div className="mt-px text-[10px] text-neutral"><MapPin className="inline h-3 w-3 shrink-0 align-middle" aria-hidden="true" /> {f.venue_name}</div>
                   </div>
                 ))}
                 {dayBookings.map(b => <BookingCard key={b.id} booking={b} onClick={() => setSelectedBooking(b)} />)}
@@ -567,12 +585,12 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
               <div className="flex justify-between"><span className="text-neutral">Date</span><span className="font-semibold text-ink">{new Date(selectedFixture.fixture_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span></div>
               <div className="flex justify-between"><span className="text-neutral">Time</span><span className="font-semibold text-ink">{selectedFixture.fixture_time ? selectedFixture.fixture_time.slice(0,5) : 'TBC'}</span></div>
               <div className="flex justify-between"><span className="text-neutral">Venue</span><span className="font-semibold text-ink">{selectedFixture.venue_name}</span></div>
-              <div className="flex justify-between"><span className="text-neutral">Home/Away</span><span className="font-semibold text-ink">{selectedFixture.home_away === 'home' ? '🏠 Home' : '🚌 Away'}</span></div>
+              <div className="flex justify-between"><span className="text-neutral">Home/Away</span><span className="font-semibold text-ink"><HomeAwayMark homeAway={selectedFixture.home_away} /></span></div>
               <div className="flex justify-between"><span className="text-neutral">Competition</span><span className="font-semibold text-ink">{selectedFixture.competition}</span></div>
               {selectedFixture.notes && <div className="flex justify-between"><span className="text-neutral">Notes</span><span className="font-semibold text-ink">{selectedFixture.notes}</span></div>}
             </div>
             <div className="mt-6">
-              <a href={`https://maps.google.com/?q=${selectedFixture.venue_name}`} target="_blank" rel="noopener noreferrer" className="block w-full bg-info text-white text-center py-3 rounded-lg font-semibold text-sm">📍 Get Directions</a>
+              <a href={`https://maps.google.com/?q=${selectedFixture.venue_name}`} target="_blank" rel="noopener noreferrer" className="block w-full bg-info text-white text-center py-3 rounded-lg font-semibold text-sm"><MapPin className="inline h-4 w-4 shrink-0 align-middle" aria-hidden="true" /> Get Directions</a>
             </div>
           </div>
         </div>
