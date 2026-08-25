@@ -1,7 +1,30 @@
 'use client'
-import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+
+import Badge from '@/components/ui/Badge'
+import Card from '@/components/ui/Card'
+import IconTile from '@/components/ui/IconTile'
 import Navbar from '@/components/Navbar'
+import { supabase } from '@/lib/supabase'
+import {
+  AlertTriangle,
+  BarChart3,
+  Bus,
+  Calendar,
+  CalendarCheck,
+  Home,
+  ListChecks,
+  LucideIcon,
+  MapPin,
+  Megaphone,
+  Pin,
+  Settings,
+  Stethoscope,
+  Swords,
+  Trophy,
+  X,
+} from 'lucide-react'
+import type { StatusTone } from '@/components/ui/Badge'
+import { useEffect, useState } from 'react'
 
 interface Notice {
   id: string
@@ -48,6 +71,13 @@ interface Booking {
   pitch_name: string
   team_name: string
   status: string
+}
+
+interface NavButton {
+  label: string
+  href: string
+  icon: LucideIcon
+  tone: StatusTone | 'ink'
 }
 
 export default function DashboardPage() {
@@ -127,38 +157,50 @@ export default function DashboardPage() {
     return `${goals}-${points}`
   }
 
+  function resultTone(result: string): StatusTone {
+    if (result === 'win') return 'approved'
+    if (result === 'loss') return 'rejected'
+    return 'pending'
+  }
+
+  function resultLabel(result: string) {
+    if (result === 'win') return 'WIN'
+    if (result === 'loss') return 'LOSS'
+    return 'DRAW'
+  }
+
   const activeNotices = notices.filter(n => !dismissedNotices.includes(n.id))
 
-  const navButtons: Record<string, { label: string; href: string; emoji: string; colour: string }[]> = {
+  const navButtons: Record<string, NavButton[]> = {
     admin: [
-      { label: 'Calendar', href: '/planner', emoji: '📅', colour: '#2e7d32' },
-      { label: 'New Booking', href: '/new-booking', emoji: '📋', colour: '#111' },
-      { label: 'Fixtures', href: '/fixtures', emoji: '🏟', colour: '#2563eb' },
-      { label: 'Results', href: '/results', emoji: '🏆', colour: '#d97706' },
-      { label: 'My Bookings', href: '/my-bookings', emoji: '📁', colour: '#7c3aed' },
-      { label: 'Session Plan', href: '/session-planner', emoji: '📋', colour: '#0891b2' },
-      { label: 'Admin Panel', href: '/admin', emoji: '⚙️', colour: '#dc2626' },
-      { label: 'Stats', href: '/stats', emoji: '📊', colour: '#374151' },
+      { label: 'Calendar', href: '/planner', icon: Calendar, tone: 'approved' },
+      { label: 'New Booking', href: '/new-booking', icon: CalendarCheck, tone: 'ink' },
+      { label: 'Fixtures', href: '/fixtures', icon: Swords, tone: 'info' },
+      { label: 'Results', href: '/results', icon: Trophy, tone: 'pending' },
+      { label: 'My Bookings', href: '/my-bookings', icon: CalendarCheck, tone: 'accent' },
+      { label: 'Session Plan', href: '/session-planner', icon: ListChecks, tone: 'info' },
+      { label: 'Admin Panel', href: '/admin', icon: Settings, tone: 'rejected' },
+      { label: 'Stats', href: '/stats', icon: BarChart3, tone: 'neutral' },
     ],
     coach: [
-      { label: 'Calendar', href: '/planner', emoji: '📅', colour: '#2e7d32' },
-      { label: 'New Booking', href: '/new-booking', emoji: '📋', colour: '#111' },
-      { label: 'Fixtures', href: '/fixtures', emoji: '🏟', colour: '#2563eb' },
-      { label: 'Results', href: '/results', emoji: '🏆', colour: '#d97706' },
-      { label: 'My Bookings', href: '/my-bookings', emoji: '📁', colour: '#7c3aed' },
-      { label: 'Session Plan', href: '/session-planner', emoji: '📋', colour: '#0891b2' },
-      { label: 'Physio', href: '/physio', emoji: '🏥', colour: '#dc2626' },
+      { label: 'Calendar', href: '/planner', icon: Calendar, tone: 'approved' },
+      { label: 'New Booking', href: '/new-booking', icon: CalendarCheck, tone: 'ink' },
+      { label: 'Fixtures', href: '/fixtures', icon: Swords, tone: 'info' },
+      { label: 'Results', href: '/results', icon: Trophy, tone: 'pending' },
+      { label: 'My Bookings', href: '/my-bookings', icon: CalendarCheck, tone: 'accent' },
+      { label: 'Session Plan', href: '/session-planner', icon: ListChecks, tone: 'info' },
+      { label: 'Physio', href: '/physio', icon: Stethoscope, tone: 'rejected' },
     ],
     player: [
-      { label: 'Calendar', href: '/planner', emoji: '📅', colour: '#2e7d32' },
-      { label: 'Fixtures', href: '/fixtures', emoji: '🏟', colour: '#2563eb' },
-      { label: 'Results', href: '/results', emoji: '🏆', colour: '#d97706' },
-      { label: 'Physio', href: '/physio', emoji: '🏥', colour: '#dc2626' },
+      { label: 'Calendar', href: '/planner', icon: Calendar, tone: 'approved' },
+      { label: 'Fixtures', href: '/fixtures', icon: Swords, tone: 'info' },
+      { label: 'Results', href: '/results', icon: Trophy, tone: 'pending' },
+      { label: 'Physio', href: '/physio', icon: Stethoscope, tone: 'rejected' },
     ],
     viewer: [
-      { label: 'Calendar', href: '/planner', emoji: '📅', colour: '#2e7d32' },
-      { label: 'Fixtures', href: '/fixtures', emoji: '🏟', colour: '#2563eb' },
-      { label: 'Results', href: '/results', emoji: '🏆', colour: '#d97706' },
+      { label: 'Calendar', href: '/planner', icon: Calendar, tone: 'approved' },
+      { label: 'Fixtures', href: '/fixtures', icon: Swords, tone: 'info' },
+      { label: 'Results', href: '/results', icon: Trophy, tone: 'pending' },
     ],
   }
 
@@ -171,113 +213,162 @@ export default function DashboardPage() {
   )
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f4f4f4' }}>
+    <div className="min-h-screen bg-gray-100">
       <Navbar activePage="Home" userRole={userRole} />
-      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px 16px' }}>
+      <div className="mx-auto max-w-[800px] px-4 py-5">
 
-        {/* Welcome */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', backgroundColor: 'white', borderRadius: '10px', padding: '14px 16px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-          <img src="/crest.png" alt="St Saviours" style={{ width: '52px', height: '52px', objectFit: 'contain', flexShrink: 0 }} />
+        <Card className="mb-5 flex items-center gap-3 p-4 shadow-sm">
+          <img src="/crest.png" alt="St Saviours" className="h-[52px] w-[52px] shrink-0 object-contain" />
           <div>
-            <h1 style={{ fontSize: '17px', fontWeight: 'bold', color: '#111', margin: 0 }}>St. Saviours GAA & LGFA</h1>
-            <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '2px', margin: 0 }}>Welcome back, {fullName} 👋</p>
+            <h1 className="text-[17px] font-bold text-ink">St. Saviours GAA & LGFA</h1>
+            <p className="mt-0.5 text-[13px] text-neutral">Welcome back, {fullName} 👋</p>
           </div>
-        </div>
+        </Card>
 
-        {/* Admin pending alert */}
         {userRole === 'admin' && pendingCount > 0 && (
-          <a href="/admin" style={{ display: 'block', backgroundColor: '#fef3c7', border: '1px solid #f59e0b', borderRadius: '8px', padding: '10px 14px', marginBottom: '12px', textDecoration: 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '16px' }}>⚠️</span>
-              <span style={{ fontSize: '13px', fontWeight: '600', color: '#92400e' }}>{pendingCount} booking{pendingCount !== 1 ? 's' : ''} awaiting approval</span>
-              <span style={{ fontSize: '12px', color: '#b45309', marginLeft: 'auto' }}>Review →</span>
+          <a
+            href="/admin"
+            className="mb-3 block rounded-lg border border-pending bg-pending/10 p-3 no-underline"
+          >
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 shrink-0 text-pending" aria-hidden="true" />
+              <span className="text-[13px] font-semibold text-pending">
+                {pendingCount} booking{pendingCount !== 1 ? 's' : ''} awaiting approval
+              </span>
+              <span className="ml-auto text-xs text-pending">Review →</span>
             </div>
           </a>
         )}
 
-        {/* Notices */}
         {activeNotices.length > 0 && (
-          <div style={{ marginBottom: '16px' }}>
-            {activeNotices.map(n => (
-              <div key={n.id} style={{ backgroundColor: '#eff6ff', borderLeft: '4px solid #2563eb', borderRadius: '8px', padding: '10px 14px', marginBottom: '8px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                <span style={{ fontSize: '16px' }}>{n.is_pinned ? '📌' : '📢'}</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: '600', fontSize: '13px', color: '#1e40af' }}>{n.title}</div>
-                  <div style={{ fontSize: '12px', color: '#1e3a8a', marginTop: '2px' }}>{n.body}</div>
-                </div>
-                <button onClick={() => dismissNotice(n.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#93c5fd', fontSize: '16px', padding: '0', flexShrink: 0 }}>✕</button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Quick action buttons */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px', marginBottom: '20px' }}>
-          {buttons.map(b => (
-            <a key={b.href} href={b.href} style={{ backgroundColor: 'white', borderRadius: '10px', padding: '16px 12px', textAlign: 'center', textDecoration: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', border: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '24px' }}>{b.emoji}</span>
-              <span style={{ fontSize: '13px', fontWeight: '600', color: b.colour }}>{b.label}</span>
-            </a>
-          ))}
-        </div>
-
-        {/* Upcoming fixtures */}
-        {fixtures.length > 0 && (
-          <div style={{ marginBottom: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <h2 style={{ fontSize: '14px', fontWeight: '700', color: '#111' }}>📅 Upcoming Fixtures</h2>
-              <a href="/fixtures" style={{ fontSize: '12px', color: '#2563eb', textDecoration: 'none', fontWeight: '600' }}>View All →</a>
-            </div>
-            {fixtures.map(f => (
-              <div key={f.id} style={{ backgroundColor: 'white', borderLeft: `4px solid ${f.home_away === 'home' ? '#2e7d32' : '#2563eb'}`, borderRadius: '8px', padding: '10px 14px', marginBottom: '6px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-                <div style={{ fontSize: '11px', fontWeight: '700', color: f.home_away === 'home' ? '#2e7d32' : '#2563eb', marginBottom: '2px' }}>{f.home_away === 'home' ? '🏠 Home' : '🚌 Away'} · {formatDate(f.fixture_date)}{f.fixture_time ? ` · ${fmt(f.fixture_time)}` : ''}</div>
-                <div style={{ fontSize: '13px', fontWeight: '700', color: '#111' }}>{f.team_name}{f.sport && f.sport !== 'Other' ? ` · ${f.sport}` : ''} vs {f.opposition}</div>
-                <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>📍 {f.venue_name} · {f.competition}</div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Recent results */}
-        {results.length > 0 && (
-          <div style={{ marginBottom: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <h2 style={{ fontSize: '14px', fontWeight: '700', color: '#111' }}>🏆 Recent Results</h2>
-              <a href="/results" style={{ fontSize: '12px', color: '#2563eb', textDecoration: 'none', fontWeight: '600' }}>View All →</a>
-            </div>
-            {results.map(r => {
-              const bg = r.result === 'win' ? '#f0fdf4' : r.result === 'loss' ? '#fef2f2' : '#fefce8'
-              const border = r.result === 'win' ? '#2e7d32' : r.result === 'loss' ? '#dc2626' : '#f9ab2b'
-              const label = r.result === 'win' ? '🟢 WIN' : r.result === 'loss' ? '🔴 LOSS' : '🟡 DRAW'
+          <div className="mb-4 space-y-2">
+            {activeNotices.map(n => {
+              const NoticeIcon = n.is_pinned ? Pin : Megaphone
               return (
-                <div key={r.id} style={{ backgroundColor: bg, borderLeft: `4px solid ${border}`, borderRadius: '8px', padding: '10px 14px', marginBottom: '6px' }}>
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: border, marginBottom: '2px' }}>{label} · {r.team_name}</div>
-                  <div style={{ fontSize: '13px', color: '#111' }}>
-                    <span style={{ fontWeight: '600' }}>St Saviours {formatScore(r.our_goals, r.our_points, r.our_two_pointers, r.sport)}</span>
-                    {' v '}{r.opposition} {formatScore(r.their_goals, r.their_points, r.their_two_pointers, r.sport)}
+                <Card key={n.id} statusColor="info" className="flex items-start gap-2.5 bg-info/5 p-3">
+                  <NoticeIcon className="mt-0.5 h-4 w-4 shrink-0 text-info" aria-hidden="true" />
+                  <div className="flex-1">
+                    <div className="text-[13px] font-semibold text-info">{n.title}</div>
+                    <div className="mt-0.5 text-xs text-info/80">{n.body}</div>
                   </div>
-                  <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>{r.competition} · {formatDate(r.match_date)}</div>
-                </div>
+                  <button
+                    type="button"
+                    onClick={() => dismissNotice(n.id)}
+                    className="shrink-0 border-none bg-transparent p-0 text-info/50 hover:text-info"
+                    aria-label="Dismiss notice"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </Card>
               )
             })}
           </div>
         )}
 
-        {/* This week's bookings - coaches and admin only */}
-        {(userRole === 'coach' || userRole === 'admin') && bookings.length > 0 && (
-          <div style={{ marginBottom: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <h2 style={{ fontSize: '14px', fontWeight: '700', color: '#111' }}>📋 Upcoming Bookings</h2>
-              <a href="/my-bookings" style={{ fontSize: '12px', color: '#2563eb', textDecoration: 'none', fontWeight: '600' }}>View All →</a>
+        <div className="mb-5 grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-2.5">
+          {buttons.map(b => (
+            <IconTile key={b.href} icon={b.icon} label={b.label} href={b.href} tone={b.tone} />
+          ))}
+        </div>
+
+        {fixtures.length > 0 && (
+          <section className="mb-4">
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 text-sm font-bold text-ink">
+                <Calendar className="h-4 w-4" aria-hidden="true" />
+                Upcoming Fixtures
+              </h2>
+              <a href="/fixtures" className="text-xs font-semibold text-info no-underline">View All →</a>
             </div>
-            {bookings.map(b => (
-              <div key={b.id} style={{ backgroundColor: '#f1f8f1', borderLeft: '4px solid #2e7d32', borderRadius: '8px', padding: '10px 14px', marginBottom: '6px' }}>
-                <div style={{ fontSize: '11px', fontWeight: '700', color: '#2e7d32', marginBottom: '2px' }}>{formatDate(b.booking_date)} · {fmt(b.start_time)} – {fmt(b.end_time)}</div>
-                <div style={{ fontSize: '13px', fontWeight: '600', color: '#111' }}>{b.team_name}</div>
-                <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>📍 {b.pitch_name}</div>
-              </div>
-            ))}
-          </div>
+            <div className="space-y-1.5">
+              {fixtures.map(f => {
+                const isHome = f.home_away === 'home'
+                const VenueIcon = isHome ? Home : Bus
+                const tone = isHome ? 'approved' : 'info'
+                return (
+                  <Card key={f.id} statusColor={tone} className="p-3 shadow-sm">
+                    <div className={`mb-0.5 flex items-center gap-1 text-[11px] font-bold ${isHome ? 'text-approved' : 'text-info'}`}>
+                      <VenueIcon className="h-3 w-3" aria-hidden="true" />
+                      <span>{isHome ? 'Home' : 'Away'}</span>
+                      <span className="font-normal text-neutral">
+                        · {formatDate(f.fixture_date)}{f.fixture_time ? ` · ${fmt(f.fixture_time)}` : ''}
+                      </span>
+                    </div>
+                    <div className="text-[13px] font-bold text-ink">
+                      {f.team_name}{f.sport && f.sport !== 'Other' ? ` · ${f.sport}` : ''} vs {f.opposition}
+                    </div>
+                    <div className="mt-0.5 flex items-center gap-1 text-[11px] text-neutral">
+                      <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
+                      {f.venue_name} · {f.competition}
+                    </div>
+                  </Card>
+                )
+              })}
+            </div>
+          </section>
+        )}
+
+        {results.length > 0 && (
+          <section className="mb-4">
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 text-sm font-bold text-ink">
+                <Trophy className="h-4 w-4" aria-hidden="true" />
+                Recent Results
+              </h2>
+              <a href="/results" className="text-xs font-semibold text-info no-underline">View All →</a>
+            </div>
+            <div className="space-y-1.5">
+              {results.map(r => {
+                const tone = resultTone(r.result)
+                return (
+                  <Card key={r.id} statusColor={tone} className="p-3 shadow-sm">
+                    <div className="mb-0.5 flex items-center gap-2">
+                      <Badge tone={tone} variant="solid">{resultLabel(r.result)}</Badge>
+                      <span className="text-[11px] font-bold text-ink">{r.team_name}</span>
+                    </div>
+                    <div className="text-[13px] text-ink">
+                      <span className="font-bold tabular-nums tracking-tight">
+                        St Saviours {formatScore(r.our_goals, r.our_points, r.our_two_pointers, r.sport)}
+                      </span>
+                      {' v '}{r.opposition}{' '}
+                      <span className="font-bold tabular-nums tracking-tight">
+                        {formatScore(r.their_goals, r.their_points, r.their_two_pointers, r.sport)}
+                      </span>
+                    </div>
+                    <div className="mt-0.5 text-[11px] text-neutral">
+                      {r.competition} · {formatDate(r.match_date)}
+                    </div>
+                  </Card>
+                )
+              })}
+            </div>
+          </section>
+        )}
+
+        {(userRole === 'coach' || userRole === 'admin') && bookings.length > 0 && (
+          <section className="mb-4">
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 text-sm font-bold text-ink">
+                <CalendarCheck className="h-4 w-4" aria-hidden="true" />
+                Upcoming Bookings
+              </h2>
+              <a href="/my-bookings" className="text-xs font-semibold text-info no-underline">View All →</a>
+            </div>
+            <div className="space-y-1.5">
+              {bookings.map(b => (
+                <Card key={b.id} statusColor="approved" className="bg-approved/5 p-3 shadow-sm">
+                  <div className="mb-0.5 text-[11px] font-bold text-approved">
+                    {formatDate(b.booking_date)} · {fmt(b.start_time)} – {fmt(b.end_time)}
+                  </div>
+                  <div className="text-[13px] font-semibold text-ink">{b.team_name}</div>
+                  <div className="mt-0.5 flex items-center gap-1 text-[11px] text-neutral">
+                    <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
+                    {b.pitch_name}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </section>
         )}
 
       </div>
