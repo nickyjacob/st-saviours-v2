@@ -12,6 +12,7 @@
   --color-info: 37 99 235;
   --color-neutral: 107 114 128;
   --color-accent: 109 40 217;
+  --bottom-nav-height: 3.5rem;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -40,4 +41,8 @@ body {
   .nav-desktop-links { display: none !important; }
   .nav-hamburger { display: flex !important; }
   .nav-bottom-bar { display: flex !important; }
+
+  body {
+    padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+  }
 }
