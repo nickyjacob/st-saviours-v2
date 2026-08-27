@@ -1,6 +1,7 @@
 'use client'
 
 import { supabase } from '@/lib/supabase'
+import { subscribeToPush, unsubscribeFromPush, getPushSubscriptionStatus } from '@/lib/push'
 import {
   Bell,
   Calendar,
@@ -40,20 +41,25 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
   const [resolvedRole, setResolvedRole] = useState(userRole || '')
+  const [pushSubscribed, setPushSubscribed] = useState(false)
+  const [userId, setUserId] = useState('')
 
   useEffect(() => {
     async function getProfile() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
+      setUserId(session.user.id)
       const { data: profile } = await supabase
         .from('profiles')
         .select('full_name, role')
         .eq('id', session.user.id)
         .single()
-    if (profile) {
+      if (profile) {
         setUserName(profile.full_name || '')
         setResolvedRole(profile.role || '')
       }
+      const subscribed = await getPushSubscriptionStatus()
+      setPushSubscribed(subscribed)
     }
     getProfile()
   }, [])
@@ -62,7 +68,23 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
     await supabase.auth.signOut()
     window.location.href = '/login'
   }
+  async function handleBellClick() {
+    if (!userId) return
 
+    if (pushSubscribed) {
+      const confirmed = confirm('Turn off push notifications?')
+      if (!confirmed) return
+      const success = await unsubscribeFromPush(userId)
+      if (success) setPushSubscribed(false)
+    } else {
+      const success = await subscribeToPush(userId)
+      if (success) {
+        setPushSubscribed(true)
+      } else if (Notification.permission === 'denied') {
+        alert('Notifications are blocked. Enable them in your browser settings to turn this on.')
+      }
+    }
+  }
   const isViewer = resolvedRole === 'viewer'
 
   const primaryNavItems: NavItem[] = [
@@ -274,21 +296,25 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
               </>
             )}
           </div>
-          <span
+          <button
+            type='button'
+            onClick={handleBellClick}
             className='nav-desktop-links'
-            style={{ display: 'flex', alignItems: 'center', padding: '4px' }}
-            aria-hidden='true'
+            style={{ display: 'flex', alignItems: 'center', padding: '4px', background: 'transparent', border: 'none', cursor: 'pointer' }}
+            aria-label={pushSubscribed ? 'Turn off notifications' : 'Turn on notifications'}
           >
-            <Bell size={20} color='#d1d5db' />
-          </span>
+            <Bell size={20} color={pushSubscribed ? '#ffffff' : '#d1d5db'} fill={pushSubscribed ? '#ffffff' : 'none'} />
+          </button>
           <button onClick={handleLogout} style={{ backgroundColor: 'white', color: '#111', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }} className='nav-desktop-links'>Sign out</button>
-          <span
+          <button
+            type='button'
+            onClick={handleBellClick}
             className='nav-hamburger'
-            style={{ display: 'flex', alignItems: 'center', padding: '4px' }}
-            aria-hidden='true'
+            style={{ display: 'flex', alignItems: 'center', padding: '4px', background: 'transparent', border: 'none', cursor: 'pointer' }}
+            aria-label={pushSubscribed ? 'Turn off notifications' : 'Turn on notifications'}
           >
-            <Bell size={22} color='white' />
-          </span>
+            <Bell size={22} color='white' fill={pushSubscribed ? 'white' : 'none'} />
+          </button>
           <button onClick={() => setMenuOpen(!menuOpen)} className='nav-hamburger' style={{ backgroundColor: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {menuOpen ? (
               <svg width='24' height='24' fill='none' stroke='currentColor' strokeWidth='2' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' d='M6 18L18 6M6 6l12 12'/></svg>
