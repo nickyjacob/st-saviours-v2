@@ -113,6 +113,18 @@ export default function FixturesPage() {
       ...form,
       posted_by: currentUserId
     })
+
+    fetch('/api/notify-fixture', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        team_name: form.team_name,
+        opposition: form.opposition,
+        fixture_date: form.fixture_date,
+        venue_name: form.venue_name,
+      }),
+    }).catch(err => console.error('Push notify failed:', err))
+
     setShowModal(false)
     resetForm()
     await fetchFixtures()
