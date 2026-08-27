@@ -16,17 +16,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing subscription data' }, { status: 400 })
     }
 
+    await supabase.from('subscriptions').delete().eq('user_id', userId)
+
     const { error } = await supabase
       .from('subscriptions')
-      .upsert(
-        {
-          user_id: userId,
-          endpoint: subscription.endpoint,
-          p256dh: subscription.keys.p256dh,
-          auth: subscription.keys.auth,
-        },
-        { onConflict: 'user_id,endpoint' }
-      )
+      .insert({
+        user_id: userId,
+        endpoint: subscription.endpoint,
+        p256dh: subscription.keys.p256dh,
+        auth: subscription.keys.auth,
+      })
 
     if (error) {
       console.error('Subscription save error:', error)

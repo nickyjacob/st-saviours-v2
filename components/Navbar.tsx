@@ -2,6 +2,8 @@
 
 import { supabase } from '@/lib/supabase'
 import { subscribeToPush, unsubscribeFromPush, getPushSubscriptionStatus } from '@/lib/push'
+import Modal from '@/components/ui/Modal'
+import Toggle from '@/components/ui/Toggle'
 import {
   Bell,
   Calendar,
@@ -43,6 +45,7 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
   const [resolvedRole, setResolvedRole] = useState(userRole || '')
   const [pushSubscribed, setPushSubscribed] = useState(false)
   const [userId, setUserId] = useState('')
+  const [notifModalOpen, setNotifModalOpen] = useState(false)
 
   useEffect(() => {
     async function getProfile() {
@@ -68,21 +71,23 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
     await supabase.auth.signOut()
     window.location.href = '/login'
   }
-  async function handleBellClick() {
+  function handleBellClick() {
+    setNotifModalOpen(true)
+  }
+
+  async function handleToggleNotifications(next: boolean) {
     if (!userId) return
 
-    if (pushSubscribed) {
-      const confirmed = confirm('Turn off push notifications?')
-      if (!confirmed) return
-      const success = await unsubscribeFromPush(userId)
-      if (success) setPushSubscribed(false)
-    } else {
+    if (next) {
       const success = await subscribeToPush(userId)
       if (success) {
         setPushSubscribed(true)
       } else if (Notification.permission === 'denied') {
         alert('Notifications are blocked. Enable them in your browser settings to turn this on.')
       }
+    } else {
+      const success = await unsubscribeFromPush(userId)
+      if (success) setPushSubscribed(false)
     }
   }
   const isViewer = resolvedRole === 'viewer'
@@ -349,6 +354,17 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
           </div>
         </div>
       )}
+
+      <Modal open={notifModalOpen} onClose={() => setNotifModalOpen(false)} title='Notifications'>
+        <Toggle
+          checked={pushSubscribed}
+          onChange={handleToggleNotifications}
+          label='Push notifications'
+        />
+        <p className='mt-3 text-xs text-neutral'>
+          Get notified about new fixtures, results, and booking updates.
+        </p>
+      </Modal>
 
       <nav
         className='nav-bottom-bar fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white'
