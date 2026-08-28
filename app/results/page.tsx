@@ -116,6 +116,18 @@ export default function ResultsPage() {
       result,
       posted_by: currentUserId
     })
+
+    fetch('/api/notify-result', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        team_name: form.team_name,
+        opposition: form.opposition,
+        result,
+        score_display: `${ourTotal}-${theirTotal}`,
+      }),
+    }).catch(err => console.error('Push notify failed:', err))
+
     setShowModal(false)
     setForm({ team_name: '', opposition: '', sport: "Men's/Boys Hurling", our_goals: 0, our_points: 0, our_two_pointers: 0, their_goals: 0, their_points: 0, their_two_pointers: 0, competition: '', match_date: '', home_away: 'home', notes: '', fixture_id: '' })
     await fetchResults()
