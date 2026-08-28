@@ -65,6 +65,8 @@ export default function PhysioPage() {
       gdpr_consent: true
     })
     try {
+      const profileRes = await supabase.from('profiles').select('full_name').eq('id', currentUserId).single()
+      const userName = profileRes.data?.full_name || 'A player'
       await fetch('/api/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -79,6 +81,15 @@ export default function PhysioPage() {
           }
         })
       })
+      fetch('/api/notify-physio-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userName,
+          body_part: form.body_part,
+          injury_description: form.injury_description,
+        }),
+      }).catch(err => console.error('Push notify failed:', err))
     } catch (e) { console.error('Email failed:', e) }
     setShowModal(false)
     setForm({ injury_description: '', body_part: 'Knee', date_of_injury: '', urgency: 'routine' })

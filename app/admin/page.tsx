@@ -165,6 +165,16 @@ export default function AdminPage() {
             })
           })
         }
+        fetch('/api/notify-physio-decision', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: req.player_id,
+            decision: status,
+            body_part: req.body_part,
+            injury_description: req.injury_description,
+          }),
+        }).catch(err => console.error('Push notify failed:', err))
       }
     } catch (e) { console.error('Email failed:', e) }
     setPhysioNote('')
