@@ -227,6 +227,18 @@ export default function AdminPage() {
             })
           })
         }
+        fetch('/api/notify-booking-decision', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: booking.user_id,
+            decision: 'approved',
+            team_name: booking.team_name,
+            pitch_name: booking.pitch_name,
+            date_display: new Date(booking.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
+            time_display: `${fmt(booking.start_time)}–${fmt(booking.end_time)}`,
+          }),
+        }).catch(err => console.error('Push notify failed:', err))
       }
     } catch (emailErr) { console.error('Email failed:', emailErr) }
   }
@@ -254,6 +266,18 @@ export default function AdminPage() {
           })
         })
       }
+      fetch('/api/notify-booking-decision', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: rejectModal.user_id,
+          decision: 'rejected',
+          team_name: rejectModal.team_name,
+          pitch_name: rejectModal.pitch_name,
+          date_display: new Date(rejectModal.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
+          time_display: `${fmt(rejectModal.start_time)}–${fmt(rejectModal.end_time)}`,
+        }),
+      }).catch(err => console.error('Push notify failed:', err))
     } catch (emailErr) { console.error('Email failed:', emailErr) }
     setRejectModal(null)
     setRejectReason('')
