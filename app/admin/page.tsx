@@ -283,6 +283,37 @@ export default function AdminPage() {
     setRejectReason('')
   }
 
+    async function handleNoticeSubmit() {
+    if (!noticeTitle || !noticeBody) return
+    if (editingNotice) {
+      await supabase.from('notices').update({
+        title: noticeTitle,
+        body: noticeBody,
+        is_pinned: noticePinned,
+        expires_at: noticeExpiry ? new Date(noticeExpiry + 'T23:59:59').toISOString() : null
+      }).eq('id', editingNotice.id)
+    } else {
+      await supabase.from('notices').insert({
+        title: noticeTitle,
+        body: noticeBody,
+        created_by: currentUserId,
+        is_pinned: noticePinned,
+        expires_at: noticeExpiry ? new Date(noticeExpiry + 'T23:59:59').toISOString() : null
+      })
+      fetch('/api/notify-notice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: noticeTitle }),
+      }).catch(err => console.error('Push notify failed:', err))
+    }
+    setNoticeModal(false)
+    setNoticeTitle('')
+    setNoticeBody('')
+    setNoticePinned(false)
+    setNoticeExpiry('')
+    setEditingNotice(null)
+    fetchNotices()
+  }
   async function handleApproveUser(id: string) {
     await supabase.from('profiles').update({ is_approved: true }).eq('id', id)
     setProfiles(prev => prev.map(p => p.id === id ? { ...p, is_approved: true } : p))
@@ -673,7 +704,7 @@ export default function AdminPage() {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                     <button onClick={() => { setNoticeModal(false); setNoticeTitle(''); setNoticeBody(''); setNoticePinned(false); setNoticeExpiry(''); setEditingNotice(null) }} style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '13px', fontWeight: '600', color: '#374151', backgroundColor: 'white', cursor: 'pointer' }}>Cancel</button>
-                    <button onClick={async () => { if (!noticeTitle || !noticeBody) return; if (editingNotice) { await supabase.from('notices').update({ title: noticeTitle, body: noticeBody, is_pinned: noticePinned, expires_at: noticeExpiry ? new Date(noticeExpiry + 'T23:59:59').toISOString() : null }).eq('id', editingNotice.id) } else { await supabase.from('notices').insert({ title: noticeTitle, body: noticeBody, created_by: currentUserId, is_pinned: noticePinned, expires_at: noticeExpiry ? new Date(noticeExpiry + 'T23:59:59').toISOString() : null }) } setNoticeModal(false); setNoticeTitle(''); setNoticeBody(''); setNoticePinned(false); setNoticeExpiry(''); setEditingNotice(null); fetchNotices() }} style={{ padding: '10px 16px', borderRadius: '8px', backgroundColor: '#111', color: 'white', fontSize: '13px', fontWeight: '600', border: 'none', cursor: 'pointer' }}>{editingNotice ? 'Update Notice' : 'Post Notice'}</button>
+                    <button onClick={handleNoticeSubmit} style={{ padding: '10px 16px', borderRadius: '8px', backgroundColor: '#111', color: 'white', fontSize: '13px', fontWeight: '600', border: 'none', cursor: 'pointer' }}>{editingNotice ? 'Update Notice' : 'Post Notice'}</button>
                   </div>
                 </div>
               </div>
