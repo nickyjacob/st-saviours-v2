@@ -276,6 +276,18 @@ if (!data && data !== false) return null
             }
           })
         })))
+
+        fetch('/api/notify-booking', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userName,
+            team_name: teamName,
+            pitch_name: pitch?.name || '',
+            date_display: created[0] ? new Date(created[0].booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) : '',
+            time_display: created[0] ? `${fmt(created[0].start_time)}–${fmt(created[0].end_time)}` : '',
+          }),
+        }).catch(err => console.error('Push notify failed:', err))
       } catch (emailErr) {
         console.error('Email notification failed:', emailErr)
       }
