@@ -46,6 +46,11 @@ export default function RegisterPage() {
           userEmail: email,
         })
       })
+      fetch('/api/notify-new-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userName: fullName }),
+      }).catch(err => console.error('Push notify failed:', err))
     } catch (emailErr) {
       console.error('Email notification failed:', emailErr)
     }
