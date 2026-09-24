@@ -357,6 +357,7 @@ export default function AdminPage() {
     // Email all coaches about the closure
     try {
       const pitchName = pitches.find(p => String(p.id) === newClosure.pitch_id)?.name || 'Pitch'
+      const closureDateDisplay = `${new Date(newClosure.start_date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}${newClosure.start_date !== newClosure.end_date ? ` to ${new Date(newClosure.end_date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}` : ''}`
       await fetch('/api/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -364,11 +365,19 @@ export default function AdminPage() {
           type: 'pitch_closure',
           booking: {
             pitch_name: pitchName,
-            date_display: `${new Date(newClosure.start_date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}${newClosure.start_date !== newClosure.end_date ? ` to ${new Date(newClosure.end_date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}` : ''}`,
+            date_display: closureDateDisplay,
             purpose: newClosure.reason || 'Closed',
           }
         })
       })
+      fetch('/api/notify-pitch-closure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pitch_name: pitchName,
+          date_display: closureDateDisplay,
+        }),
+      }).catch(err => console.error('Push notify failed:', err))
     } catch (e) { console.error('Closure email failed:', e) }
   }
 
