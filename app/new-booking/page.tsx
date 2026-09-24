@@ -261,6 +261,18 @@ if (!data && data !== false) return null
         const pitch = pitches.find(p => String(p.id) === pitchId)
         const profileRes = await supabase.from('profiles').select('full_name').eq('id', userId).single()
         const userName = profileRes.data?.full_name || 'A user'
+        await fetch('/api/notify-booking', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userName,
+            team_name: teamName,
+            pitch_name: pitch?.name || '',
+            date_display: created[0] ? new Date(created[0].booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) : '',
+            time_display: created[0] ? `${fmt(created[0].start_time)}–${fmt(created[0].end_time)}` : '',
+          }),
+        }).catch(err => console.error('Push notify failed:', err))
+
         await Promise.all(created.map(b => fetch('/api/send-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -276,18 +288,6 @@ if (!data && data !== false) return null
             }
           })
         })))
-
-        fetch('/api/notify-booking', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userName,
-            team_name: teamName,
-            pitch_name: pitch?.name || '',
-            date_display: created[0] ? new Date(created[0].booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) : '',
-            time_display: created[0] ? `${fmt(created[0].start_time)}–${fmt(created[0].end_time)}` : '',
-          }),
-        }).catch(err => console.error('Push notify failed:', err))
       } catch (emailErr) {
         console.error('Email notification failed:', emailErr)
       }

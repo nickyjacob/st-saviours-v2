@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-import { sendPushToSubscriptions } from '@/lib/sendPush'
+import { sendPushToSubscriptions, shouldUseEmailFallback } from '@/lib/sendPush'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -24,6 +24,7 @@ export async function POST(req: Request) {
     }
 
     const adminIds = admins.map(a => a.id)
+    const noSub = await shouldUseEmailFallback(adminIds)
 
     const { data: subscriptions } = await supabase
       .from('subscriptions')
@@ -31,7 +32,7 @@ export async function POST(req: Request) {
       .in('user_id', adminIds)
 
     if (!subscriptions || subscriptions.length === 0) {
-      return NextResponse.json({ sent: 0, failed: 0 })
+      return NextResponse.json({ sent: 0, failed: 0, failedUserIds: [], usersNeedingEmailFallback: noSub })
     }
 
     const result = await sendPushToSubscriptions(subscriptions, {
@@ -40,7 +41,10 @@ export async function POST(req: Request) {
       url: '/admin',
     }, 'new_booking')
 
-    return NextResponse.json(result)
+    return NextResponse.json({
+      ...result,
+      usersNeedingEmailFallback: Array.from(new Set(noSub.concat(result.failedUserIds))),
+    })
   } catch (error) {
     console.error('Notify booking error:', error)
     return NextResponse.json({ error: 'Failed to notify' }, { status: 500 })

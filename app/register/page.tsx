@@ -37,6 +37,11 @@ export default function RegisterPage() {
     })
     if (signUpError) { setError(signUpError.message); setLoading(false); return }
     try {
+      await fetch('/api/notify-new-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userName: fullName }),
+      }).catch(err => console.error('Push notify failed:', err))
       await fetch('/api/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -46,11 +51,6 @@ export default function RegisterPage() {
           userEmail: email,
         })
       })
-      fetch('/api/notify-new-user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userName: fullName }),
-      }).catch(err => console.error('Push notify failed:', err))
     } catch (emailErr) {
       console.error('Email notification failed:', emailErr)
     }

@@ -147,34 +147,43 @@ export default function AdminPage() {
     try {
       const req = physioRequests.find(r => r.id === id)
       if (req) {
-        const { data: profile } = await supabase.from('profiles').select('email').eq('id', req.player_id).single()
-        if (profile?.email) {
-          await fetch('/api/send-email', {
+        let needsEmailFallback = true
+        try {
+          const notifyRes = await fetch('/api/notify-physio-decision', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              type: status === 'approved' ? 'physio_approved' : 'physio_declined',
-              userEmail: profile.email,
-              booking: {
-                team_name: req.body_part,
-                pitch_name: req.body_part,
-                date_display: new Date(req.date_of_injury + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
-                time_display: physioNote || '',
-                purpose: req.injury_description,
-              }
-            })
+              userId: req.player_id,
+              decision: status,
+              body_part: req.body_part,
+              injury_description: req.injury_description,
+            }),
           })
+          const notifyData = await notifyRes.json()
+          needsEmailFallback = notifyData.needsEmailFallback !== false
+        } catch (err) {
+          console.error('Push notify failed:', err)
         }
-        fetch('/api/notify-physio-decision', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: req.player_id,
-            decision: status,
-            body_part: req.body_part,
-            injury_description: req.injury_description,
-          }),
-        }).catch(err => console.error('Push notify failed:', err))
+        if (needsEmailFallback) {
+          const { data: profile } = await supabase.from('profiles').select('email').eq('id', req.player_id).single()
+          if (profile?.email) {
+            await fetch('/api/send-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                type: status === 'approved' ? 'physio_approved' : 'physio_declined',
+                userEmail: profile.email,
+                booking: {
+                  team_name: req.body_part,
+                  pitch_name: req.body_part,
+                  date_display: new Date(req.date_of_injury + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
+                  time_display: physioNote || '',
+                  purpose: req.injury_description,
+                }
+              })
+            })
+          }
+        }
       }
     } catch (e) { console.error('Email failed:', e) }
     setPhysioNote('')
@@ -219,36 +228,45 @@ export default function AdminPage() {
     try {
       const booking = bookings.find(b => b.id === id)
       if (booking) {
-        const { data: profile } = await supabase.from('profiles').select('email').eq('id', booking.user_id).single()
-        if (profile?.email) {
-          await fetch('/api/send-email', {
+        let needsEmailFallback = true
+        try {
+          const notifyRes = await fetch('/api/notify-booking-decision', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              type: 'booking_approved',
-              userEmail: profile.email,
-              booking: {
-                team_name: booking.team_name,
-                pitch_name: booking.pitch_name,
-                date_display: new Date(booking.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
-                time_display: `${fmt(booking.start_time)} – ${fmt(booking.end_time)}`,
-                purpose: booking.purpose,
-              }
-            })
+              userId: booking.user_id,
+              decision: 'approved',
+              team_name: booking.team_name,
+              pitch_name: booking.pitch_name,
+              date_display: new Date(booking.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
+              time_display: `${fmt(booking.start_time)}–${fmt(booking.end_time)}`,
+            }),
           })
+          const notifyData = await notifyRes.json()
+          needsEmailFallback = notifyData.needsEmailFallback !== false
+        } catch (err) {
+          console.error('Push notify failed:', err)
         }
-        fetch('/api/notify-booking-decision', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: booking.user_id,
-            decision: 'approved',
-            team_name: booking.team_name,
-            pitch_name: booking.pitch_name,
-            date_display: new Date(booking.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
-            time_display: `${fmt(booking.start_time)}–${fmt(booking.end_time)}`,
-          }),
-        }).catch(err => console.error('Push notify failed:', err))
+        if (needsEmailFallback) {
+          const { data: profile } = await supabase.from('profiles').select('email').eq('id', booking.user_id).single()
+          if (profile?.email) {
+            await fetch('/api/send-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                type: 'booking_approved',
+                userEmail: profile.email,
+                booking: {
+                  team_name: booking.team_name,
+                  pitch_name: booking.pitch_name,
+                  date_display: new Date(booking.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+                  time_display: `${fmt(booking.start_time)} – ${fmt(booking.end_time)}`,
+                  purpose: booking.purpose,
+                }
+              })
+            })
+          }
+        }
       }
     } catch (emailErr) { console.error('Email failed:', emailErr) }
   }
@@ -258,36 +276,45 @@ export default function AdminPage() {
     await supabase.from('bookings').update({ status: 'rejected', decided_by: currentUserId, decided_at: new Date().toISOString(), rejection_reason: rejectReason }).eq('id', rejectModal.id)
     setBookings(prev => prev.map(b => b.id === rejectModal.id ? { ...b, status: 'rejected' } : b))
     try {
-      const { data: profile } = await supabase.from('profiles').select('email').eq('id', rejectModal.user_id).single()
-      if (profile?.email) {
-        await fetch('/api/send-email', {
+      let needsEmailFallback = true
+      try {
+        const notifyRes = await fetch('/api/notify-booking-decision', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            type: 'booking_rejected',
-            userEmail: profile.email,
-            booking: {
-              team_name: rejectModal.team_name,
-              pitch_name: rejectModal.pitch_name,
-              date_display: new Date(rejectModal.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
-              time_display: `${fmt(rejectModal.start_time)} – ${fmt(rejectModal.end_time)}`,
-              purpose: rejectModal.purpose,
-            }
-          })
+            userId: rejectModal.user_id,
+            decision: 'rejected',
+            team_name: rejectModal.team_name,
+            pitch_name: rejectModal.pitch_name,
+            date_display: new Date(rejectModal.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
+            time_display: `${fmt(rejectModal.start_time)}–${fmt(rejectModal.end_time)}`,
+          }),
         })
+        const notifyData = await notifyRes.json()
+        needsEmailFallback = notifyData.needsEmailFallback !== false
+      } catch (err) {
+        console.error('Push notify failed:', err)
       }
-      fetch('/api/notify-booking-decision', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: rejectModal.user_id,
-          decision: 'rejected',
-          team_name: rejectModal.team_name,
-          pitch_name: rejectModal.pitch_name,
-          date_display: new Date(rejectModal.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
-          time_display: `${fmt(rejectModal.start_time)}–${fmt(rejectModal.end_time)}`,
-        }),
-      }).catch(err => console.error('Push notify failed:', err))
+      if (needsEmailFallback) {
+        const { data: profile } = await supabase.from('profiles').select('email').eq('id', rejectModal.user_id).single()
+        if (profile?.email) {
+          await fetch('/api/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'booking_rejected',
+              userEmail: profile.email,
+              booking: {
+                team_name: rejectModal.team_name,
+                pitch_name: rejectModal.pitch_name,
+                date_display: new Date(rejectModal.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+                time_display: `${fmt(rejectModal.start_time)} – ${fmt(rejectModal.end_time)}`,
+                purpose: rejectModal.purpose,
+              }
+            })
+          })
+        }
+      }
     } catch (emailErr) { console.error('Email failed:', emailErr) }
     setRejectModal(null)
     setRejectReason('')
@@ -358,6 +385,14 @@ export default function AdminPage() {
     try {
       const pitchName = pitches.find(p => String(p.id) === newClosure.pitch_id)?.name || 'Pitch'
       const closureDateDisplay = `${new Date(newClosure.start_date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}${newClosure.start_date !== newClosure.end_date ? ` to ${new Date(newClosure.end_date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}` : ''}`
+      await fetch('/api/notify-pitch-closure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pitch_name: pitchName,
+          date_display: closureDateDisplay,
+        }),
+      }).catch(err => console.error('Push notify failed:', err))
       await fetch('/api/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -370,14 +405,6 @@ export default function AdminPage() {
           }
         })
       })
-      fetch('/api/notify-pitch-closure', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          pitch_name: pitchName,
-          date_display: closureDateDisplay,
-        }),
-      }).catch(err => console.error('Push notify failed:', err))
     } catch (e) { console.error('Closure email failed:', e) }
   }
 

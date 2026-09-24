@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-import { sendPushToSubscriptions } from '@/lib/sendPush'
+import { sendPushToSubscriptions, shouldUseEmailFallback } from '@/lib/sendPush'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,13 +17,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing userId or decision' }, { status: 400 })
     }
 
+    const noSub = await shouldUseEmailFallback([userId])
+
     const { data: subscriptions } = await supabase
       .from('subscriptions')
       .select('endpoint, p256dh, auth, user_id')
       .eq('user_id', userId)
 
     if (!subscriptions || subscriptions.length === 0) {
-      return NextResponse.json({ sent: 0, failed: 0 })
+      return NextResponse.json({ sent: 0, failed: 0, failedUserIds: [], needsEmailFallback: true })
     }
 
     const isApproved = decision === 'approved'
@@ -33,7 +35,10 @@ export async function POST(req: Request) {
       url: '/my-bookings',
     }, isApproved ? 'booking_approved' : 'booking_rejected')
 
-    return NextResponse.json(result)
+    return NextResponse.json({
+      ...result,
+      needsEmailFallback: noSub.length > 0 || result.failedUserIds.includes(userId),
+    })
   } catch (error) {
     console.error('Notify booking decision error:', error)
     return NextResponse.json({ error: 'Failed to notify' }, { status: 500 })

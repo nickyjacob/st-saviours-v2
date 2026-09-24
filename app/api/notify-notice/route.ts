@@ -18,7 +18,7 @@ export async function POST(req: Request) {
       .select('endpoint, p256dh, auth, user_id')
 
     if (!subscriptions || subscriptions.length === 0) {
-      return NextResponse.json({ sent: 0, failed: 0 })
+      return NextResponse.json({ sent: 0, failed: 0, failedUserIds: [], usersNeedingEmailFallback: [] })
     }
 
     const pushResult = await sendPushToSubscriptions(subscriptions, {
@@ -27,7 +27,10 @@ export async function POST(req: Request) {
       url: '/dashboard',
     }, 'new_notice')
 
-    return NextResponse.json(pushResult)
+    return NextResponse.json({
+      ...pushResult,
+      usersNeedingEmailFallback: pushResult.failedUserIds,
+    })
   } catch (error) {
     console.error('Notify notice error:', error)
     return NextResponse.json({ error: 'Failed to notify' }, { status: 500 })

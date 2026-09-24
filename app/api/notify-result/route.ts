@@ -18,7 +18,7 @@ export async function POST(req: Request) {
       .select('endpoint, p256dh, auth, user_id')
 
     if (!subscriptions || subscriptions.length === 0) {
-      return NextResponse.json({ sent: 0, failed: 0 })
+      return NextResponse.json({ sent: 0, failed: 0, failedUserIds: [], usersNeedingEmailFallback: [] })
     }
 
     const resultLabel = result === 'win' ? 'Win' : result === 'loss' ? 'Loss' : 'Draw'
@@ -28,7 +28,10 @@ export async function POST(req: Request) {
       url: '/results',
     }, 'new_result')
 
-    return NextResponse.json(pushResult)
+    return NextResponse.json({
+      ...pushResult,
+      usersNeedingEmailFallback: pushResult.failedUserIds,
+    })
   } catch (error) {
     console.error('Notify result error:', error)
     return NextResponse.json({ error: 'Failed to notify' }, { status: 500 })
