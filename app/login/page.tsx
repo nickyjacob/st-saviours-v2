@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Button from '@/components/ui/Button'
@@ -67,9 +68,11 @@ if (signInError) {
     <div className="min-h-screen bg-ink flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
         <div className="flex flex-col items-center mb-6">
-  <img
+  <Image
   src="/crest.png"
   alt="St. Saviours GAA Club Crest"
+  width={144}
+  height={144}
   className="w-36 h-36 object-contain mb-4"
 />
           <h1 className="text-2xl font-bold text-gray-900">St. Saviours GAA & LGFA</h1>

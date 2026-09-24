@@ -180,7 +180,33 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
   useEffect(() => { fetchPitches() }, [])
   useEffect(() => { fetchClosures() }, [])
   useEffect(() => { fetchFixtures() }, [])
-  useEffect(() => { fetchBookings() }, [currentDate, view, selectedDay])
+  useEffect(() => {
+    async function fetchBookings() {
+      setLoading(true)
+      let start: Date, end: Date
+      if (view === 'month') {
+        start = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 1 })
+        end = endOfWeek(endOfMonth(currentDate), { weekStartsOn: 1 })
+      } else if (view === 'day') {
+        start = selectedDay
+        end = selectedDay
+      } else {
+        start = startOfWeek(currentDate, { weekStartsOn: 1 })
+        end = endOfWeek(currentDate, { weekStartsOn: 1 })
+      }
+      const { data, error } = await supabase
+        .from('public_planner')
+        .select('*')
+        .gte('booking_date', format(start, 'yyyy-MM-dd'))
+        .lte('booking_date', format(end, 'yyyy-MM-dd'))
+        .order('booking_date')
+        .order('start_time')
+      if (error) console.error('Planner fetch error:', error)
+      if (data) setBookings(data as Booking[])
+      setLoading(false)
+    }
+    fetchBookings()
+  }, [currentDate, view, selectedDay])
 
   async function fetchPitches() {
     const { data } = await supabase.from('pitches').select('id, name, colour').eq('is_active', true).order('sort_order')
@@ -198,34 +224,6 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
       const p = c.pitches as {name: string; colour: string} | null
       return { ...c, pitch_name: p?.name || '', pitch_colour: p?.colour || '#888' }
     }) as Closure[])
-  }
-
-  async function fetchBookings() {
-    setLoading(true)
-    let start: Date, end: Date
-    if (view === 'month') {
-      start = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 1 })
-      end = endOfWeek(endOfMonth(currentDate), { weekStartsOn: 1 })
-    } else if (view === 'day') {
-      start = selectedDay
-      end = selectedDay
-    } else if (view === 'week' && isMobile) {
-      start = startOfWeek(currentDate, { weekStartsOn: 1 })
-      end = endOfWeek(currentDate, { weekStartsOn: 1 })
-    } else {
-      start = startOfWeek(currentDate, { weekStartsOn: 1 })
-      end = endOfWeek(currentDate, { weekStartsOn: 1 })
-    }
-    const { data, error } = await supabase
-      .from('public_planner')
-      .select('*')
-      .gte('booking_date', format(start, 'yyyy-MM-dd'))
-      .lte('booking_date', format(end, 'yyyy-MM-dd'))
-      .order('booking_date')
-      .order('start_time')
-    if (error) console.error('Planner fetch error:', error)
-    if (data) setBookings(data as Booking[])
-    setLoading(false)
   }
 
   function getBookingsForDay(date: Date) {

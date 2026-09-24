@@ -24,6 +24,7 @@ import {
   X,
 } from 'lucide-react'
 import type { StatusTone } from '@/components/ui/Badge'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
 interface Notice {
@@ -226,7 +227,7 @@ export default function DashboardPage() {
       <div className="mx-auto max-w-[800px] px-4 py-5">
 
         <Card className="mb-5 flex items-center gap-3 p-4 shadow-sm">
-          <img src="/crest.png" alt="St Saviours" className="h-[52px] w-[52px] shrink-0 object-contain" />
+          <Image src="/crest.png" alt="St Saviours" width={52} height={52} className="h-[52px] w-[52px] shrink-0 object-contain" />
           <div>
             <h1 className="text-[17px] font-bold text-ink">St. Saviours GAA & LGFA</h1>
             <p className="mt-0.5 text-[13px] text-neutral">Welcome back, {fullName} 👋</p>

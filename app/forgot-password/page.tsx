@@ -1,4 +1,5 @@
 'use client'
+import Image from 'next/image'
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
@@ -35,7 +36,7 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
         <div className="flex flex-col items-center mb-6">
-          <img src="/crest.png" alt="St. Saviours GAA Club Crest" className="w-24 h-24 object-contain mb-4" />
+          <Image src="/crest.png" alt="St. Saviours GAA Club Crest" width={96} height={96} className="w-24 h-24 object-contain mb-4" />
           <h1 className="text-2xl font-bold text-gray-900">Reset Password</h1>
           <p className="text-gray-500 text-sm mt-1">St. Saviours GAA & LGFA</p>
         </div>

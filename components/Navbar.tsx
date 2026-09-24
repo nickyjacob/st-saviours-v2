@@ -16,6 +16,7 @@ import {
   Stethoscope,
   Shield,
 } from 'lucide-react'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
 interface NavbarProps {
@@ -219,7 +220,7 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
     <>
       <nav style={{ backgroundColor: '#111', color: 'white', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '56px', position: 'sticky', top: 0, zIndex: 100 }}>
         <a href='/dashboard' style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-          <img src='/crest.png' alt='Crest' style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
+          <Image src='/crest.png' alt='Crest' width={32} height={32} style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
           <div style={{ lineHeight: '1.2' }}>
             <div style={{ color: 'white', fontWeight: 'bold', fontSize: '14px' }}>St. Saviours</div>
             <div style={{ color: '#9ca3af', fontSize: '11px' }}>GAA & LGFA</div>
