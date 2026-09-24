@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
-import { Bus, Calendar, Clock, Home, MapPin } from 'lucide-react'
+import { AlertTriangle, Bus, Calendar, Clock, Home, MapPin } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import Button from '@/components/ui/Button'
 import Navbar from '@/components/Navbar'
@@ -30,6 +30,12 @@ interface Venue {
   is_home: boolean
 }
 
+interface Pitch {
+  id: number
+  name: string
+  colour: string
+}
+
 const SPORTS = ["Men's/Boys Hurling", "Men's/Boys Gaelic", "LGFA", "Other"]
 const SPORT_TEAMS: Record<string, string[]> = {
   "Men's/Boys Hurling": ['U6','U7','U8','U9','U10','U11','U12','U13','U14','U15','U16','U18','U20','Junior','Intermediate','Pre-Intermediate','Senior'],
@@ -57,6 +63,9 @@ export default function FixturesPage() {
   const [loading, setLoading] = useState(true)
   const [fixtures, setFixtures] = useState<Fixture[]>([])
   const [venues, setVenues] = useState<Venue[]>([])
+  const [pitches, setPitches] = useState<Pitch[]>([])
+  const [pitchId, setPitchId] = useState('')
+  const [conflict, setConflict] = useState<boolean | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [venueSearch, setVenueSearch] = useState('')
@@ -80,7 +89,7 @@ export default function FixturesPage() {
       if (!profile || !profile.is_approved) { window.location.href = '/pending'; return }
       setUserRole(profile.role || '')
       setCurrentUserId(session.user.id)
-      await Promise.all([fetchFixtures(), fetchVenues()])
+      await Promise.all([fetchFixtures(), fetchVenues(), fetchPitches()])
       setLoading(false)
     }
     init()
@@ -106,13 +115,72 @@ export default function FixturesPage() {
     if (data) setVenues(data)
   }
 
+  async function fetchPitches() {
+    const { data } = await supabase.from('pitches').select('id, name, colour').eq('is_active', true).order('sort_order')
+    if (data && data.length > 0) {
+      setPitches(data)
+      setPitchId(prev => prev || String(data[0].id))
+    }
+  }
+
+  function addMatchDuration(t: string) {
+    const [h, m] = t.slice(0, 5).split(':').map(Number)
+    const total = h * 60 + m + 75
+    const newH = Math.min(Math.floor(total / 60), 23)
+    const newM = total % 60
+    return `${String(newH).padStart(2, '0')}:${String(newM).padStart(2, '0')}`
+  }
+
+  async function checkConflict(pId: string, d: string, st: string, et: string, excludeId?: string) {
+    if (!pId || !d || !st || !et) return null
+    const { data: closureData } = await supabase
+      .from('pitch_closures')
+      .select('id')
+      .eq('pitch_id', parseInt(pId))
+      .lte('start_date', d)
+      .gte('end_date', d)
+    if (closureData && closureData.length > 0) return true
+    const { data } = await supabase.rpc('check_booking_conflict_extended', {
+      p_pitch_id: parseInt(pId),
+      p_date: d,
+      p_start: st + ':00',
+      p_end: et + ':00',
+      p_exclude_id: excludeId || null
+    })
+    if (!data && data !== false) return null
+    return data as boolean
+  }
+
   async function handleSubmit() {
     if (!form.team_name || !form.opposition || !form.fixture_date || !form.venue_name) return
     setSubmitting(true)
+    const startTime = form.fixture_time.slice(0, 5)
+    const endTime = addMatchDuration(startTime)
+    if (form.home_away === 'home') {
+      if (!pitchId) { setSubmitting(false); return }
+      const c = await checkConflict(pitchId, form.fixture_date, startTime, endTime)
+      setConflict(c)
+      if (c) { setSubmitting(false); return }
+    }
     await supabase.from('fixtures').insert({
       ...form,
       posted_by: currentUserId
     })
+
+    if (form.home_away === 'home') {
+      const { error: bookingError } = await supabase.from('bookings').insert({
+        user_id: currentUserId,
+        pitch_id: parseInt(pitchId),
+        team_name: form.team_name,
+        purpose: 'Match / Fixture',
+        status: 'approved',
+        booking_date: form.fixture_date,
+        start_time: startTime + ':00',
+        end_time: endTime + ':00',
+        facility_type: 'pitch',
+      })
+      if (bookingError) console.error('Home fixture booking insert failed:', bookingError)
+    }
 
     fetch('/api/notify-fixture', {
       method: 'POST',
@@ -140,6 +208,8 @@ export default function FixturesPage() {
   function resetForm() {
     setForm({ team_name: '', opposition: '', sport: "Men's/Boys Hurling", venue_id: '', venue_name: '', home_away: 'away', fixture_date: '', fixture_time: '14:00', competition: 'League', notes: '' })
     setVenueSearch('')
+    setConflict(null)
+    if (pitches[0]) setPitchId(String(pitches[0].id))
   }
 
   function selectVenue(v: Venue) {
@@ -311,11 +381,11 @@ export default function FixturesPage() {
             <div className="mb-3 grid grid-cols-2 gap-3">
               <div>
                 <label className={labelClass}>Date</label>
-                <input type="date" value={form.fixture_date} min={new Date().toISOString().split('T')[0]} onChange={e => setForm({ ...form, fixture_date: e.target.value })} className={inputClass} />
+                <input type="date" value={form.fixture_date} min={new Date().toISOString().split('T')[0]} onChange={e => { setConflict(null); setForm({ ...form, fixture_date: e.target.value }) }} className={inputClass} />
               </div>
               <div>
                 <label className={labelClass}>Time</label>
-                <select value={form.fixture_time} onChange={e => setForm({ ...form, fixture_time: e.target.value })} className={inputClass}>
+                <select value={form.fixture_time} onChange={e => { setConflict(null); setForm({ ...form, fixture_time: e.target.value }) }} className={inputClass}>
                   {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
@@ -332,7 +402,9 @@ export default function FixturesPage() {
                 <label className={labelClass}>Home / Away</label>
                 <select value={form.home_away} onChange={e => {
                   const val = e.target.value
+                  setConflict(null)
                   if (val === 'home') {
+                    if (pitches[0] && !pitchId) setPitchId(String(pitches[0].id))
                     const homeVenue = venues.find(v => v.is_home)
                     if (homeVenue) {
                       setForm({ ...form, home_away: val, venue_id: homeVenue.id, venue_name: homeVenue.name })
@@ -350,6 +422,29 @@ export default function FixturesPage() {
                 </select>
               </div>
             </div>
+
+            {form.home_away === 'home' && (
+              <div className={fieldClass}>
+                <label className={labelClass}>Pitch</label>
+                <select value={pitchId} onChange={e => { setConflict(null); setPitchId(e.target.value) }} className={inputClass}>
+                  {pitches.map(p => <option key={p.id} value={String(p.id)}>{p.name}</option>)}
+                </select>
+              </div>
+            )}
+            {form.home_away === 'home' && conflict !== null && (
+              <div className={`mb-3 rounded-lg border px-3.5 py-2.5 text-sm font-semibold ${conflict ? 'border-rejected/40 bg-rejected/10 text-rejected' : 'border-approved/40 bg-approved/10 text-approved'}`}>
+                {conflict ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    Conflict detected — this pitch is already booked at this time
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5">
+                    Available
+                  </span>
+                )}
+              </div>
+            )}
 
             <div className={`${fieldClass} relative`} ref={venueRef}>
               <label className={labelClass}>Venue</label>
