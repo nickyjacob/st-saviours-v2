@@ -19,7 +19,7 @@ export async function POST(req: Request) {
 
     const { data: subscriptions } = await supabase
       .from('subscriptions')
-      .select('endpoint, p256dh, auth')
+      .select('endpoint, p256dh, auth, user_id')
       .eq('user_id', userId)
 
     if (!subscriptions || subscriptions.length === 0) {
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
       title: isApproved ? 'Physio Request Approved' : 'Physio Request Declined',
       body: `${body_part} — ${injury_description}`,
       url: '/physio',
-    })
+    }, isApproved ? 'physio_approved' : 'physio_declined')
 
     return NextResponse.json(result)
   } catch (error) {

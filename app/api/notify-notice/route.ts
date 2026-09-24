@@ -15,7 +15,7 @@ export async function POST(req: Request) {
 
     const { data: subscriptions } = await supabase
       .from('subscriptions')
-      .select('endpoint, p256dh, auth')
+      .select('endpoint, p256dh, auth, user_id')
 
     if (!subscriptions || subscriptions.length === 0) {
       return NextResponse.json({ sent: 0, failed: 0 })
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
       title: 'New Notice',
       body: title,
       url: '/dashboard',
-    })
+    }, 'new_notice')
 
     return NextResponse.json(pushResult)
   } catch (error) {

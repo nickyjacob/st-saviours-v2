@@ -27,7 +27,7 @@ export async function POST(req: Request) {
 
     const { data: subscriptions } = await supabase
       .from('subscriptions')
-      .select('endpoint, p256dh, auth')
+      .select('endpoint, p256dh, auth, user_id')
       .in('user_id', coachIds)
 
     if (!subscriptions || subscriptions.length === 0) {
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
       title: 'Pitch Closure',
       body: `${pitch_name} — ${date_display}`,
       url: '/planner',
-    })
+    }, 'pitch_closure')
 
     return NextResponse.json(result)
   } catch (error) {

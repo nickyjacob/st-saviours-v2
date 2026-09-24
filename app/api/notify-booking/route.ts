@@ -27,7 +27,7 @@ export async function POST(req: Request) {
 
     const { data: subscriptions } = await supabase
       .from('subscriptions')
-      .select('endpoint, p256dh, auth')
+      .select('endpoint, p256dh, auth, user_id')
       .in('user_id', adminIds)
 
     if (!subscriptions || subscriptions.length === 0) {
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
       title: 'New Booking Request',
       body: `${userName} requested ${team_name} — ${pitch_name}, ${date_display} ${time_display}`,
       url: '/admin',
-    })
+    }, 'new_booking')
 
     return NextResponse.json(result)
   } catch (error) {

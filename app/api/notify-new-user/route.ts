@@ -27,7 +27,7 @@ export async function POST(req: Request) {
 
     const { data: subscriptions } = await supabase
       .from('subscriptions')
-      .select('endpoint, p256dh, auth')
+      .select('endpoint, p256dh, auth, user_id')
       .in('user_id', adminIds)
 
     if (!subscriptions || subscriptions.length === 0) {
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
       title: 'New User Registration',
       body: `${userName} has registered and is awaiting approval`,
       url: '/admin',
-    })
+    }, 'new_user')
 
     return NextResponse.json(result)
   } catch (error) {
