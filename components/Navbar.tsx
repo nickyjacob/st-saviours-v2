@@ -47,6 +47,8 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
   const [pushSubscribed, setPushSubscribed] = useState(false)
   const [userId, setUserId] = useState('')
   const [notifModalOpen, setNotifModalOpen] = useState(false)
+  const [assignedTeams, setAssignedTeams] = useState<string[]>([])
+  const [selectedTeam, setSelectedTeam] = useState<string>('')
 
   useEffect(() => {
     async function getProfile() {
@@ -55,12 +57,21 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
       setUserId(session.user.id)
       const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name, role')
+        .select('full_name, role, assigned_teams')
         .eq('id', session.user.id)
         .single()
       if (profile) {
         setUserName(profile.full_name || '')
         setResolvedRole(profile.role || '')
+        const teams = profile.assigned_teams || []
+        setAssignedTeams(teams)
+        const stored = localStorage.getItem('selectedTeam')
+        if (stored && teams.includes(stored)) {
+          setSelectedTeam(stored)
+        } else if (teams.length > 0) {
+          setSelectedTeam(teams[0])
+          localStorage.setItem('selectedTeam', teams[0])
+        }
       }
       const subscribed = await getPushSubscriptionStatus()
       setPushSubscribed(subscribed)
@@ -71,6 +82,11 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
   async function handleLogout() {
     await supabase.auth.signOut()
     window.location.href = '/login'
+  }
+  function handleTeamChange(team: string) {
+    setSelectedTeam(team)
+    localStorage.setItem('selectedTeam', team)
+    window.dispatchEvent(new Event('teamchange'))
   }
   function handleBellClick() {
     setNotifModalOpen(true)
@@ -302,6 +318,15 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
               </>
             )}
           </div>
+          {assignedTeams.length > 1 && (
+            <select
+              value={selectedTeam}
+              onChange={e => handleTeamChange(e.target.value)}
+              style={{ backgroundColor: '#374151', color: 'white', border: 'none', borderRadius: '6px', padding: '4px 8px', fontSize: '12px', cursor: 'pointer' }}
+            >
+              {assignedTeams.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          )}
           <button
             type='button'
             onClick={handleBellClick}
