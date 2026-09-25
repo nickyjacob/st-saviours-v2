@@ -72,7 +72,8 @@ export default function FixturesPage() {
   const [venueDropdown, setVenueDropdown] = useState(false)
   const [filterTeam, setFilterTeam] = useState('')
   const [filterType, setFilterType] = useState('upcoming')
-    const [responses, setResponses] = useState<Record<string, { attending: number; declined: number; mine: string | null }>>({})
+    const [responses, setResponses] = useState<Record<string, { attending: number; declined: number; mine: string | null; names: { attending: string[]; declined: string[] } }>>({})
+  const [expandedFixture, setExpandedFixture] = useState<string | null>(null)
   const venueRef = useRef<HTMLDivElement>(null)
 
   const [form, setForm] = useState({
@@ -119,16 +120,17 @@ export default function FixturesPage() {
     if (fixtureIds.length === 0) return
     const { data } = await supabase
       .from('responses')
-      .select('event_id, user_id, response')
+      .select('event_id, user_id, response, profiles(full_name)')
       .eq('event_type', 'fixture')
       .in('event_id', fixtureIds)
     if (!data) return
     const uid = userId || currentUserId
-    const summary: Record<string, { attending: number; declined: number; mine: string | null }> = {}
-    for (const id of fixtureIds) summary[id] = { attending: 0, declined: 0, mine: null }
+    const summary: Record<string, { attending: number; declined: number; mine: string | null; names: { attending: string[]; declined: string[] } }> = {}
+    for (const id of fixtureIds) summary[id] = { attending: 0, declined: 0, mine: null, names: { attending: [], declined: [] } }
     for (const row of data) {
-      if (row.response === 'attending') summary[row.event_id].attending++
-      if (row.response === 'declined') summary[row.event_id].declined++
+      const name = (row.profiles as unknown as { full_name: string } | null)?.full_name || 'Unknown'
+      if (row.response === 'attending') { summary[row.event_id].attending++; summary[row.event_id].names.attending.push(name) }
+      if (row.response === 'declined') { summary[row.event_id].declined++; summary[row.event_id].names.declined.push(name) }
       if (row.user_id === uid) summary[row.event_id].mine = row.response
     }
     setResponses(summary)
@@ -368,7 +370,25 @@ export default function FixturesPage() {
                     >
                       Declined {responses[f.id]?.declined ? `(${responses[f.id].declined})` : ''}
                     </button>
+                    {(userRole === 'admin' || userRole === 'coach') && (responses[f.id]?.attending > 0 || responses[f.id]?.declined > 0) && (
+                      <button
+                        onClick={() => setExpandedFixture(expandedFixture === f.id ? null : f.id)}
+                        className="cursor-pointer text-xs font-semibold text-neutral underline"
+                      >
+                        {expandedFixture === f.id ? 'Hide' : 'Who?'}
+                      </button>
+                    )}
                   </div>
+                  {expandedFixture === f.id && (userRole === 'admin' || userRole === 'coach') && (
+                    <div className="mt-2 rounded-md bg-gray-50 p-2.5 text-xs">
+                      {responses[f.id].names.attending.length > 0 && (
+                        <div className="mb-1"><span className="font-semibold text-approved">Attending:</span> {responses[f.id].names.attending.join(', ')}</div>
+                      )}
+                      {responses[f.id].names.declined.length > 0 && (
+                        <div><span className="font-semibold text-rejected">Declined:</span> {responses[f.id].names.declined.join(', ')}</div>
+                      )}
+                    </div>
+                  )}
                 </div>
                 {(userRole === 'admin' || f.posted_by === currentUserId) && (
                   <button onClick={() => handleDelete(f.id)} className="shrink-0 cursor-pointer rounded-md border border-rejected/40 bg-white px-2 py-[3px] text-[11px] text-rejected">Delete</button>
