@@ -198,8 +198,10 @@ export default function FixturesPage() {
       setConflict(c)
       if (c) { setSubmitting(false); return }
     }
+    const teamName = `${form.sport} ${form.team_name}`.trim()
     await supabase.from('fixtures').insert({
       ...form,
+      team_name: teamName,
       posted_by: currentUserId
     })
 
@@ -207,7 +209,7 @@ export default function FixturesPage() {
       const { error: bookingError } = await supabase.from('bookings').insert({
         user_id: currentUserId,
         pitch_id: parseInt(pitchId),
-        team_name: form.team_name,
+        team_name: teamName,
         purpose: 'Match / Fixture',
         status: 'approved',
         booking_date: form.fixture_date,
@@ -222,7 +224,7 @@ export default function FixturesPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        team_name: form.team_name,
+        team_name: teamName,
         opposition: form.opposition,
         fixture_date: form.fixture_date,
         venue_name: form.venue_name,

@@ -113,6 +113,7 @@ export default function ResultsPage() {
     const result = ourTotal > theirTotal ? 'win' : ourTotal < theirTotal ? 'loss' : 'draw'
     await supabase.from('results').insert({
       ...form,
+      team_name: `${form.sport} ${form.team_name}`.trim(),
       result,
       posted_by: currentUserId
     })
@@ -121,7 +122,7 @@ export default function ResultsPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        team_name: form.team_name,
+        team_name: `${form.sport} ${form.team_name}`.trim(),
         opposition: form.opposition,
         result,
         score_display: `${ourTotal}-${theirTotal}`,
@@ -244,7 +245,18 @@ export default function ResultsPage() {
               <select value={form.fixture_id} onChange={e => {
                 const selected = fixtures.find(f => f.id === e.target.value)
                 if (selected) {
-                  setForm({ ...form, fixture_id: selected.id, team_name: selected.team_name, opposition: selected.opposition, competition: selected.competition, home_away: selected.home_away, sport: selected.sport, match_date: selected.fixture_date })
+                  setForm({
+                    ...form,
+                    fixture_id: selected.id,
+                    team_name: selected.team_name.startsWith(selected.sport + ' ')
+                      ? selected.team_name.slice(selected.sport.length + 1)
+                      : selected.team_name,
+                    opposition: selected.opposition,
+                    competition: selected.competition,
+                    home_away: selected.home_away,
+                    sport: selected.sport,
+                    match_date: selected.fixture_date,
+                  })
                 } else {
                   setForm({ ...form, fixture_id: '' })
                 }
