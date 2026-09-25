@@ -72,6 +72,7 @@ export default function FixturesPage() {
   const [venueDropdown, setVenueDropdown] = useState(false)
   const [filterTeam, setFilterTeam] = useState('')
   const [filterType, setFilterType] = useState('upcoming')
+    const [responses, setResponses] = useState<Record<string, { attending: number; declined: number; mine: string | null }>>({})
   const venueRef = useRef<HTMLDivElement>(null)
 
   const [form, setForm] = useState({
@@ -89,10 +90,11 @@ export default function FixturesPage() {
       if (!profile || !profile.is_approved) { window.location.href = '/pending'; return }
       setUserRole(profile.role || '')
       setCurrentUserId(session.user.id)
-      await Promise.all([fetchFixtures(), fetchVenues(), fetchPitches()])
+      await Promise.all([fetchFixtures(session.user.id), fetchVenues(), fetchPitches()])
       setLoading(false)
     }
     init()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -105,9 +107,41 @@ export default function FixturesPage() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  async function fetchFixtures() {
+  async function fetchFixtures(userId?: string) {
     const { data } = await supabase.from('fixtures').select('*').order('fixture_date', { ascending: true })
-    if (data) setFixtures(data)
+    if (data) {
+      setFixtures(data)
+      await fetchResponses(data.map(f => f.id), userId || currentUserId)
+    }
+  }
+
+  async function fetchResponses(fixtureIds: string[], userId?: string) {
+    if (fixtureIds.length === 0) return
+    const { data } = await supabase
+      .from('responses')
+      .select('event_id, user_id, response')
+      .eq('event_type', 'fixture')
+      .in('event_id', fixtureIds)
+    if (!data) return
+    const uid = userId || currentUserId
+    const summary: Record<string, { attending: number; declined: number; mine: string | null }> = {}
+    for (const id of fixtureIds) summary[id] = { attending: 0, declined: 0, mine: null }
+    for (const row of data) {
+      if (row.response === 'attending') summary[row.event_id].attending++
+      if (row.response === 'declined') summary[row.event_id].declined++
+      if (row.user_id === uid) summary[row.event_id].mine = row.response
+    }
+    setResponses(summary)
+  }
+
+  async function handleRsvp(fixtureId: string, response: 'attending' | 'declined') {
+    await supabase.from('responses').upsert({
+      event_id: fixtureId,
+      event_type: 'fixture',
+      user_id: currentUserId,
+      response,
+    }, { onConflict: 'event_id,event_type,user_id' })
+    await fetchResponses(fixtures.map(f => f.id))
   }
 
   async function fetchVenues() {
@@ -321,6 +355,20 @@ export default function FixturesPage() {
                       Get Directions
                     </a>
                   )}
+                  <div className="mt-3 flex items-center gap-2">
+                    <button
+                      onClick={() => handleRsvp(f.id, 'attending')}
+                      className={`cursor-pointer rounded-md border px-3 py-1.5 text-xs font-semibold ${responses[f.id]?.mine === 'attending' ? 'border-approved bg-approved text-white' : 'border-approved/40 bg-white text-approved'}`}
+                    >
+                      Attending {responses[f.id]?.attending ? `(${responses[f.id].attending})` : ''}
+                    </button>
+                    <button
+                      onClick={() => handleRsvp(f.id, 'declined')}
+                      className={`cursor-pointer rounded-md border px-3 py-1.5 text-xs font-semibold ${responses[f.id]?.mine === 'declined' ? 'border-rejected bg-rejected text-white' : 'border-rejected/40 bg-white text-rejected'}`}
+                    >
+                      Declined {responses[f.id]?.declined ? `(${responses[f.id].declined})` : ''}
+                    </button>
+                  </div>
                 </div>
                 {(userRole === 'admin' || f.posted_by === currentUserId) && (
                   <button onClick={() => handleDelete(f.id)} className="shrink-0 cursor-pointer rounded-md border border-rejected/40 bg-white px-2 py-[3px] text-[11px] text-rejected">Delete</button>
