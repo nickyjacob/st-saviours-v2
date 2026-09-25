@@ -108,6 +108,17 @@ export default function FixturesPage() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
+  useEffect(() => {
+    const stored = localStorage.getItem('selectedTeam')
+    if (stored) setFilterTeam(stored)
+    function onTeamChange() {
+      const updated = localStorage.getItem('selectedTeam')
+      if (updated) setFilterTeam(updated)
+    }
+    window.addEventListener('teamchange', onTeamChange)
+    return () => window.removeEventListener('teamchange', onTeamChange)
+  }, [])
+
   async function fetchFixtures(userId?: string) {
     const { data } = await supabase.from('fixtures').select('*').order('fixture_date', { ascending: true })
     if (data) {
