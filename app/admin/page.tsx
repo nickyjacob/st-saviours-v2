@@ -39,6 +39,7 @@ interface Profile {
   email: string
   role: string
   is_approved: boolean
+  assigned_teams?: string[]
 }
 
 interface Closure {
@@ -113,7 +114,7 @@ export default function AdminPage() {
   }
 
   async function fetchProfiles() {
-    const { data } = await supabase.from('profiles').select('id, full_name, email, role, is_approved').order('full_name')
+    const { data } = await supabase.from('profiles').select('id, full_name, email, role, is_approved, assigned_teams').order('full_name')
     if (data) setProfiles([...data].sort((a, b) => {
       if (!a.is_approved && b.is_approved) return -1
       if (a.is_approved && !b.is_approved) return 1
@@ -367,6 +368,12 @@ export default function AdminPage() {
     setProfiles(prev => prev.map(p => p.id === id ? { ...p, role: newRole } : p))
   }
 
+  async function handleUpdateTeams(id: string, value: string) {
+    const teams = value.split(',').map(t => t.trim()).filter(Boolean)
+    await supabase.from('profiles').update({ assigned_teams: teams }).eq('id', id)
+    setProfiles(prev => prev.map(p => p.id === id ? { ...p, assigned_teams: teams } : p))
+  }
+
   async function handleAddClosure() {
     if (!newClosure.pitch_id || !newClosure.start_date || !newClosure.end_date) return
     const { data } = await supabase.from('pitch_closures').insert([{
@@ -515,32 +522,44 @@ export default function AdminPage() {
         {tab === 'users' && (
           <div>
             {profiles.map(p => (
-              <div key={p.id} className="mb-2 flex items-center justify-between rounded-lg bg-white px-4 py-3 shadow-sm">
-                <div>
-                  <div className="text-sm font-semibold text-ink">{p.full_name || p.email}</div>
-                  <div className="text-xs text-neutral">{p.email}</div>
-                  <div className="mt-1.5 flex gap-1.5">
-                    <span className={`inline-flex items-center gap-1 rounded-xl px-2 py-0.5 text-[11px] font-medium ${p.role === 'admin' ? 'bg-accent/10 text-accent' : 'bg-neutral/10 text-neutral'}`}>
-                      {p.role === 'admin' ? <Settings className="h-3 w-3" aria-hidden="true" /> : <User className="h-3 w-3" aria-hidden="true" />}
-                      {p.role === 'admin' ? 'Admin' : 'Coach'}
-                    </span>
-                    <span className={`inline-flex items-center gap-1 rounded-xl px-2 py-0.5 text-[11px] font-medium ${p.is_approved ? 'bg-approved/10 text-approved' : 'bg-pending/10 text-pending'}`}>
-                      {p.is_approved ? <CheckCircle className="h-3 w-3" aria-hidden="true" /> : <Clock className="h-3 w-3" aria-hidden="true" />}
-                      {p.is_approved ? 'Approved' : 'Pending'}
-                    </span>
+              <div key={p.id} className="mb-2 rounded-lg bg-white px-4 py-3 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-semibold text-ink">{p.full_name || p.email}</div>
+                    <div className="text-xs text-neutral">{p.email}</div>
+                    <div className="mt-1.5 flex gap-1.5">
+                      <span className={`inline-flex items-center gap-1 rounded-xl px-2 py-0.5 text-[11px] font-medium ${p.role === 'admin' ? 'bg-accent/10 text-accent' : 'bg-neutral/10 text-neutral'}`}>
+                        {p.role === 'admin' ? <Settings className="h-3 w-3" aria-hidden="true" /> : <User className="h-3 w-3" aria-hidden="true" />}
+                        {p.role === 'admin' ? 'Admin' : 'Coach'}
+                      </span>
+                      <span className={`inline-flex items-center gap-1 rounded-xl px-2 py-0.5 text-[11px] font-medium ${p.is_approved ? 'bg-approved/10 text-approved' : 'bg-pending/10 text-pending'}`}>
+                        {p.is_approved ? <CheckCircle className="h-3 w-3" aria-hidden="true" /> : <Clock className="h-3 w-3" aria-hidden="true" />}
+                        {p.is_approved ? 'Approved' : 'Pending'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-1.5">
+                    {p.id === currentUserId ? (
+                      <span className="px-3 py-1.5 text-xs text-neutral">You</span>
+                    ) : (
+                      <>
+                        {!p.is_approved && <button onClick={() => handleApproveUser(p.id)} className="cursor-pointer rounded-md border-none bg-approved px-3 py-1.5 text-xs font-semibold text-white">Approve</button>}
+                        {p.is_approved && <button onClick={() => handleSuspendUser(p.id)} className="cursor-pointer rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs text-ink">Suspend</button>}
+                        <button onClick={() => handleToggleAdmin(p.id, p.role)} className="cursor-pointer rounded-md border border-accent bg-white px-3 py-1.5 text-xs text-accent">{p.role === 'admin' ? 'Remove Admin' : 'Make Admin'}</button>
+                      </>
+                    )}
                   </div>
                 </div>
-                <div className="flex gap-1.5">
-                  {p.id === currentUserId ? (
-                    <span className="px-3 py-1.5 text-xs text-neutral">You</span>
-                  ) : (
-                    <>
-                      {!p.is_approved && <button onClick={() => handleApproveUser(p.id)} className="cursor-pointer rounded-md border-none bg-approved px-3 py-1.5 text-xs font-semibold text-white">Approve</button>}
-                      {p.is_approved && <button onClick={() => handleSuspendUser(p.id)} className="cursor-pointer rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs text-ink">Suspend</button>}
-                      <button onClick={() => handleToggleAdmin(p.id, p.role)} className="cursor-pointer rounded-md border border-accent bg-white px-3 py-1.5 text-xs text-accent">{p.role === 'admin' ? 'Remove Admin' : 'Make Admin'}</button>
-                    </>
-                  )}
-                </div>
+                {p.role === 'coach' && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <input
+                      defaultValue={(p.assigned_teams || []).join(', ')}
+                      placeholder="e.g. Men's/Boys Hurling U12, LGFA U13"
+                      className="min-h-[36px] flex-1 rounded-md border border-gray-200 px-2.5 text-xs text-ink outline-none focus:ring-2 focus:ring-approved"
+                      onBlur={e => handleUpdateTeams(p.id, e.target.value)}
+                    />
+                  </div>
+                )}
               </div>
             ))}
           </div>
