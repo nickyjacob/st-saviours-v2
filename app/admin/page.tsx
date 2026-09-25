@@ -224,6 +224,20 @@ export default function AdminPage() {
   }
 
   async function handleApprove(id: string) {
+    const booking = bookings.find(b => b.id === id)
+    if (booking) {
+      const { data: conflict } = await supabase.rpc('check_booking_conflict_extended', {
+        p_pitch_id: booking.pitch_id,
+        p_date: booking.booking_date,
+        p_start: booking.start_time,
+        p_end: booking.end_time,
+        p_exclude_id: id,
+      })
+      if (conflict) {
+        alert('Cannot approve — this would conflict with another approved booking on the same pitch and time.')
+        return
+      }
+    }
     await supabase.from('bookings').update({ status: 'approved', decided_by: currentUserId, decided_at: new Date().toISOString() }).eq('id', id)
     setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'approved' } : b))
     try {
