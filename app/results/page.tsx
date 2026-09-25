@@ -95,6 +95,17 @@ export default function ResultsPage() {
     init()
   }, [])
 
+  useEffect(() => {
+    const stored = localStorage.getItem('selectedTeam')
+    if (stored) setFilterTeam(stored)
+    function onTeamChange() {
+      const updated = localStorage.getItem('selectedTeam')
+      if (updated) setFilterTeam(updated)
+    }
+    window.addEventListener('teamchange', onTeamChange)
+    return () => window.removeEventListener('teamchange', onTeamChange)
+  }, [])
+
   async function fetchFixtures() {
     const { data } = await supabase.from('fixtures').select('id, team_name, opposition, fixture_date, competition, home_away, sport').order('fixture_date', { ascending: false })
     if (data) setFixtures(data)
