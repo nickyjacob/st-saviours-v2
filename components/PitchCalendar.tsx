@@ -181,6 +181,16 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
   useEffect(() => { fetchClosures() }, [])
   useEffect(() => { fetchFixtures() }, [])
   useEffect(() => {
+    const stored = localStorage.getItem('selectedTeam')
+    if (stored) setSelectedTeam(stored)
+    function onTeamChange() {
+      const updated = localStorage.getItem('selectedTeam')
+      if (updated) setSelectedTeam(updated)
+    }
+    window.addEventListener('teamchange', onTeamChange)
+    return () => window.removeEventListener('teamchange', onTeamChange)
+  }, [])
+  useEffect(() => {
     async function fetchBookings() {
       setLoading(true)
       let start: Date, end: Date
