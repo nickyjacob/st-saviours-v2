@@ -97,8 +97,8 @@ export default function MyBookingsPage() {
               {isApproved ? 'Booked' : isPending ? 'Awaiting' : 'Cancelled'}
             </Badge>
             <div style={{ display: 'flex', gap: '4px' }}>
-              <Button variant="outline" onClick={() => { window.location.href = `/edit-booking/${b.id}` }}>Edit</Button>
-              <Button variant="rejected" onClick={() => handleCancel(b.id)} disabled={cancelling === b.id}>
+              <Button variant="outline" className="!min-h-0 !px-2.5 !py-1.5 !text-xs" onClick={() => { window.location.href = `/edit-booking/${b.id}` }}>Edit</Button>
+              <Button variant="rejected" className="!min-h-0 !px-2.5 !py-1.5 !text-xs" onClick={() => handleCancel(b.id)} disabled={cancelling === b.id}>
                 {cancelling === b.id ? '...' : 'Cancel'}
               </Button>
             </div>
