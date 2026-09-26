@@ -522,7 +522,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
           Booked
         </span>
         <span className="flex items-center gap-1">
-          <span className="inline-block h-2 w-2 rounded-full border-2 border-dashed border-pending" />
+          <span className="inline-block h-2 w-2 rounded-full bg-pending" />
           Awaiting
         </span>
         <span className="flex items-center gap-1">
