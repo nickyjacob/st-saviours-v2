@@ -1,11 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import {
-  LogOut,
-  Settings,
-} from 'lucide-react'
+import { LogOut, Settings, Bell } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { PREFERENCE_CATEGORIES } from '@/lib/notificationCategories'
 import Navbar from '@/components/Navbar'
 import Button from '@/components/ui/Button'
 import PageHeader from '@/components/ui/PageHeader'
@@ -19,6 +17,7 @@ export default function SettingsPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [preferences, setPreferences] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     async function init() {
@@ -30,10 +29,32 @@ export default function SettingsPage() {
       setUserRole(profile.role || '')
       setFullName(profile.full_name || '')
       setEmail(profile.email || session.user.email || '')
+
+      const { data: prefRows } = await supabase
+        .from('notification_preferences')
+        .select('notification_type, enabled')
+        .eq('user_id', session.user.id)
+      const prefMap: Record<string, boolean> = {}
+      for (const row of prefRows || []) {
+        prefMap[row.notification_type] = row.enabled
+      }
+      setPreferences(prefMap)
+
       setLoading(false)
     }
     init()
   }, [])
+
+  async function handleTogglePreference(key: string, currentValue: boolean) {
+    const newValue = !currentValue
+    setPreferences(prev => ({ ...prev, [key]: newValue }))
+    await supabase.from('notification_preferences').upsert({
+      user_id: userId,
+      club_id: 'st-saviours',
+      notification_type: key,
+      enabled: newValue,
+    }, { onConflict: 'user_id,club_id,notification_type' })
+  }
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -78,6 +99,43 @@ export default function SettingsPage() {
       <Navbar activePage="Settings" userRole={userRole} />
       <div className="mx-auto max-w-[700px] px-4 py-6">
         <PageHeader icon={Settings} title="Settings" subtitle={subtitle || undefined} />
+
+        <section className="mb-8">
+          <h2 className="mb-1 flex items-center gap-2 text-sm font-bold text-ink">
+            <Bell className="h-4 w-4 shrink-0" aria-hidden="true" />
+            Notifications
+          </h2>
+          <p className="mb-4 text-[13px] text-neutral">
+            Choose which push notifications you&apos;d like to receive. Notices about your own bookings and new registrations always stay on.
+          </p>
+          <div className="flex flex-col gap-3">
+            {PREFERENCE_CATEGORIES.map(cat => {
+              const enabled = preferences[cat.key] !== false
+              return (
+                <div key={cat.key} className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3">
+                  <div>
+                    <div className="text-[14px] font-semibold text-ink">{cat.label}</div>
+                    <div className="text-xs text-neutral">{cat.description}</div>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={enabled}
+                    onClick={() => handleTogglePreference(cat.key, enabled)}
+                    className={`relative box-content h-6 w-11 shrink-0 rounded-full border-none p-0 transition-colors ${enabled ? 'bg-approved' : 'bg-gray-300'}`}
+                    style={{ appearance: 'none' }}
+                  >
+                    <span
+                      className="absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform"
+                      style={{ transform: enabled ? 'translateX(20px)' : 'translateX(0)' }}
+                    />
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+
         <div className="border-t border-gray-200 pt-6">
           <Button variant="outline" onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" aria-hidden="true" />
