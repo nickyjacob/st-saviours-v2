@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { sendPushToSubscriptions, shouldUseEmailFallback } from '@/lib/sendPush'
+import { filterByPreference } from '@/lib/notificationPreferences'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -35,7 +36,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ sent: 0, failed: 0, failedUserIds: [], usersNeedingEmailFallback: noSub })
     }
 
-    const result = await sendPushToSubscriptions(subscriptions, {
+    const allowedIds = new Set(await filterByPreference(coachIds, 'pitch_closure'))
+    const allowedSubscriptions = subscriptions.filter(s => s.user_id && allowedIds.has(s.user_id))
+    if (allowedSubscriptions.length === 0) {
+      return NextResponse.json({ sent: 0, failed: 0, failedUserIds: [], usersNeedingEmailFallback: noSub })
+    }
+
+    const result = await sendPushToSubscriptions(allowedSubscriptions, {
       title: 'Pitch Closure',
       body: `${pitch_name} — ${date_display}`,
       url: '/planner',

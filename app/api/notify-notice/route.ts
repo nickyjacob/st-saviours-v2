@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { sendPushToSubscriptions } from '@/lib/sendPush'
+import { filterByPreference } from '@/lib/notificationPreferences'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,7 +22,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ sent: 0, failed: 0, failedUserIds: [], usersNeedingEmailFallback: [] })
     }
 
-    const pushResult = await sendPushToSubscriptions(subscriptions, {
+    const allowedIds = new Set(await filterByPreference(
+      Array.from(new Set(subscriptions.map(s => s.user_id).filter((id): id is string => !!id))),
+      'new_notice'
+    ))
+    const allowedSubscriptions = subscriptions.filter(s => s.user_id && allowedIds.has(s.user_id))
+    if (allowedSubscriptions.length === 0) {
+      return NextResponse.json({ sent: 0, failed: 0, failedUserIds: [], usersNeedingEmailFallback: [] })
+    }
+
+    const pushResult = await sendPushToSubscriptions(allowedSubscriptions, {
       title: 'New Notice',
       body: title,
       url: '/dashboard',
