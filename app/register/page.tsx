@@ -30,9 +30,9 @@ export default function RegisterPage() {
       options: {
         data: {
           full_name: fullName,
-          gdpr_consent: true,
-          physio_consent: true,
-          age_confirmed: true,
+          gdpr_consent: gdprConsent,
+          physio_consent: physioConsent,
+          age_confirmed: ageConfirmed,
         }
       }
     })
