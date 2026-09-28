@@ -118,6 +118,7 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
   ]
 
   const secondaryNavItems: NavItem[] = [
+    { label: 'Pitch View', href: '/pitch-view' },
     ...(!isViewer ? [{ label: 'New Booking', href: '/new-booking' }] : []),
     ...((['player', 'coach', 'admin'].includes(resolvedRole)) ? [{ label: 'Physio', href: '/physio' }] : []),
     { label: 'Settings', href: '/settings', icon: Settings },
@@ -130,6 +131,7 @@ export default function Navbar({ activePage, userRole }: NavbarProps) {
   const navItems: NavItem[] = [
     { label: 'Home', href: '/dashboard' },
     { label: 'Calendar', href: '/planner' },
+    { label: 'Pitch View', href: '/pitch-view' },
     ...(!isViewer ? [{ label: 'My Bookings', href: '/my-bookings' }] : []),
     ...(!isViewer ? [{ label: 'New Booking', href: '/new-booking' }] : []),
     ...((['player', 'coach', 'admin'].includes(resolvedRole)) ? [{ label: 'Physio', href: '/physio' }] : []),
