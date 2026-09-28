@@ -16,6 +16,7 @@ import {
   X,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { formatTime } from '@/lib/formatTime'
 import Navbar from '@/components/Navbar'
 
 interface Booking {
@@ -60,7 +61,6 @@ interface LoginRecord {
   email?: string
 }
 
-const fmt = (t: string) => { const parts = t.slice(0,5).split(':'); const hr = parseInt(parts[0]); const mn = parts[1]; return `${hr > 12 ? hr-12 : hr === 0 ? 12 : hr}:${mn}${hr >= 12 ? 'pm' : 'am'}` }
 const formatDate = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
 const formatDateTime = (d: string) => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 
@@ -259,7 +259,7 @@ export default function AdminPage() {
               team_name: booking.team_name,
               pitch_name: booking.pitch_name,
               date_display: new Date(booking.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
-              time_display: `${fmt(booking.start_time)}–${fmt(booking.end_time)}`,
+              time_display: `${formatTime(booking.start_time)}–${formatTime(booking.end_time)}`,
             }),
           })
           const notifyData = await notifyRes.json()
@@ -280,7 +280,7 @@ export default function AdminPage() {
                   team_name: booking.team_name,
                   pitch_name: booking.pitch_name,
                   date_display: new Date(booking.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
-                  time_display: `${fmt(booking.start_time)} – ${fmt(booking.end_time)}`,
+                  time_display: `${formatTime(booking.start_time)} – ${formatTime(booking.end_time)}`,
                   purpose: booking.purpose,
                 }
               })
@@ -307,7 +307,7 @@ export default function AdminPage() {
             team_name: rejectModal.team_name,
             pitch_name: rejectModal.pitch_name,
             date_display: new Date(rejectModal.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
-            time_display: `${fmt(rejectModal.start_time)}–${fmt(rejectModal.end_time)}`,
+            time_display: `${formatTime(rejectModal.start_time)}–${formatTime(rejectModal.end_time)}`,
           }),
         })
         const notifyData = await notifyRes.json()
@@ -328,7 +328,7 @@ export default function AdminPage() {
                 team_name: rejectModal.team_name,
                 pitch_name: rejectModal.pitch_name,
                 date_display: new Date(rejectModal.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
-                time_display: `${fmt(rejectModal.start_time)} – ${fmt(rejectModal.end_time)}`,
+                time_display: `${formatTime(rejectModal.start_time)} – ${formatTime(rejectModal.end_time)}`,
                 purpose: rejectModal.purpose,
               }
             })
@@ -513,7 +513,7 @@ export default function AdminPage() {
                   <div className="flex flex-wrap items-center gap-2.5">
                     <span className="text-sm font-semibold text-ink">{b.full_name}</span>
                     <span className="text-[13px] text-ink">{formatDate(b.booking_date)}</span>
-                    <span className="text-[13px] text-ink">{fmt(b.start_time)} – {fmt(b.end_time)}</span>
+                    <span className="text-[13px] text-ink">{formatTime(b.start_time)} – {formatTime(b.end_time)}</span>
                   </div>
                   <div className="mt-0.5 flex items-center gap-1.5 text-[13px] font-semibold text-ink">
                     <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: b.pitch_colour || '#888' }} aria-hidden="true" />
@@ -873,7 +873,7 @@ export default function AdminPage() {
           <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', width: '100%', maxWidth: '480px' }}>
             <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#dc2626', marginBottom: '8px' }}>Reject Booking</h2>
             <p style={{ fontSize: '13px', color: '#111', marginBottom: '4px' }}>{rejectModal.full_name} — {rejectModal.pitch_name}</p>
-            <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '16px' }}>{formatDate(rejectModal.booking_date)}, {fmt(rejectModal.start_time)}–{fmt(rejectModal.end_time)}</p>
+            <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '16px' }}>{formatDate(rejectModal.booking_date)}, {formatTime(rejectModal.start_time)}–{formatTime(rejectModal.end_time)}</p>
             <label style={{ fontSize: '13px', fontWeight: '600', color: '#111', display: 'block', marginBottom: '6px' }}>Reason (will be emailed to the coach)</label>
             <textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} placeholder="e.g. Pitch already in use, maintenance scheduled..." rows={3} style={{ width: '100%', border: '1px solid #d1d5db', borderRadius: '8px', padding: '8px 12px', fontSize: '13px', resize: 'vertical' }} />
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '16px' }}>

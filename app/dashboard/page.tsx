@@ -5,6 +5,7 @@ import Card from '@/components/ui/Card'
 import IconTile from '@/components/ui/IconTile'
 import Navbar from '@/components/Navbar'
 import { supabase } from '@/lib/supabase'
+import { formatTime } from '@/lib/formatTime'
 import {
   AlertTriangle,
   BarChart3,
@@ -137,13 +138,6 @@ export default function DashboardPage() {
     const updated = [...dismissedNotices, id]
     setDismissedNotices(updated)
     localStorage.setItem('dismissedNotices', JSON.stringify(updated))
-  }
-
-  function fmt(t: string) {
-    if (!t) return ''
-    const [h, m] = t.split(':')
-    const hour = parseInt(h)
-    return `${hour > 12 ? hour - 12 : hour === 0 ? 12 : hour}:${m}${hour >= 12 ? 'pm' : 'am'}`
   }
 
   function formatDate(d: string) {
@@ -300,7 +294,7 @@ export default function DashboardPage() {
                       <VenueIcon className="h-3 w-3" aria-hidden="true" />
                       <span>{isHome ? 'Home' : 'Away'}</span>
                       <span className="font-normal text-neutral">
-                        · {formatDate(f.fixture_date)}{f.fixture_time ? ` · ${fmt(f.fixture_time)}` : ''}
+                        · {formatDate(f.fixture_date)}{f.fixture_time ? ` · ${formatTime(f.fixture_time)}` : ''}
                       </span>
                     </div>
                     <div className="text-[13px] font-bold text-ink">
@@ -371,7 +365,7 @@ export default function DashboardPage() {
               {bookings.map(b => (
                 <Card key={b.id} statusColor="approved" className="bg-approved/5 p-3 shadow-sm">
                   <div className="mb-0.5 text-[11px] font-bold text-approved">
-                    {formatDate(b.booking_date)} · {fmt(b.start_time)} – {fmt(b.end_time)}
+                    {formatDate(b.booking_date)} · {formatTime(b.start_time)} – {formatTime(b.end_time)}
                   </div>
                   <div className="text-[13px] font-semibold text-ink">{b.team_name}</div>
                   <div className="mt-0.5 flex items-center gap-1 text-[11px] text-neutral">

@@ -5,6 +5,7 @@ import Button from '@/components/ui/Button'
 import { AlertTriangle, Check, Pencil } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { formatTime } from '@/lib/formatTime'
 import { useParams } from 'next/navigation'
 
 const SPORTS: Record<string, string[]> = {
@@ -22,8 +23,6 @@ for (let h = 8; h <= 21; h++) {
     TIME_SLOTS.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`)
   }
 }
-
-const fmt = (t: string) => { const parts = t.split(':'); const hr = parseInt(parts[0]); const mn = parts[1]; return `${hr > 12 ? hr-12 : hr === 0 ? 12 : hr}:${mn}${hr >= 12 ? 'pm' : 'am'}` }
 
 const addHour = (t: string) => {
   const [h, m] = t.split(':').map(Number)
@@ -302,7 +301,7 @@ async function checkConflict(pId: string, d: string, st: string, et: string) {
               <label className={labelClass}>Start Time{requiredStar}</label>
               <select value={startTime} onChange={e => handleStartTimeChange(e.target.value)} className={fieldClass(!!errors.startTime)}>
                 <option value="">Start...</option>
-                {TIME_SLOTS.map(t => <option key={t} value={t}>{fmt(t)}</option>)}
+                {TIME_SLOTS.map(t => <option key={t} value={t}>{formatTime(t)}</option>)}
               </select>
               {errors.startTime && <p className={errorClass}>Required</p>}
             </div>
@@ -310,7 +309,7 @@ async function checkConflict(pId: string, d: string, st: string, et: string) {
               <label className={labelClass}>End Time{requiredStar}</label>
               <select value={endTime} onChange={e => handleEndTimeChange(e.target.value)} className={fieldClass(!!errors.endTime)}>
                 <option value="">End...</option>
-                {TIME_SLOTS.map(t => <option key={t} value={t}>{fmt(t)}</option>)}
+                {TIME_SLOTS.map(t => <option key={t} value={t}>{formatTime(t)}</option>)}
               </select>
               {errors.endTime && <p className={errorClass}>Required</p>}
             </div>

@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { AlertTriangle, Bus, Calendar, Clock, Home, MapPin } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { formatTime } from '@/lib/formatTime'
 import Button from '@/components/ui/Button'
 import Navbar from '@/components/Navbar'
 
@@ -348,7 +349,7 @@ export default function FixturesPage() {
                     {f.fixture_time && (
                       <span className="inline-flex items-center gap-1 text-[11px] text-neutral">
                         <Clock className="h-3 w-3 shrink-0" aria-hidden="true" />
-                        {f.fixture_time.slice(0,5)}
+                        {formatTime(f.fixture_time)}
                       </span>
                     )}
                   </div>

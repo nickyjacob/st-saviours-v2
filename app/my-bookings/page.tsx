@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { formatTime } from '@/lib/formatTime'
 import Navbar from '@/components/Navbar'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
@@ -19,7 +20,6 @@ interface Booking {
   pitch_colour: string
 }
 
-const fmt = (t: string) => { const parts = t.slice(0,5).split(':'); const hr = parseInt(parts[0]); const mn = parts[1]; return `${hr > 12 ? hr-12 : hr === 0 ? 12 : hr}:${mn}${hr >= 12 ? 'pm' : 'am'}` }
 const formatDate = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
 
 export default function MyBookingsPage() {
@@ -81,7 +81,7 @@ export default function MyBookingsPage() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: '13px', fontWeight: '700', color: '#111' }}>{formatDate(b.booking_date)}</div>
-            <div style={{ fontSize: '12px', color: '#374151', marginTop: '1px' }}>{fmt(b.start_time)} – {fmt(b.end_time)}</div>
+            <div style={{ fontSize: '12px', color: '#374151', marginTop: '1px' }}>{formatTime(b.start_time)} – {formatTime(b.end_time)}</div>
             <div className="mt-px flex items-center gap-1.5 text-xs font-semibold text-ink">
               <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: b.pitch_colour || '#888' }} aria-hidden="true" />
               {b.pitch_name}

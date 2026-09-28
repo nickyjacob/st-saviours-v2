@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { formatTime } from '@/lib/formatTime'
 
 const SPORTS: Record<string, string[]> = {
   "Men's/Boys Hurling": ['U6','U7','U8','U9','U10','U11','U12','U13','U14','U15','U16','U18','U20','Junior'],
@@ -32,8 +33,6 @@ for (let h = 8; h <= 21; h++) {
     TIME_SLOTS.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`)
   }
 }
-
-const fmt = (t: string) => { const parts = t.split(':'); const hr = parseInt(parts[0]); const mn = parts[1]; return `${hr > 12 ? hr-12 : hr === 0 ? 12 : hr}:${mn}${hr >= 12 ? 'pm' : 'am'}` }
 
 const addHour = (t: string) => {
   const [h, m] = t.split(':').map(Number)
@@ -269,7 +268,7 @@ if (!data && data !== false) return null
             team_name: teamName,
             pitch_name: pitch?.name || '',
             date_display: created[0] ? new Date(created[0].booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) : '',
-            time_display: created[0] ? `${fmt(created[0].start_time)}–${fmt(created[0].end_time)}` : '',
+            time_display: created[0] ? `${formatTime(created[0].start_time)}–${formatTime(created[0].end_time)}` : '',
           }),
         }).catch(err => console.error('Push notify failed:', err))
 
@@ -283,7 +282,7 @@ if (!data && data !== false) return null
               team_name: teamName,
               pitch_name: pitch?.name || '',
               date_display: new Date(b.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
-              time_display: `${fmt(b.start_time)} – ${fmt(b.end_time)}`,
+              time_display: `${formatTime(b.start_time)} – ${formatTime(b.end_time)}`,
               purpose,
             }
           })
@@ -370,7 +369,7 @@ if (!data && data !== false) return null
                   <label className={labelClass}>Start Time{requiredStar}</label>
                   <select value={startTime} onChange={e => handleStartTimeChange(e.target.value)} className={fieldClass(!!errors.startTime)}>
                     <option value="">Start...</option>
-                    {TIME_SLOTS.map(t => <option key={t} value={t}>{fmt(t)}</option>)}
+                    {TIME_SLOTS.map(t => <option key={t} value={t}>{formatTime(t)}</option>)}
                   </select>
                   {errors.startTime && <p className={errorClass}>Required</p>}
                 </div>
@@ -378,7 +377,7 @@ if (!data && data !== false) return null
                   <label className={labelClass}>End Time{requiredStar}</label>
                   <select value={endTime} onChange={e => handleEndTimeChange(e.target.value)} className={fieldClass(!!errors.endTime)}>
                     <option value="">End...</option>
-                    {TIME_SLOTS.map(t => <option key={t} value={t}>{fmt(t)}</option>)}
+                    {TIME_SLOTS.map(t => <option key={t} value={t}>{formatTime(t)}</option>)}
                   </select>
                   {errors.endTime && <p className={errorClass}>Required</p>}
                 </div>
@@ -465,14 +464,14 @@ if (!data && data !== false) return null
                         <label className="mb-1 block text-xs font-semibold text-ink">Start Time{requiredStar}</label>
                         <select value={day.start_time} onChange={e => handleMultiDayChange(i, 'start_time', e.target.value)} className={fieldClass(!!errors[`day_start_${i}`])}>
                           <option value="">Start...</option>
-                          {TIME_SLOTS.map(t => <option key={t} value={t}>{fmt(t)}</option>)}
+                          {TIME_SLOTS.map(t => <option key={t} value={t}>{formatTime(t)}</option>)}
                         </select>
                       </div>
                       <div>
                         <label className="mb-1 block text-xs font-semibold text-ink">End Time{requiredStar}</label>
                         <select value={day.end_time} onChange={e => handleMultiDayChange(i, 'end_time', e.target.value)} className={fieldClass(!!errors[`day_end_${i}`])}>
                           <option value="">End...</option>
-                          {TIME_SLOTS.map(t => <option key={t} value={t}>{fmt(t)}</option>)}
+                          {TIME_SLOTS.map(t => <option key={t} value={t}>{formatTime(t)}</option>)}
                         </select>
                       </div>
                     </div>
@@ -561,7 +560,7 @@ if (!data && data !== false) return null
                 {bookingMode === 'single' && date && (
                   <span className="inline-flex items-center gap-1.5">
                     <Calendar className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                    {formatDateDisplay(date)}{startTime ? ` · ${fmt(startTime)}${endTime ? ` – ${fmt(endTime)}` : ''}` : ''}
+                    {formatDateDisplay(date)}{startTime ? ` · ${formatTime(startTime)}${endTime ? ` – ${formatTime(endTime)}` : ''}` : ''}
                   </span>
                 )}
                 {purpose && (

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Bus, Home, MapPin } from 'lucide-react'
 import Badge from '@/components/ui/Badge'
 import { supabase } from '@/lib/supabase'
+import { formatTime } from '@/lib/formatTime'
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addWeeks, subWeeks, addMonths, subMonths, isSameMonth, isSameDay, isToday } from 'date-fns'
 
 interface Booking {
@@ -36,8 +37,6 @@ interface Pitch {
   name: string
   colour: string
 }
-
-const fmt = (t: string) => { const parts = t.slice(0,5).split(':'); const hr = parseInt(parts[0]); const mn = parts[1]; return `${hr > 12 ? hr-12 : hr === 0 ? 12 : hr}:${mn}${hr >= 12 ? 'pm' : 'am'}` }
 
 function sportPrefix(sport: string) {
   return sport && sport !== 'Other' ? `${sport} · ` : ''
@@ -73,7 +72,7 @@ function BookingModal({ booking, onClose, currentUserId, userRole }: { booking: 
         </div>
         <div className="space-y-3 text-sm">
           <div className="flex justify-between"><span className="text-neutral">Date</span><span className="font-semibold text-ink">{new Date(booking.booking_date + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span></div>
-          <div className="flex justify-between"><span className="text-neutral">Time</span><span className="font-semibold text-ink">{fmt(booking.start_time)} - {fmt(booking.end_time)}</span></div>
+          <div className="flex justify-between"><span className="text-neutral">Time</span><span className="font-semibold text-ink">{formatTime(booking.start_time)} - {formatTime(booking.end_time)}</span></div>
           <div className="flex justify-between"><span className="text-neutral">Pitch</span><span className="font-semibold text-ink">{booking.pitch_name}</span></div>
           <div className="flex justify-between"><span className="text-neutral">Booked by</span><span className="font-semibold text-ink">{booking.full_name}</span></div>
           <div className="flex justify-between items-center"><span className="text-neutral">Status</span><span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusColour}`}>{booking.status}</span></div>
@@ -101,7 +100,7 @@ function BookingCard({ booking, onClick, compact }: { booking: Booking; onClick:
   if (compact) {
     return (
       <div onClick={onClick} className={`cursor-pointer rounded border-l-[3px] px-[5px] py-[3px] ${statusClasses}`}>
-        <div className={`${timeClasses} text-[10px] font-bold`}>{fmt(booking.start_time)}-{fmt(booking.end_time)}</div>
+        <div className={`${timeClasses} text-[10px] font-bold`}>{formatTime(booking.start_time)}-{formatTime(booking.end_time)}</div>
         <div className="text-[11px] font-bold text-ink truncate">{booking.team_name}</div>
         {pendingBadge}
         <div className="text-[10px] text-neutral truncate">{booking.full_name} - {booking.pitch_name}</div>
@@ -110,7 +109,7 @@ function BookingCard({ booking, onClick, compact }: { booking: Booking; onClick:
   }
   return (
     <div onClick={onClick} className={`cursor-pointer rounded-md border-l-4 px-[7px] py-[5px] ${statusClasses}`}>
-      <div className={`${timeClasses} text-[11px] font-bold`}>{fmt(booking.start_time)}-{fmt(booking.end_time)}</div>
+      <div className={`${timeClasses} text-[11px] font-bold`}>{formatTime(booking.start_time)}-{formatTime(booking.end_time)}</div>
       <div className="text-[12px] font-bold text-ink mt-px">{booking.team_name}</div>
       {pendingBadge}
       <div className="text-[11px] text-neutral mt-px leading-snug">{booking.full_name} - {booking.pitch_name}</div>
@@ -133,7 +132,7 @@ function MobileBookingRow({ b, onClick }: { b: Booking; onClick: () => void }) {
   return (
     <div onClick={onClick} className={`mb-[5px] flex cursor-pointer items-center justify-between gap-2 rounded-md border-l-4 px-2.5 py-1.5 ${statusClasses}`}>
       <div className="min-w-0 flex-1">
-        <div className={`text-[10px] font-bold ${timeClasses}`}>{fmt(b.start_time)}-{fmt(b.end_time)} · {b.pitch_name}</div>
+        <div className={`text-[10px] font-bold ${timeClasses}`}>{formatTime(b.start_time)}-{formatTime(b.end_time)} · {b.pitch_name}</div>
         <div className="truncate text-[13px] font-bold text-ink">{b.team_name}</div>
         <div className="truncate text-[11px] text-neutral">{b.full_name} · {b.purpose}</div>
       </div>
@@ -299,7 +298,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
         ))}
         {dayFixtures.map(f => (
           <div key={f.id} onClick={() => setSelectedFixture(f)} className="mb-[5px] cursor-pointer rounded-md border-l-4 border-l-info bg-info/10 px-2.5 py-1.5">
-            <div className="text-[10px] font-bold text-info">{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · <HomeAwayMark homeAway={f.home_away} /></div>
+            <div className="text-[10px] font-bold text-info">{formatTime(f.fixture_time)} · <HomeAwayMark homeAway={f.home_away} /></div>
             <div className="text-[13px] font-bold text-ink">{formatFixtureLine(f)}</div>
             <div className="text-[11px] text-neutral"><MapPin className="inline h-3 w-3 shrink-0 align-middle" aria-hidden="true" /> {f.venue_name} · {f.competition}</div>
           </div>
@@ -345,7 +344,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
               ))}
               {dayFixtures.map(f => (
                 <div key={f.id} onClick={() => setSelectedFixture(f)} className="mb-[5px] cursor-pointer rounded-md border-l-4 border-l-info bg-info/10 px-2.5 py-1.5">
-                  <div className="text-[10px] font-bold text-info">{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · <HomeAwayMark homeAway={f.home_away} /></div>
+                  <div className="text-[10px] font-bold text-info">{formatTime(f.fixture_time)} · <HomeAwayMark homeAway={f.home_away} /></div>
                   <div className="text-[13px] font-bold text-ink">{formatFixtureLine(f)}</div>
                   <div className="text-[11px] text-neutral"><MapPin className="inline h-3 w-3 shrink-0 align-middle" aria-hidden="true" /> {f.venue_name} · {f.competition}</div>
                 </div>
@@ -390,7 +389,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
               ))}
               {dayFixtures.map(f => (
                 <div key={f.id} onClick={() => setSelectedFixture(f)} className="mb-[5px] cursor-pointer rounded-md border-l-4 border-l-info bg-info/10 px-2.5 py-1.5">
-                  <div className="text-[10px] font-bold text-info">{f.fixture_time ? f.fixture_time.slice(0,5) : ''} · <HomeAwayMark homeAway={f.home_away} /></div>
+                  <div className="text-[10px] font-bold text-info">{formatTime(f.fixture_time)} · <HomeAwayMark homeAway={f.home_away} /></div>
                   <div className="text-[13px] font-bold text-ink">{formatFixtureLine(f)}</div>
                   <div className="text-[11px] text-neutral"><MapPin className="inline h-3 w-3 shrink-0 align-middle" aria-hidden="true" /> {f.venue_name} · {f.competition}</div>
                 </div>
@@ -453,7 +452,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
                     {calendarView !== 'fixtures' && dayBookings.length > 3 && <div className="pl-0.5 text-[9px] text-neutral">+{dayBookings.length - 3} more</div>}
                     {calendarView !== 'bookings' && getDayFixtures(day).map(f => (
                       <div key={f.id} onClick={() => setSelectedFixture(f)} className="cursor-pointer rounded border-l-[3px] border-l-info bg-info/10 px-1 py-0.5">
-                        <div className="text-[9px] font-bold text-info">📅 <HomeAwayMark homeAway={f.home_away} showLabel={false} /> {f.fixture_time ? f.fixture_time.slice(0,5) : ''}</div>
+                        <div className="text-[9px] font-bold text-info">📅 <HomeAwayMark homeAway={f.home_away} showLabel={false} /> {formatTime(f.fixture_time)}</div>
                         <div className="truncate text-[9px] text-ink">{formatFixtureLine(f)}</div>
                       </div>
                     ))}
@@ -490,7 +489,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
                 ))}
                 {dayFixtures.map(f => (
                   <div key={f.id} onClick={() => setSelectedFixture(f)} className="cursor-pointer rounded-md border-l-4 border-l-info bg-info/10 px-[7px] py-[5px]">
-                    <div className="text-[11px] font-bold text-info">📅 <HomeAwayMark homeAway={f.home_away} showLabel={false} /> {f.fixture_time ? f.fixture_time.slice(0,5) : ''}</div>
+                    <div className="text-[11px] font-bold text-info">📅 <HomeAwayMark homeAway={f.home_away} showLabel={false} /> {formatTime(f.fixture_time)}</div>
                     <div className="mt-px truncate text-[11px] text-ink">{formatFixtureLine(f)}</div>
                     <div className="mt-px text-[10px] text-neutral"><MapPin className="inline h-3 w-3 shrink-0 align-middle" aria-hidden="true" /> {f.venue_name}</div>
                   </div>
@@ -591,7 +590,7 @@ export default function PitchCalendar({ userRole, currentUserId }: { userRole: s
             </div>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between"><span className="text-neutral">Date</span><span className="font-semibold text-ink">{new Date(selectedFixture.fixture_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span></div>
-              <div className="flex justify-between"><span className="text-neutral">Time</span><span className="font-semibold text-ink">{selectedFixture.fixture_time ? selectedFixture.fixture_time.slice(0,5) : 'TBC'}</span></div>
+              <div className="flex justify-between"><span className="text-neutral">Time</span><span className="font-semibold text-ink">{selectedFixture.fixture_time ? formatTime(selectedFixture.fixture_time) : 'TBC'}</span></div>
               <div className="flex justify-between"><span className="text-neutral">Venue</span><span className="font-semibold text-ink">{selectedFixture.venue_name}</span></div>
               <div className="flex justify-between"><span className="text-neutral">Home/Away</span><span className="font-semibold text-ink"><HomeAwayMark homeAway={selectedFixture.home_away} /></span></div>
               <div className="flex justify-between"><span className="text-neutral">Competition</span><span className="font-semibold text-ink">{selectedFixture.competition}</span></div>
