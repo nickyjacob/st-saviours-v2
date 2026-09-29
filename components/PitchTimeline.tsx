@@ -111,7 +111,9 @@ function assignLanes(items: PitchViewBooking[]): Map<string, number> {
   return laneOf;
 }
 
-const LANE_HEIGHT = 20; // px per overlapping booking "lane"
+const LANE_HEIGHT = 32; // px per overlapping booking "lane" (button is LANE_HEIGHT - 4 tall)
+const LANE_PAD_TOP = 8; // space above the first lane; also used below the last one
+const MIN_TRACK_HEIGHT = 44; // keeps an empty track a comfortable tap target
 
 function statusClasses(status: string): string {
   if (status === 'approved') return 'bg-approved text-white';
@@ -120,24 +122,19 @@ function statusClasses(status: string): string {
   return 'bg-rejected/60 text-white'; // shouldn't normally reach here, filtered below
 }
 
-// Hourly gridlines on desktop, every 2 hours on mobile.
+// Hourly gridlines (the track is wide enough on every screen size now).
 function HourGridlines() {
   const hours = [];
   for (let h = PITCH_VIEW_START_HOUR; h <= PITCH_VIEW_END_HOUR; h++) hours.push(h);
   return (
     <div className="absolute inset-0 pointer-events-none">
-      {hours.map((h) => {
-        const isEvenHour = h % 2 === 0;
-        return (
-          <div
-            key={h}
-            className={`absolute top-0 bottom-0 border-l border-gray-100 ${
-              isEvenHour ? '' : 'hidden md:block'
-            }`}
-            style={{ left: `${pctFromMinutes(h * 60)}%` }}
-          />
-        );
-      })}
+      {hours.map((h) => (
+        <div
+          key={h}
+          className="absolute top-0 bottom-0 border-l border-gray-100"
+          style={{ left: `${pctFromMinutes(h * 60)}%` }}
+        />
+      ))}
     </div>
   );
 }
@@ -154,18 +151,15 @@ function HourLabels({ hasLabelColumn }: { hasLabelColumn: boolean }) {
         </>
       )}
       <div className="relative flex-1 h-4 text-[10px] text-neutral">
-        {hours.map((h) => {
-          const isEvenHour = h % 2 === 0;
-          return (
-            <span
-              key={h}
-              className={`absolute -translate-x-1/2 ${isEvenHour ? '' : 'hidden md:inline'}`}
-              style={{ left: `${pctFromMinutes(h * 60)}%` }}
-            >
-              {formatHourLabel(h)}
-            </span>
-          );
-        })}
+        {hours.map((h) => (
+          <span
+            key={h}
+            className="absolute -translate-x-1/2"
+            style={{ left: `${pctFromMinutes(h * 60)}%` }}
+          >
+            {formatHourLabel(h)}
+          </span>
+        ))}
       </div>
     </div>
   );
@@ -179,6 +173,7 @@ function PitchTimelineRow({
   onBookingClick,
   showLabel = true,
   now,
+  pendingTime = null,
 }: {
   pitch: PitchViewPitch;
   bookings: PitchViewBooking[];
@@ -187,6 +182,7 @@ function PitchTimelineRow({
   onBookingClick: (booking: PitchViewBooking) => void;
   showLabel?: boolean;
   now: Date;
+  pendingTime?: string | null; // 'HH:MM' of a tapped-but-unconfirmed slot on this row
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
 
@@ -202,7 +198,7 @@ function PitchTimelineRow({
 
   const laneOf = assignLanes(relevant);
   const laneCount = Math.max(1, ...Array.from(laneOf.values()).map((l) => l + 1));
-  const trackHeight = Math.max(36, laneCount * LANE_HEIGHT + 4);
+  const trackHeight = Math.max(MIN_TRACK_HEIGHT, laneCount * LANE_HEIGHT + LANE_PAD_TOP + 4);
 
   function handleTrackClick(e: React.MouseEvent<HTMLDivElement>) {
     if (!trackRef.current) return;
@@ -217,9 +213,9 @@ function PitchTimelineRow({
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center">
       {showLabel && (
-        <>
+        <div className="sticky left-0 z-20 bg-white flex items-center gap-2 pr-2 flex-shrink-0">
           <div
             className="w-2 h-2 rounded-full flex-shrink-0"
             style={{ backgroundColor: pitch.colour }}
@@ -228,7 +224,7 @@ function PitchTimelineRow({
           <span className="text-xs font-medium text-ink w-14 flex-shrink-0 truncate">
             {friendlyLabel(pitch.name)}
           </span>
-        </>
+        </div>
       )}
       <div
         ref={trackRef}
@@ -240,7 +236,7 @@ function PitchTimelineRow({
         {relevant.map((b) => {
           const left = pctFromMinutes(toMinutes(b.start_time));
           const right = pctFromMinutes(toMinutes(b.end_time));
-          const width = Math.max(right - left, 1.5); // keep short bookings visible/tappable
+          const width = Math.max(right - left, 2.5); // keep short bookings visible/tappable
           return (
             <button
               key={b.id}
@@ -254,7 +250,7 @@ function PitchTimelineRow({
               style={{
                 left: `${left}%`,
                 width: `${width}%`,
-                top: `${laneOf.get(b.id)! * LANE_HEIGHT + 2}px`,
+                top: `${laneOf.get(b.id)! * LANE_HEIGHT + LANE_PAD_TOP}px`,
                 height: `${LANE_HEIGHT - 4}px`,
               }}
               title={`${b.team_name} · ${formatTime(b.start_time)}–${formatTime(b.end_time)}`}
@@ -263,6 +259,12 @@ function PitchTimelineRow({
             </button>
           );
         })}
+        {pendingTime && (
+          <div
+            className="absolute top-0 bottom-0 w-0.5 bg-info z-10 pointer-events-none"
+            style={{ left: `${pctFromMinutes(toMinutes(pendingTime))}%` }}
+          />
+        )}
         {showNowLine && (
           <div
             className="absolute top-0 bottom-0 w-px bg-rejected z-10"
@@ -289,24 +291,74 @@ export default function PitchTimeline({
   const isStandalone = sortedChildren.length === 0;
   const rows = isStandalone ? [parentPitch] : sortedChildren;
 
+  // On touch devices a tap on an empty slot is only a "selection" until the user
+  // confirms it, so a stray tap or a scroll-drag never throws them off to another
+  // page. With a mouse the click books straight away, as it always did.
+  const [pendingSlot, setPendingSlot] = useState<{ pitchId: number; time: string } | null>(null);
+  function handleSlotPick(pitchId: number, time: string) {
+    const isTouch = window.matchMedia('(pointer: coarse)').matches;
+    if (isTouch) setPendingSlot({ pitchId, time });
+    else onSlotClick(pitchId, time);
+  }
+  useEffect(() => {
+    setPendingSlot(null);
+  }, [selectedDate]);
+  const pendingRow = pendingSlot ? rows.find((r) => r.id === pendingSlot.pitchId) : undefined;
+  const pendingLabel = pendingRow
+    ? isStandalone
+      ? shortenPitchName(pendingRow.name)
+      : friendlyLabel(pendingRow.name)
+    : '';
+
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-3">
       <h3 className="text-sm font-semibold text-ink mb-2">{shortenPitchName(parentPitch.name)}</h3>
-      <div className="space-y-2">
-        {rows.map((row) => (
-          <PitchTimelineRow
-            key={row.id}
-            pitch={row}
-            bookings={bookings}
-            selectedDate={selectedDate}
-            onSlotClick={onSlotClick}
-            onBookingClick={onBookingClick}
-            showLabel={!isStandalone}
-            now={now}
-          />
-        ))}
+      {/* On phones the timeline keeps a fixed width per hour and scrolls sideways
+          instead of squashing 14 hours into ~250px. From md up it fits the card. */}
+      <div className="overflow-x-auto">
+        <div className="min-w-[860px] md:min-w-0">
+          <div className="space-y-2">
+            {rows.map((row) => (
+              <PitchTimelineRow
+                key={row.id}
+                pitch={row}
+                bookings={bookings}
+                selectedDate={selectedDate}
+                onSlotClick={handleSlotPick}
+                onBookingClick={onBookingClick}
+                showLabel={!isStandalone}
+                now={now}
+                pendingTime={pendingSlot?.pitchId === row.id ? pendingSlot.time : null}
+              />
+            ))}
+          </div>
+          <HourLabels hasLabelColumn={!isStandalone} />
+        </div>
       </div>
-      <HourLabels hasLabelColumn={!isStandalone} />
+      {pendingSlot && (
+        <div className="mt-3 flex items-center justify-between gap-2 rounded-md border border-gray-200 bg-gray-50 px-3 py-2">
+          <span className="text-xs text-ink">
+            Book {pendingLabel} at {formatTime(pendingSlot.time)}?
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPendingSlot(null)}
+              className="min-h-[36px] rounded-md border border-gray-200 bg-white px-3 text-xs font-medium text-ink"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                onSlotClick(pendingSlot.pitchId, pendingSlot.time);
+                setPendingSlot(null);
+              }}
+              className="min-h-[36px] rounded-md bg-info px-3 text-xs font-medium text-white"
+            >
+              Book
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
