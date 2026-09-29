@@ -15,6 +15,7 @@ import {
   X,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { formatTime } from '@/lib/formatTime'
 
@@ -74,6 +75,7 @@ export default function NewBookingPage() {
   const [userRole, setUserRole] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
+  const searchParams = useSearchParams()
 
   useEffect(() => {
     async function init() {
@@ -87,6 +89,21 @@ export default function NewBookingPage() {
       }
       const { data } = await supabase.from('pitches').select('id, name, colour').eq('is_active', true).order('sort_order')
       if (data) setPitches(data)
+
+      const initialPitch = searchParams.get('pitch')
+      const initialDate = searchParams.get('date')
+      const initialStart = searchParams.get('start')
+      if (initialPitch) setPitchId(initialPitch)
+      if (initialDate) setDate(initialDate)
+      if (initialStart) {
+        setStartTime(initialStart)
+        const autoEnd = addHour(initialStart)
+        setEndTime(autoEnd)
+        if (initialPitch && initialDate) {
+          const c = await checkConflict(initialPitch, initialDate, initialStart, autoEnd)
+          setConflict(c)
+        }
+      }
     }
     init()
   }, [])

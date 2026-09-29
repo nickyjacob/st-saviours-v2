@@ -57,7 +57,7 @@ function HomeAwayMark({ homeAway, showLabel = true, iconClassName = 'h-3 w-3' }:
   )
 }
 
-function BookingModal({ booking, onClose, currentUserId, userRole }: { booking: Booking; onClose: () => void; currentUserId: string; userRole: string }) {
+export function BookingModal({ booking, onClose, currentUserId, userRole }: { booking: Booking; onClose: () => void; currentUserId: string; userRole: string }) {
   const canEdit = booking.user_id === currentUserId || userRole === 'admin'
   const statusColour = booking.status === 'approved' ? 'bg-approved/10 text-approved' : booking.status === 'pending' ? 'bg-pending/10 text-pending' : 'bg-rejected/10 text-rejected'
   return (
