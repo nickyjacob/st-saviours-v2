@@ -85,6 +85,34 @@ function shortenPitchName(name: string): string {
   return name.replace(/\s*\(.*\)\s*$/, '').trim();
 }
 
+function assignLanes(items: PitchViewBooking[]): Map<string, number> {
+  const sorted = [...items].sort(
+    (a, b) => toMinutes(a.start_time) - toMinutes(b.start_time)
+  );
+  const laneEnds: number[] = [];
+  const laneOf = new Map<string, number>();
+  for (const b of sorted) {
+    const start = toMinutes(b.start_time);
+    const end = toMinutes(b.end_time);
+    let placed = false;
+    for (let i = 0; i < laneEnds.length; i++) {
+      if (laneEnds[i] <= start) {
+        laneEnds[i] = end;
+        laneOf.set(b.id, i);
+        placed = true;
+        break;
+      }
+    }
+    if (!placed) {
+      laneEnds.push(end);
+      laneOf.set(b.id, laneEnds.length - 1);
+    }
+  }
+  return laneOf;
+}
+
+const LANE_HEIGHT = 20; // px per overlapping booking "lane"
+
 function statusClasses(status: string): string {
   if (status === 'approved') return 'bg-approved text-white';
   if (status === 'pending')
@@ -172,6 +200,10 @@ function PitchTimelineRow({
   const nowMin = now.getHours() * 60 + now.getMinutes();
   const showNowLine = isToday && nowMin >= START_MIN && nowMin <= END_MIN;
 
+  const laneOf = assignLanes(relevant);
+  const laneCount = Math.max(1, ...Array.from(laneOf.values()).map((l) => l + 1));
+  const trackHeight = Math.max(36, laneCount * LANE_HEIGHT + 4);
+
   function handleTrackClick(e: React.MouseEvent<HTMLDivElement>) {
     if (!trackRef.current) return;
     const rect = trackRef.current.getBoundingClientRect();
@@ -201,7 +233,8 @@ function PitchTimelineRow({
       <div
         ref={trackRef}
         onClick={handleTrackClick}
-        className="relative flex-1 h-9 bg-gray-50 rounded-md border border-gray-200 cursor-pointer overflow-hidden"
+        className="relative flex-1 bg-gray-50 rounded-md border border-gray-200 cursor-pointer overflow-hidden"
+        style={{ height: `${trackHeight}px` }}
       >
         <HourGridlines />
         {relevant.map((b) => {
@@ -215,10 +248,15 @@ function PitchTimelineRow({
                 e.stopPropagation();
                 onBookingClick(b);
               }}
-              className={`absolute top-0.5 bottom-0.5 rounded px-1 text-[10px] font-medium truncate text-left ${statusClasses(
+              className={`absolute rounded px-1 text-[10px] font-medium truncate text-left ${statusClasses(
                 b.status
               )}`}
-              style={{ left: `${left}%`, width: `${width}%` }}
+              style={{
+                left: `${left}%`,
+                width: `${width}%`,
+                top: `${laneOf.get(b.id)! * LANE_HEIGHT + 2}px`,
+                height: `${LANE_HEIGHT - 4}px`,
+              }}
               title={`${b.team_name} · ${formatTime(b.start_time)}–${formatTime(b.end_time)}`}
             >
               {width >= 6 ? b.team_name : ''}

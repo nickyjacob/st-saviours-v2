@@ -147,6 +147,15 @@ if (!data && data !== false) return null
     }
   }
 
+  async function handlePitchChange(val: string) {
+    setPitchId(val)
+    setConflict(null)
+    if (val && date && startTime && endTime) {
+      const c = await checkConflict(val, date, startTime, endTime)
+      setConflict(c)
+    }
+  }
+
   async function handleDateChange(val: string) {
     setDate(val)
     setConflict(null)
@@ -222,8 +231,43 @@ if (!data && data !== false) return null
       return
     }
     setErrors({})
-    setSubmitting(true)
     setSubmitError('')
+    setSubmitting(true)
+
+    if (bookingMode === 'single') {
+      const datesToCheck = repeatDates.length > 0 ? repeatDates : [date]
+      for (const d of datesToCheck) {
+        const c = await checkConflict(pitchId, d, startTime, endTime)
+        if (c) {
+          setConflict(true)
+          setSubmitError(`This pitch is already booked on ${formatDateDisplay(d)} at this time. Choose a different time, pitch, or remove that date.`)
+          setSubmitting(false)
+          const el = document.getElementById('field-date')
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          return
+        }
+      }
+    } else {
+      for (let dayIndex = 0; dayIndex < multiDays.length; dayIndex++) {
+        const day = multiDays[dayIndex]
+        for (let w = 0; w < multiRepeat; w++) {
+          const d = new Date(day.date + 'T00:00:00')
+          d.setDate(d.getDate() + w * 7)
+          const dStr = d.toISOString().split('T')[0]
+          const c = await checkConflict(pitchId, dStr, day.start_time, day.end_time)
+          if (c) {
+            const updated = [...multiDays]
+            updated[dayIndex] = { ...updated[dayIndex], conflict: true }
+            setMultiDays(updated)
+            setSubmitError(`This pitch is already booked on ${formatDateDisplay(dStr)} at this time. Choose a different time, pitch, or remove that day.`)
+            setSubmitting(false)
+            const el = document.getElementById(`field-day_date_${dayIndex}`)
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            return
+          }
+        }
+      }
+    }
     const teamName = `${sport} ${ageGroup}`.trim()
     const baseBooking = {
       user_id: userId,
@@ -338,6 +382,11 @@ if (!data && data !== false) return null
             New Booking
           </h1>
           <p className="mb-6 text-[13px] text-neutral">Fields marked <span className="text-rejected">*</span> are required</p>
+          {submitError && (
+            <div className="mb-4 rounded-lg border border-rejected/40 bg-rejected/10 px-3.5 py-2.5 text-sm text-rejected">
+              {submitError}
+            </div>
+          )}
 
           <div className="mb-4 grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3">
             <div id="field-sport">
@@ -350,7 +399,7 @@ if (!data && data !== false) return null
             </div>
             <div id="field-pitchId">
               <label className={labelClass}>Pitch{requiredStar}</label>
-              <select value={pitchId} onChange={e => setPitchId(e.target.value)} className={fieldClass(!!errors.pitchId)}>
+              <select value={pitchId} onChange={e => handlePitchChange(e.target.value)} className={fieldClass(!!errors.pitchId)}>
                 <option value="">Select a pitch...</option>
                 {pitches.map(p => <option key={p.id} value={String(p.id)}>{p.name}</option>)}
               </select>
