@@ -14,7 +14,7 @@ import {
   Target,
   X,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { formatTime } from '@/lib/formatTime'
@@ -51,7 +51,7 @@ interface DayEntry {
   conflict: boolean | null
 }
 
-export default function NewBookingPage() {
+function NewBookingForm() {
   const [userId, setUserId] = useState('')
   const [pitches, setPitches] = useState<Pitch[]>([])
   const [sport, setSport] = useState('')
@@ -657,5 +657,13 @@ if (!data && data !== false) return null
         </div>
       </div>
     </div>
+  )
+}
+
+export default function NewBookingPage() {
+  return (
+    <Suspense fallback={null}>
+      <NewBookingForm />
+    </Suspense>
   )
 }

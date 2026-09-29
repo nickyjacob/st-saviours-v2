@@ -32,10 +32,11 @@ export default function PitchViewPage() {
 
   function openDatePicker() {
     const el = dateInputRef.current;
-    if (el && 'showPicker' in el) {
-      (el as any).showPicker();
+    if (!el) return;
+    if (typeof el.showPicker === 'function') {
+      el.showPicker();
     } else {
-      el?.focus();
+      el.focus();
     }
   }
 
